@@ -1,0 +1,157 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="versus-restlet" default="archive">
+
+	<property name="build.dir" location="build" />
+	
+	<property name="src.dir" location="src" />
+	
+	<property name="lib.dir" location="lib" />
+	
+	<property name="test.dir" location="${build.dir}/test" />
+	
+	<property name="dist.dir" location="dist" />
+	
+	<property name="standalone.dir" location="${dist.dir}/standalone" />
+	
+	<property name="war.dir" location="${dist.dir}/war" />
+	
+	<property name="test.data.dir" location="${build.dir}/data" />
+	
+	<property name="test.reports.dir" location="${build.dir}/reports" />
+	
+	<property name="javadocs.dir" location="${build.dir}/javadocs" />
+	
+	<property name="project.name" value="versus-restlet" />
+	
+	<property name="project.version" value="0.5" />
+	
+	<property name="jarfile.name" value="${project.name}-${project.version}.jar" />
+		
+	<property name="jarfile.path" location="${dist.dir}/${jarfile.name}" />
+	
+	<path id="compile.classpath">
+		<pathelement path="${src.dir}" />
+		<pathelement location="../versus/src" />
+		<fileset dir="${lib.dir}">
+			<include name="**/*.jar" />
+			<exclude name="junit-4.8.1.jar"/>
+		</fileset>
+	</path>
+	
+	<path id="test.classpath">
+		<path refid="compile.classpath" />
+		<pathelement path="lib/junit-4.8.1.jar" />
+		<pathelement path="${build.dir}/classes" />
+		<pathelement path="${build.dir}/test" />
+	</path>
+
+	<target name="init">
+		<mkdir dir="${build.dir}/classes" />
+		<mkdir dir="${dist.dir}" />
+	</target>
+	
+	<target name="test-init">
+		<mkdir dir="${test.dir}"/>
+		<delete dir="${test.data.dir}" />
+		<delete dir="${test.reports.dir}" />
+		<mkdir dir="${test.data.dir}"/>
+		<mkdir dir="${test.reports.dir}"/>
+	</target>
+
+	<target name="clean" depends="init" description="Deletes all generated files">
+		<delete dir="${build.dir}" />
+		<delete dir="${dist.dir}" />
+	</target>
+
+	<target name="build-versus">
+		<ant antfile="../versus/build.xml" dir="../versus/" target="archive" inheritall="false"/>
+		<copy file="../versus/dist/versus-api-0.5.jar" todir="lib"/>
+		<copy file="../versus/dist/versus-impl-0.5.jar" todir="lib"/>
+	</target>
+	
+	<target name="compile" depends="init" description="Compiles the Java source code">
+		<javac srcdir="src" includes="**" encoding="utf-8" destdir="build/classes" 
+			source="1.5" target="1.6" nowarn="true" debug="true" debuglevel="lines,vars,source">
+			<classpath refid="compile.classpath" />
+		</javac>
+	</target>
+	
+	<target name="test-compile" depends="compile,test-init">
+		<javac destdir="${test.dir}" debug="${build.debug}" includeantruntime="true" srcdir="test">
+			<classpath refid="test.classpath" />
+		</javac>
+		
+		<copy todir="${test.dir}">
+			<fileset dir="test" excludes="**/*.java" />
+		</copy>
+	</target>
+	
+	<target name="test" depends="test-compile">
+		<junit printsummary="true" errorproperty="test.failed" failureproperty="test.failed">
+			<classpath refid="test.classpath" />
+			<formatter type="brief" usefile="false"/>
+			<formatter type="xml"/>
+			<batchtest todir="${test.data.dir}">
+				<fileset dir="${test.dir}" includes="**/*Test.class" />
+			</batchtest>
+		</junit>
+		
+		<junitreport todir="${test.reports.dir}">
+			<fileset dir="${test.data.dir}">
+				<include name="TEST-*.xml"/>
+			</fileset>
+			<report format="frames" todir="${test.reports.dir}"/>
+		</junitreport>
+		
+		<fail message="Tests failed. Check log and reports." if="test.failed" />
+	</target>	
+	
+	<target name="archive" depends="compile" description="Creates the JAR file">
+	    <manifest file="build/MANIFEST.MF">
+	        <attribute name="Built-By" value="${user.name}"/>
+	        <attribute name="Main-Class" value="edu.illinois.ncsa.versus.restlet.SimpleServer"/>
+	    </manifest>
+		<jar destfile="${jarfile.path}" manifest="build/MANIFEST.MF">
+			<fileset dir="${build.dir}/classes"></fileset>
+		</jar>
+	</target>
+	
+	<target name="dist" depends="archive" description="Create distribution folder">
+		<mkdir dir="${standalone.dir}/lib"/>
+		<copy todir="${standalone.dir}/lib">
+		  <fileset dir="lib"
+		           includes="**/*.jar"
+		           excludes="junit-4.8.1.jar"
+		  />
+		</copy>
+		<copy file="${jarfile.path}" todir="${standalone.dir}/lib"/>
+		<copy file="resources/startup.sh" todir="${standalone.dir}"/>
+		<copy file="src/versus.properties" todir="${standalone.dir}"/>
+	</target>
+	
+	<target name="war" depends="archive" description="Create distribution folder">
+		<war destfile="${dist.dir}/versus.war" webxml="resources/web.xml">
+			<fileset dir="html"/>
+			<lib dir="lib">
+				<include name="**/*.jar"/>
+				<include name="${jarfile.path}"/>
+				<exclude name="junit-4.8.1.jar"/>
+			</lib>
+			<classes dir="${build.dir}/classes"/>
+			<classes file="src/versus.properties"/>
+		</war>
+	</target>
+	
+	<target name="test-dist" depends="archive">
+		<unjar src="${jarfile.path}" dest="${dist.dir}/unjar">
+		</unjar>
+	</target>
+	
+	<target name="javadocs" depends="compile" description="Make javadocs">
+		<mkdir dir="${javadocs.dir}" />
+		<javadoc author="true" destdir="${javadocs.dir}" packagenames="edu.illinois.ncsa.versus.*"
+			sourcepath="${src.dir}" use="true" version="true" windowtitle="documentation" private="true" >
+			<classpath refid="compile.classpath" />
+		</javadoc>
+	</target>
+</project>
