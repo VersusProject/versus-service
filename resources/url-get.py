@@ -51,7 +51,7 @@ def main(argv=None):
     for arg in args:
         process(arg) # process() is defined elsewhere
 
-    base = 'http://localhost:8183/versus'
+    base = args[0]
     # get adapters
     result = get(base + '/adapters')
     print result
@@ -66,6 +66,8 @@ def main(argv=None):
     }
     postResult = post(base + '/comparisons', comparison)
     print postResult
+def process(arg):
+    print 'Processing arg: ', arg
 
 if __name__ == "__main__":
     sys.exit(main())
