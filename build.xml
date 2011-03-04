@@ -139,6 +139,7 @@
 			</lib>
 			<classes dir="${build.dir}/classes"/>
 			<classes file="src/versus.properties"/>
+			<classes file="src/log4j.properties"/>
 		</war>
 	</target>
 	

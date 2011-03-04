@@ -32,7 +32,7 @@ public class MeasuresServerResource extends ServerResource {
 		} else {
 			String content = new String("<h3>Versus > Mesures</h3>" + "<ul>");
 			for (Measure measure : measures) {
-				content += "<li><a href='/versus/measures/"
+				content += "<li><a href='/versus/api/measures/"
 						+ measure.getClass().getName() + "'>"
 						+ measure.getClass().getName() + "</a></li>";
 			}

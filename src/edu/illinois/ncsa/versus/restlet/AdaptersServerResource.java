@@ -32,7 +32,7 @@ public class AdaptersServerResource extends ServerResource {
 		} else {
 			String content = new String("<h3>Versus > Adapters</h3>" + "<ul>");
 			for (Adapter adapter : adapters) {
-				content += "<li><a href='/versus/adapters/"
+				content += "<li><a href='/versus/api/adapters/"
 						+ adapter.getClass().getName() + "'>"
 						+ adapter.getClass().getName() + "</a></li>";
 			}

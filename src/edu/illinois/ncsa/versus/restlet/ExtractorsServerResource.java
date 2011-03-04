@@ -32,7 +32,7 @@ public class ExtractorsServerResource extends ServerResource {
 		} else {
 			String content = new String("<h3>Versus > Extractors</h3>" + "<ul>");
 			for (Extractor extractor : extractors) {
-				content += "<li><a href='/versus/extractors/"
+				content += "<li><a href='/versus/api/extractors/"
 						+ extractor.getClass().getName() + "'>"
 						+ extractor.getClass().getName() + "</a></li>";
 			}

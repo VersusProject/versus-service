@@ -63,7 +63,7 @@ public class ComparisonsServerResource extends ServerResource {
 					+ "<ul>");
 			for (Comparison comparison : comparisons) {
 				String id = comparison.getId();
-				content += "<li><a href='/versus/comparisons/" + id + "'>" + id
+				content += "<li><a href='/versus/api/comparisons/" + id + "'>" + id
 						+ "</a></li>";
 			}
 			content += "</ul>";

@@ -19,11 +19,11 @@ public class VersusServerResource extends ServerResource {
 	@Get
 	public Representation get() {
 		String content = new String("<h3>Versus</h3>"
-				+ "<ul><li><a href='/versus/adapters'>Adapters</a></li>"
-				+ "<li><a href='/versus/extractors'>Extractors</a></li>"
-				+ "<li><a href='/versus/measures'>Measures</a></li>"
-				+ "<li><a href='/versus/comparisons'>Comparisons</a></li>"
-				+ "<li><a href='/versus/slaves'>Slaves</a></li>" + "</ul>");
+				+ "<ul><li><a href='/versus/api/adapters'>Adapters</a></li>"
+				+ "<li><a href='/versus/api/extractors'>Extractors</a></li>"
+				+ "<li><a href='/versus/api/measures'>Measures</a></li>"
+				+ "<li><a href='/versus/api/comparisons'>Comparisons</a></li>"
+				+ "<li><a href='/versus/api/slaves'>Slaves</a></li>" + "</ul>");
 		Representation representation = new StringRepresentation(content,
 				MediaType.TEXT_HTML);
 		return representation;
