@@ -6,8 +6,6 @@ import java.util.logging.Logger;
 import org.restlet.Component;
 import org.restlet.Server;
 import org.restlet.data.Protocol;
-import org.restlet.ext.jetty.HttpServerHelper;
-import org.restlet.ext.jetty.JettyServerHelper;
 
 /**
  * Main restlet server.
@@ -35,27 +33,22 @@ public class SimpleServer {
 		}
 		if (args.length > 1) {
 			master = args[1];
-			logger.log(Level.INFO, "The following master was specified on the command line: " + master);
+			logger.log(Level.INFO,
+					"The following master was specified on the command line: "
+							+ master);
 		}
 		Component component = new Component();
-//		Server add = component.getServers().add(Protocol.HTTP, getPort());
-//		add.getContext().getParameters().add("soLingerTime", "500");
+		// Server add = component.getServers().add(Protocol.HTTP, getPort());
+		// add.getContext().getParameters().add("soLingerTime", "500");
 		component.getClients().add(Protocol.HTTP);
-		component.getDefaultHost().attach("/versus", new ServerApplication(getPort()));
-//		component.start();
-		
-		Server embedingJettyServer=new Server(
-                component.getContext(),
-                Protocol.HTTP,
-                getPort(),
-                component
-            );
-		
-        JettyServerHelper jettyServerHelper=new HttpServerHelper(embedingJettyServer);
-        jettyServerHelper.start();
+		component.getDefaultHost().attach("/versus/api",
+				new ServerApplication(getPort()));
 
+		Server embedingJettyServer = new Server(component.getContext(),
+				Protocol.HTTP, getPort(), component);
+		component.getServers().add(embedingJettyServer);
 
-		
+		component.start();
 	}
 
 	public static String getMaster() {
