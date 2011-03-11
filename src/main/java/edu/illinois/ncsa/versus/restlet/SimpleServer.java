@@ -6,6 +6,8 @@ import java.util.logging.Logger;
 import org.restlet.Component;
 import org.restlet.Server;
 import org.restlet.data.Protocol;
+import org.restlet.ext.jetty.HttpServerHelper;
+import org.restlet.ext.jetty.JettyServerHelper;
 
 /**
  * Main restlet server.
@@ -46,9 +48,13 @@ public class SimpleServer {
 
 		Server embedingJettyServer = new Server(component.getContext(),
 				Protocol.HTTP, getPort(), component);
-		component.getServers().add(embedingJettyServer);
 
-		component.start();
+		JettyServerHelper jettyServerHelper = new HttpServerHelper(
+				embedingJettyServer);
+		jettyServerHelper.start();
+
+		// component.getServers().add(embedingJettyServer);
+		// component.start();
 	}
 
 	public static String getMaster() {

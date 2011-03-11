@@ -87,8 +87,8 @@ public class ServerApplication extends Application {
 		router.attach("/measures", MeasuresServerResource.class);
 		router.attach("/measures/{id}", MeasureServerResource.class);
 		router.attach("/slaves", SlavesServerResource.class);
-		router.attach("/file/upload", UploadServerResource.class);
-		router.attach("/file/{id}", FileServerResource.class);
+		router.attach("/files/upload", UploadServerResource.class);
+		router.attach("/files/{id}", FileServerResource.class);
 		router.attachDefault(VersusServerResource.class);
 		return router;
 	}
