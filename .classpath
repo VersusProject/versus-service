@@ -24,6 +24,9 @@
 	<classpathentry kind="lib" path="lib/org.eclipse.jetty.server.jar"/>
 	<classpathentry kind="lib" path="lib/org.eclipse.jetty.util.jar"/>
 	<classpathentry kind="lib" path="lib/javax.servlet.jar"/>
+	<classpathentry kind="lib" path="lib/org.apache.commons.fileupload.jar"/>
+	<classpathentry kind="lib" path="lib/org.apache.commons.io.jar"/>
+	<classpathentry kind="lib" path="lib/org.restlet.ext.fileupload.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/versus"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/versus-image"/>
 	<classpathentry kind="output" path="bin"/>

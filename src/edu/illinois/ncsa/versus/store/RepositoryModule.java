@@ -19,6 +19,7 @@ public class RepositoryModule extends AbstractModule {
 	protected void configure() {
 		try {
 			Properties properties = PropertiesUtil.load();
+			// comparison results
 			String repository = properties.getProperty("repository", "mem");
 			if ("mem".equals(repository)) {
 				bind(ComparisonProcessor.class).to(
@@ -27,6 +28,8 @@ public class RepositoryModule extends AbstractModule {
 				bind(ComparisonProcessor.class).to(
 						JDBCComparisonProcessor.class);
 			}
+			// files
+			bind(FileProcessor.class).to(DiskFileProcessor.class);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

@@ -45,4 +45,5 @@ public interface ComparisonProcessor {
 	 *            the new similarity score
 	 */
 	void updateValue(String id, String value);
+
 }

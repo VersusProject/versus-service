@@ -39,7 +39,7 @@ public class ServerApplication extends Application {
 		super();
 		port = 8080; // FIXME needs to be dynamic
 	}
-	
+
 	public ServerApplication(int port) {
 		super();
 		this.port = port;
@@ -49,7 +49,7 @@ public class ServerApplication extends Application {
 			e.printStackTrace();
 		}
 		masterURL = properties.getProperty("master");
-		
+
 		if (SimpleServer.getMaster() != null) {
 			masterURL = SimpleServer.getMaster();
 			try {
@@ -63,7 +63,8 @@ public class ServerApplication extends Application {
 
 	private void registerWithMaster() throws UnknownHostException {
 		// TODO find a better way of getting the full url
-		String slaveURL = "http://" + InetAddress.getLocalHost().getHostName() + ":" + port + "/versus";
+		String slaveURL = "http://" + InetAddress.getLocalHost().getHostName()
+				+ ":" + port + "/versus";
 		getLogger().info("Connecting to " + slaveURL);
 		ClientResource masterResource = new ClientResource(masterURL
 				+ "/slaves");
@@ -86,6 +87,8 @@ public class ServerApplication extends Application {
 		router.attach("/measures", MeasuresServerResource.class);
 		router.attach("/measures/{id}", MeasureServerResource.class);
 		router.attach("/slaves", SlavesServerResource.class);
+		router.attach("/file/upload", UploadServerResource.class);
+		router.attach("/file/{id}", FileServerResource.class);
 		router.attachDefault(VersusServerResource.class);
 		return router;
 	}
