@@ -92,8 +92,7 @@ public class UploadServerResource extends ServerResource {
 				if (found) {
 					// Create a new representation based on disk file.
 					// The content is arbitrarily sent as plain text.
-					rep = new StringRepresentation("file uploaded " + id,
-							MediaType.TEXT_HTML);
+					rep = new StringRepresentation(id, MediaType.TEXT_PLAIN);
 				} else {
 					// Some problem occurs, sent back a simple line of text.
 					rep = new StringRepresentation("no file uploaded",
