@@ -24,7 +24,7 @@ public class SimpleClientTest {
 			IOException {
 		// test comparisons resource
 		ClientResource comparisonsResource = new ClientResource(
-				"http://localhost:8182/versus/comparisons");
+				"http://localhost:8182/versus/api/comparisons");
 		try {
 			comparisonsResource.get().write(System.out);
 			System.out.println("\n");

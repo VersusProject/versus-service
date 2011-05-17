@@ -14,11 +14,15 @@ import org.restlet.data.Form;
 import org.restlet.resource.ClientResource;
 import org.restlet.routing.Router;
 
+import com.google.inject.Guice;
+import com.google.inject.Injector;
+
 import edu.illinois.ncsa.versus.adapter.Adapter;
 import edu.illinois.ncsa.versus.engine.impl.ExecutionEngine;
 import edu.illinois.ncsa.versus.extract.Extractor;
 import edu.illinois.ncsa.versus.measure.Measure;
 import edu.illinois.ncsa.versus.registry.CompareRegistry;
+import edu.illinois.ncsa.versus.store.RepositoryModule;
 
 /**
  * Main restlet application.
@@ -33,15 +37,17 @@ public class ServerApplication extends Application {
 	private final List<Slave> slaves = new ArrayList<Slave>();
 	private String masterURL;
 	private final ExecutionEngine engine = new ExecutionEngine();
-	private final int port;
+	private int port;
+	private static Injector injector;
 
 	public ServerApplication() {
 		super();
 		port = 8080; // FIXME needs to be dynamic
+		injector = Guice.createInjector(new RepositoryModule());
 	}
 
 	public ServerApplication(int port) {
-		super();
+		this();
 		this.port = port;
 		try {
 			this.properties = PropertiesUtil.load();
@@ -125,5 +131,9 @@ public class ServerApplication extends Application {
 		if (!slaves.contains(url)) {
 			slaves.add(new Slave(url));
 		}
+	}
+
+	public static Injector getInjector() {
+		return injector;
 	}
 }

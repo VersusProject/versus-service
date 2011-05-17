@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.Properties;
 
 import com.google.inject.AbstractModule;
+import com.google.inject.Singleton;
 
 import edu.illinois.ncsa.versus.restlet.PropertiesUtil;
 
@@ -18,18 +19,23 @@ public class RepositoryModule extends AbstractModule {
 	@Override
 	protected void configure() {
 		try {
+
+			bind(ComparisonService.class).to(ComparisonServiceImpl.class).in(
+					Singleton.class);
+
 			Properties properties = PropertiesUtil.load();
 			// comparison results
 			String repository = properties.getProperty("repository", "mem");
 			if ("mem".equals(repository)) {
 				bind(ComparisonProcessor.class).to(
-						InMemoryComparisonProcessor.class);
+						InMemoryComparisonProcessor.class).in(Singleton.class);
 			} else if ("mysql".equals(repository)) {
 				bind(ComparisonProcessor.class).to(
-						JDBCComparisonProcessor.class);
+						JDBCComparisonProcessor.class).in(Singleton.class);
 			}
 			// files
-			bind(FileProcessor.class).to(DiskFileProcessor.class);
+			bind(FileProcessor.class).to(DiskFileProcessor.class).in(
+					Singleton.class);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

@@ -53,10 +53,11 @@ public class SimpleServer {
 		JettyServerHelper jettyServerHelper = new HttpServerHelper(
 				embedingJettyServer);
 		jettyServerHelper.start();
-		
+
 		// HACK get rid of first 500 message
 		try {
-			new URL("http://localhost:" + port + "/versus/api/measures").openStream().close();
+			new URL("http://localhost:" + port + "/versus/api/measures")
+					.openStream().close();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

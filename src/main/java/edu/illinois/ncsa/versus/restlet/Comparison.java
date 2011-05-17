@@ -2,6 +2,8 @@ package edu.illinois.ncsa.versus.restlet;
 
 import java.io.Serializable;
 
+import edu.illinois.ncsa.versus.engine.impl.Job.ComparisonStatus;
+
 /**
  * DTO for a single pairwise comparison.
  * 
@@ -17,6 +19,7 @@ public class Comparison implements Serializable {
 	private String extractorId;
 	private String measureId;
 	private String value;
+	private ComparisonStatus status;
 
 	public Comparison() {
 	}
@@ -91,5 +94,14 @@ public class Comparison implements Serializable {
 
 	public String getValue() {
 		return value;
+	}
+
+	public ComparisonStatus getStatus() {
+		return status;
+	}
+
+	public void setStatus(ComparisonStatus status) {
+		this.status = status;
+
 	}
 }

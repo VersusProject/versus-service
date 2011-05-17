@@ -25,8 +25,10 @@ import org.restlet.resource.ServerResource;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 
-import edu.illinois.ncsa.versus.engine.impl.ComparisonDoneHandler;
+import edu.illinois.ncsa.versus.engine.impl.ComparisonStatusHandler;
 import edu.illinois.ncsa.versus.engine.impl.ExecutionEngine;
+import edu.illinois.ncsa.versus.engine.impl.Job;
+import edu.illinois.ncsa.versus.engine.impl.Job.ComparisonStatus;
 import edu.illinois.ncsa.versus.engine.impl.PairwiseComparison;
 import edu.illinois.ncsa.versus.registry.CompareRegistry;
 import edu.illinois.ncsa.versus.store.ComparisonServiceImpl;
@@ -63,8 +65,8 @@ public class ComparisonsServerResource extends ServerResource {
 					+ "<ul>");
 			for (Comparison comparison : comparisons) {
 				String id = comparison.getId();
-				content += "<li><a href='/versus/api/comparisons/" + id + "'>" + id
-						+ "</a></li>";
+				content += "<li><a href='/versus/api/comparisons/" + id + "'>"
+						+ id + "</a></li>";
 			}
 			content += "</ul>";
 			Representation representation = new StringRepresentation(content,
@@ -277,17 +279,52 @@ public class ComparisonsServerResource extends ServerResource {
 	 * @param comparison
 	 */
 	private void submit(final PairwiseComparison comparison) {
+
 		ExecutionEngine engine = ((ServerApplication) getApplication())
 				.getEngine();
-		engine.submit(comparison, new ComparisonDoneHandler() {
+		final ComparisonServiceImpl comparisonService = ServerApplication
+				.getInjector().getInstance(ComparisonServiceImpl.class);
+
+		engine.submit(comparison, new ComparisonStatusHandler() {
 
 			@Override
 			public void onDone(double value) {
-				Injector injector = Guice
-						.createInjector(new RepositoryModule());
-				ComparisonServiceImpl comparisonService = injector
-						.getInstance(ComparisonServiceImpl.class);
+				getLogger().log(
+						Level.INFO,
+						"Comparison " + comparison.getId()
+								+ " done. Result is: " + value);
+				comparisonService.setStatus(comparison.getId(),
+						ComparisonStatus.DONE);
 				comparisonService.updateValue(comparison.getId(), value);
+			}
+
+			@Override
+			public void onStarted() {
+				getLogger().log(Level.INFO,
+						"Comparison " + comparison.getId() + " started.");
+				comparisonService.setStatus(comparison.getId(),
+						Job.ComparisonStatus.STARTED);
+			}
+
+			@Override
+			public void onFailed(String msg, Exception e) {
+				getLogger().log(
+						Level.INFO,
+						"Comparison " + comparison.getId() + " failed. " + msg
+								+ " " + e);
+				comparisonService.setStatus(comparison.getId(),
+						Job.ComparisonStatus.FAILED);
+
+			}
+
+			@Override
+			public void onAborted(String msg) {
+				getLogger()
+						.log(Level.INFO,
+								"Comparison " + comparison.getId()
+										+ " aborted. " + msg);
+				comparisonService.setStatus(comparison.getId(),
+						Job.ComparisonStatus.ABORTED);
 			}
 		});
 	}

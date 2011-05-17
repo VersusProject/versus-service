@@ -8,6 +8,8 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
 
+import edu.illinois.ncsa.versus.engine.impl.Job;
+import edu.illinois.ncsa.versus.engine.impl.Job.ComparisonStatus;
 import edu.illinois.ncsa.versus.restlet.Comparison;
 
 public class JDBCComparisonProcessor implements ComparisonProcessor {
@@ -63,6 +65,9 @@ public class JDBCComparisonProcessor implements ComparisonProcessor {
 
 	}
 
+	/**
+	 * TODO set status
+	 */
 	@Override
 	public Comparison getComparison(String id) {
 		Statement stmt = null;
@@ -96,6 +101,9 @@ public class JDBCComparisonProcessor implements ComparisonProcessor {
 		return null;
 	}
 
+	/**
+	 * Set status
+	 */
 	@Override
 	public Collection<Comparison> listAll() {
 		Collection<Comparison> comparisons = new ArrayList<Comparison>();
@@ -130,6 +138,40 @@ public class JDBCComparisonProcessor implements ComparisonProcessor {
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+		}
+	}
+
+	@Override
+	public void setStatus(String id, ComparisonStatus status) {
+		Statement stmt = null;
+		try {
+			stmt = con.createStatement();
+			stmt.executeUpdate("UPDATE comparisons SET status='"
+					+ status.name() + "' WHERE id ='" + id + "'");
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	@Override
+	public ComparisonStatus getStatus(String id) {
+		Statement stmt = null;
+		try {
+			stmt = con.createStatement();
+			ResultSet rs = stmt
+					.executeQuery("SELECT status FROM comparisons WHERE id = '"
+							+ id + "'");
+			while (rs.next()) {
+				ComparisonStatus status = Job.ComparisonStatus.valueOf(rs
+						.getString("status"));
+				return status;
+			}
+			return null;
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
 		}
 	}
 

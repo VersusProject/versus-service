@@ -95,7 +95,7 @@ public class UploadServerResource extends ServerResource {
 					rep = new StringRepresentation(id, MediaType.TEXT_PLAIN);
 				} else {
 					// Some problem occurs, sent back a simple line of text.
-					rep = new StringRepresentation("no file uploaded",
+					rep = new StringRepresentation("File not uploaded",
 							MediaType.TEXT_PLAIN);
 				}
 			}

@@ -5,10 +5,8 @@ import java.util.Collection;
 
 import com.google.inject.Inject;
 
+import edu.illinois.ncsa.versus.engine.impl.Job.ComparisonStatus;
 import edu.illinois.ncsa.versus.restlet.Comparison;
-import edu.illinois.ncsa.versus.store.ComparisonProcessor;
-import edu.illinois.ncsa.versus.store.ComparisonService;
-import edu.illinois.ncsa.versus.store.FileProcessor;
 
 /**
  * Implementation of repository service for comparisons.
@@ -56,5 +54,9 @@ public class ComparisonServiceImpl implements ComparisonService {
 	@Override
 	public InputStream getFile(String id) {
 		return fileProcessor.getFile(id);
+	}
+
+	public void setStatus(String id, ComparisonStatus status) {
+		transactionLog.setStatus(id, status);
 	}
 }

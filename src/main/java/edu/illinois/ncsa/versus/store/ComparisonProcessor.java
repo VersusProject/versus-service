@@ -2,6 +2,7 @@ package edu.illinois.ncsa.versus.store;
 
 import java.util.Collection;
 
+import edu.illinois.ncsa.versus.engine.impl.Job.ComparisonStatus;
 import edu.illinois.ncsa.versus.restlet.Comparison;
 
 /**
@@ -45,5 +46,9 @@ public interface ComparisonProcessor {
 	 *            the new similarity score
 	 */
 	void updateValue(String id, String value);
+
+	void setStatus(String id, ComparisonStatus status);
+
+	ComparisonStatus getStatus(String id);
 
 }

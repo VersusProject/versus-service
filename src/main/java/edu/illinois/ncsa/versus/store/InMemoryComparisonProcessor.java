@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
+import edu.illinois.ncsa.versus.engine.impl.Job.ComparisonStatus;
 import edu.illinois.ncsa.versus.restlet.Comparison;
 
 /**
@@ -38,6 +39,20 @@ public class InMemoryComparisonProcessor implements ComparisonProcessor {
 			comparison.setValue(value);
 		}
 		comparisons.put(comparison.getId(), comparison);
+	}
+
+	@Override
+	public void setStatus(String id, ComparisonStatus status) {
+		Comparison comparison = comparisons.get(id);
+		if (comparison != null) {
+			comparison.setStatus(status);
+		}
+		comparisons.put(comparison.getId(), comparison);
+	}
+
+	@Override
+	public ComparisonStatus getStatus(String id) {
+		return comparisons.get(id).getStatus();
 	}
 
 }
