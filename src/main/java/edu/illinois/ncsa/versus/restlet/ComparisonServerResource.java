@@ -60,6 +60,16 @@ public class ComparisonServerResource extends ServerResource {
 				elementId.appendChild(document.createTextNode(comparison
 						.getId()));
 				elementComparison.appendChild(elementId);
+				// status
+				Element statusId = document.createElement("status");
+				String status = "";
+				if (comparison.getStatus() != null) {
+					status = comparison.getStatus().name();
+				} else {
+					status = "N/A";
+				}
+				statusId.appendChild(document.createTextNode(status));
+				elementComparison.appendChild(statusId);
 				// value
 				Element valueId = document.createElement("value");
 				if (comparison.getValue() != null) {

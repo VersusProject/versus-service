@@ -84,6 +84,8 @@ public class JDBCComparisonProcessor implements ComparisonProcessor {
 				comparison.setAdapterId(rs.getString("adapterId"));
 				comparison.setExtractorId(rs.getString("extractorId"));
 				comparison.setMeasureId(rs.getString("measureId"));
+				comparison.setStatus(Job.ComparisonStatus.valueOf(rs
+						.getString("status")));
 				comparison.setValue(rs.getString("value"));
 				return comparison;
 			}
@@ -118,6 +120,8 @@ public class JDBCComparisonProcessor implements ComparisonProcessor {
 				comparison.setAdapterId(rs.getString("adapterId"));
 				comparison.setExtractorId(rs.getString("extractorId"));
 				comparison.setMeasureId(rs.getString("measureId"));
+				comparison.setStatus(Job.ComparisonStatus.valueOf(rs
+						.getString("status")));
 				comparison.setValue(rs.getString("value"));
 				comparisons.add(comparison);
 			}
