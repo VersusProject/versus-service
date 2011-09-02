@@ -19,7 +19,7 @@ public interface FileProcessor {
 	 * @param inputStream
 	 * @return unique identifier for file
 	 */
-	String addFile(InputStream inputStream);
+	String addFile(InputStream inputStream, String filename);
 
 	InputStream getFile(String id);
 

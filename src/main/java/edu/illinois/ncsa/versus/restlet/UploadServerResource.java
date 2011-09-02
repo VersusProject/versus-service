@@ -83,7 +83,8 @@ public class UploadServerResource extends ServerResource {
 								.createInjector(new RepositoryModule());
 						ComparisonServiceImpl comparisonService = injector
 								.getInstance(ComparisonServiceImpl.class);
-						id = comparisonService.addFile(fi.getInputStream());
+						String filename = fi.getName();
+						id = comparisonService.addFile(fi.getInputStream(), filename);
 					}
 				}
 

@@ -55,6 +55,15 @@ public interface ComparisonService {
 	 */
 	String addFile(InputStream inputStream);
 
+	/**
+	 * Store file stream.
+	 * 
+	 * @param inputStream
+	 * @param filename the original filename
+	 * @return unique identifier for file
+	 */
+	String addFile(InputStream inputStream, String filename);
+
 	InputStream getFile(String id);
 
 }

@@ -35,7 +35,7 @@ public class DiskFileProcessor implements FileProcessor {
 			} else {
 				directory = System.getProperty("java.io.tmpdir");
 			}
-			System.out.println("Storing file in " + directory);
+			//System.out.println("Storing file in " + directory);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -43,10 +43,19 @@ public class DiskFileProcessor implements FileProcessor {
 	}
 
 	@Override
-	public String addFile(InputStream inputStream) {
-		String id = UUID.randomUUID().toString();
-		File file = new File(directory, id);
+	public String addFile(InputStream inputStream, String filename) {
 		try {
+			File file;
+			if (filename == null) {
+				file = File.createTempFile("versus", ".tmp", new File(directory));
+			} else {
+				int idx = filename.lastIndexOf(".");
+				if (idx != -1) {
+					file = File.createTempFile(filename.substring(0, idx), filename.substring(idx), new File(directory));
+				} else {
+					file = File.createTempFile(filename, ".tmp", new File(directory));
+				}
+			}
 			OutputStream out = new FileOutputStream(file);
 			byte buf[] = new byte[1024];
 			int len;
@@ -55,7 +64,7 @@ public class DiskFileProcessor implements FileProcessor {
 			}
 			out.close();
 			inputStream.close();
-			return id;
+			return file.getName();
 		} catch (FileNotFoundException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

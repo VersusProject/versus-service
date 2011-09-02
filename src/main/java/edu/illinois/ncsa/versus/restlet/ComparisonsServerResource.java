@@ -261,7 +261,20 @@ public class ComparisonsServerResource extends ServerResource {
 		URL url = new URL(remoteURL);
 		byte[] buff = new byte[10240];
 		int len;
-		File file = File.createTempFile("versus", ".tmp");
+		File file;
+		if (url.getPath().isEmpty() || url.getPath().matches(".*/versus[\\d]+.tmp")) {
+			file = File.createTempFile("versus", ".tmp");
+		} else {
+			String filename = new File(url.getPath()).getName().replaceAll("[\\d]+\\.", ".");
+			int idx = filename.lastIndexOf(".");
+			if (idx > 3) {				
+				file = File.createTempFile(filename.substring(0, idx), filename.substring(idx));
+			} else if (idx != -1) {
+				file = File.createTempFile("versus", filename.substring(idx));
+			} else {
+				file = File.createTempFile(filename, ".tmp");
+			}
+		}
 		file.deleteOnExit(); // TODO only gets called when jvm exits
 		FileOutputStream fos = new FileOutputStream(file);
 		InputStream is = url.openStream();
@@ -307,7 +320,7 @@ public class ComparisonsServerResource extends ServerResource {
 			}
 
 			@Override
-			public void onFailed(String msg, Exception e) {
+			public void onFailed(String msg, Throwable e) {
 				getLogger().log(
 						Level.INFO,
 						"Comparison " + comparison.getId() + " failed. " + msg
