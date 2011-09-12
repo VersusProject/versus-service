@@ -69,8 +69,9 @@ public class ServerApplication extends Application {
 
 	private void registerWithMaster() throws UnknownHostException {
 		// TODO find a better way of getting the full url
-		String slaveURL = "http://" + InetAddress.getLocalHost().getHostName()
-				+ ":" + port + "/versus";
+		String slaveURL = "http://"
+				+ InetAddress.getLocalHost().getHostAddress() + ":" + port
+				+ "/versus/api";
 		getLogger().info("Connecting to " + slaveURL);
 		ClientResource masterResource = new ClientResource(masterURL
 				+ "/slaves");
@@ -85,6 +86,8 @@ public class ServerApplication extends Application {
 		router.attach("/comparisons", ComparisonsServerResource.class);
 		router.attach("/comparisons/{id}/status",
 				ComparisonStatusServerResource.class);
+		router.attach("/comparisons/{id}/value",
+				ComparisonValueServerResource.class);
 		router.attach("/comparisons/{id}", ComparisonServerResource.class);
 		router.attach("/adapters", AdaptersServerResource.class);
 		router.attach("/adapters/{id}", AdapterServerResource.class);

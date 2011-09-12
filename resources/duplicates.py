@@ -3,8 +3,7 @@ from urllib import urlencode
 import itertools
 from poster.encode import multipart_encode
 from poster.streaminghttp import register_openers
-
-base = 'http://localhost:8182/versus/api'
+import time
 
 def get(url):
     try:
@@ -51,46 +50,65 @@ def upload(file):
     return urllib2.urlopen(request).read()
 
 if __name__ == '__main__':
-    
+
+    print "***************************"
     print "Starting!"
     print "***************************"
     
-    fileSet = []
+    #base = 'http://localhost:8182/versus/api'
+    base = sys.argv[1]
+    
+    fileSet = {}
     urlFileMap = {}
-    for arg in sys.argv:
+    for arg in sys.argv[2:]:
         for root, dirs, files in os.walk(arg):
            for file in files:
                 print 'File found: ', file
-                fileSet.append(root + '/' + file)
+                fileSet[root + '/' + file] = (root, file)
                 
     print "***************************"
                 
     # upload all files
-    for file in fileSet:
+    print 'Uploading files...'
+    for file in fileSet.keys():
         id = upload(file)
         fileUrl = base + "/files/" + id
-        print "Uploading file ", file, "- File url is ", fileUrl
+        #print "Uploading file ", file, "- File url is ", fileUrl
         urlFileMap[fileUrl] = file
-
+    print len(fileSet.keys()), ' files uploaded'
+    
     print "***************************"
 
     comparisons = {}
+    print 'Submitting comparisons...'
     for element in itertools.combinations(urlFileMap.keys(), 2):
-        print 'Submitting comparison between ', urlFileMap[element[0]], " and ", urlFileMap[element[1]]
+        #print 'Submitting comparison between ', urlFileMap[element[0]], " and ", urlFileMap[element[1]]
         result = compare(element)
         comparisons[result] = (urlFileMap[element[0]], urlFileMap[element[1]])
+    print len(comparisons.keys()), " comparisons submitted"    
         
+    time.sleep(10)    
+    
     print "***************************"
-        
+    
+    duplicates = []
+    nonduplicates = []
     for comparison in comparisons.keys():
-        status = urllib2.urlopen(comparison + '/status').read()
+        status = urllib2.urlopen(comparison + '/value').read()
         if '0.0' in status:
-            print "Files ", comparisons[comparison][0], " and ", comparisons[comparison][1], ' are not duplicates'
+            #print "Files ", comparisons[comparison][0], " and ", comparisons[comparison][1], ' are not duplicates'
+            nonduplicates.append(comparison)
         elif '1.0' in status:
-            print "Files ", comparisons[comparison][0], " and ", comparisons[comparison][1], ' are *duplicates*'
+            #print "Files ", comparisons[comparison][0], " and ", comparisons[comparison][1], ' are *duplicates*'
+            duplicates.append(comparison)
         else:
             print "Files ", comparisons[comparison][0], " and ", comparisons[comparison][1], ' have not being compared yet. Check ', comparison, ' in a bit'
     
-    print "***************************"   
+    print "Duplicates found: ", len(duplicates)
+    for comparison in duplicates:
+        print fileSet[comparisons[comparison][0]][1], " and ", fileSet[comparisons[comparison][1]][1]
+    
+    print "***************************"  
     print "Done!"
+    print "***************************"
 

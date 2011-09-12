@@ -35,8 +35,8 @@ public class SlavesServerResource extends ServerResource {
 		} else {
 			String content = new String("<h3>Versus > Slaves</h3>" + "<ul>");
 			for (Slave slave : slaves) {
-				content += "<li><a href='/versus/slaves/" + slave.getUrl()
-						+ "'>" + slave.getUrl() + "</a></li>";
+				content += "<li><a href='" + slave.getUrl() + "'>"
+						+ slave.getUrl() + "</a></li>";
 			}
 			content += "</ul>";
 			Representation representation = new StringRepresentation(content,
@@ -52,7 +52,9 @@ public class SlavesServerResource extends ServerResource {
 	 */
 	@Post
 	public void submit(Representation entity) {
-		getLogger().info("Slave registration from " + getRequest().getResourceRef().getIdentifier());
+		getLogger().info(
+				"Slave registration from "
+						+ getRequest().getResourceRef().getIdentifier());
 		Form form = new Form(entity);
 		String url = form.getFirstValue("url");
 		getLogger().info("Slave registered: " + url);

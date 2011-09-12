@@ -2,14 +2,14 @@ Restful API
 
 Available URIs:
 
-* http://localhost:8182/versus/comparisons
+* http://localhost:8182/versus/api/comparisons
 	* GET: list comparisons
 	* POST: submit new comparison
-* http://localhost:8182/versus/comparisons/{id}
-* http://localhost:8182/versus/adapters
-* http://localhost:8182/versus/adapters/{id}
-* http://localhost:8182/versus/extractors
-* http://localhost:8182/versus/extractors/{id}
-* http://localhost:8182/versus/measures
-* http://localhost:8182/versus/measures/{id}
-* http://localhost:8182/versus/slaves
+* http://localhost:8182/versus/api/comparisons/{id}
+* http://localhost:8182/versus/api/adapters
+* http://localhost:8182/versus/api/adapters/{id}
+* http://localhost:8182/versus/api/extractors
+* http://localhost:8182/versus/api/extractors/{id}
+* http://localhost:8182/versus/api/measures
+* http://localhost:8182/versus/api/measures/{id}
+* http://localhost:8182/versus/api/slaves

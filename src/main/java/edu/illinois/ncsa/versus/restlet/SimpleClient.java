@@ -28,7 +28,7 @@ public class SimpleClient {
 
 		if (args.length != 1) {
 			System.err
-					.print("Please specify name of file that includes the request.");
+					.println("Please specify name of file that includes the request.");
 		} else {
 
 			Properties properties = new Properties();
