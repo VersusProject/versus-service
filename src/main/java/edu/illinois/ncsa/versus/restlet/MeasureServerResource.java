@@ -3,6 +3,7 @@
  */
 package edu.illinois.ncsa.versus.restlet;
 
+import edu.illinois.ncsa.versus.descriptor.Descriptor;
 import java.io.IOException;
 import java.util.Collection;
 
@@ -20,6 +21,7 @@ import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import edu.illinois.ncsa.versus.measure.Measure;
+import org.json.JSONArray;
 
 /**
  * Single measure.
@@ -37,7 +39,10 @@ public class MeasureServerResource extends ServerResource {
 			String text = "";
 			text += "Name: " + measure.getName() + "<br>";
 			text += "Type: " + measure.getType().getName() + "<br>";
-			text += "Supported Feature: " + measure.getFeatureType() + "<br>";
+			text += "Supported Features:<br>";
+            for (Class<? extends Descriptor> feature : measure.supportedFeaturesTypes()) {
+                text += "\t" + feature.getName() + "<br>";
+            }
 			return new StringRepresentation(text, MediaType.TEXT_HTML);
 		} catch (NotFoundException e) {
 			setStatus(Status.CLIENT_ERROR_NOT_FOUND);
@@ -66,11 +71,14 @@ public class MeasureServerResource extends ServerResource {
 					.getName()));
 			elementMeasure.appendChild(elementType);
 			// mime types
-			Element elementSupportedFeature = document
-					.createElement("supportedFeature");
-			elementType.appendChild(document.createTextNode(measure
-					.getFeatureType()));
-			elementMeasure.appendChild(elementSupportedFeature);
+			Element elementSupportedFeatures = document
+					.createElement("supportedFeatures");
+			elementMeasure.appendChild(elementSupportedFeatures);
+            for(Class<? extends Descriptor> feature : measure.supportedFeaturesTypes()) {
+                Element eleFeature = document.createElement("feature");
+                eleFeature.appendChild(document.createTextNode(feature.getName()));
+                elementSupportedFeatures.appendChild(eleFeature);
+            }
 			// normalize
 			document.normalizeDocument();
 			return representation;
@@ -95,7 +103,13 @@ public class MeasureServerResource extends ServerResource {
 			JSONObject jsonObject = new JSONObject();
 			jsonObject.put("name", measure.getName());
 			jsonObject.put("id", measure.getClass().getName());
-			jsonObject.put("supportedFeature", measure.getFeatureType());
+            JSONArray featuresArray = new JSONArray();
+            for(Class<? extends Descriptor> feature : measure.supportedFeaturesTypes()) {
+                JSONObject featureObject = new JSONObject();
+                featureObject.put("feature", feature.getName());
+                featuresArray.put(featureObject);
+            }
+			jsonObject.put("supportedFeatures", featuresArray);
 			return new JsonRepresentation(jsonObject);
 		} catch (NotFoundException e) {
 			e.printStackTrace();
