@@ -23,6 +23,7 @@
 			<includes>
 				<include>**/*.properties</include>
 			</includes>
+            <fileMode>644</fileMode>
 		</fileSet>
 		<fileSet>
 			<directory>${project.basedir}</directory>
@@ -32,10 +33,12 @@
 				<include>LICENSE*</include>
 				<include>NOTICE*</include>
 			</includes>
+            <fileMode>644</fileMode>
 		</fileSet>
 		<fileSet>
 			<directory>${project.build.directory}/site</directory>
 			<outputDirectory>docs</outputDirectory>
+            <fileMode>644</fileMode>
 		</fileSet>
 	</fileSets>
 	<dependencySets>
