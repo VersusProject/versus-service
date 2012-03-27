@@ -36,6 +36,8 @@ public class RepositoryModule extends AbstractModule {
 			// files
 			bind(FileProcessor.class).to(DiskFileProcessor.class).in(
 					Singleton.class);
+			// distribution
+			bind(DistributionService.class).to(DistributionServiceImpl.class).in(Singleton.class);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
