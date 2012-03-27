@@ -11,9 +11,12 @@ import java.util.List;
 import java.util.UUID;
 import java.util.logging.Level;
 
+import org.json.JSONException;
+import org.json.JSONObject;
 import org.restlet.data.Form;
 import org.restlet.data.MediaType;
 import org.restlet.data.Status;
+import org.restlet.ext.json.JsonRepresentation;
 import org.restlet.representation.Representation;
 import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.ClientResource;
@@ -32,6 +35,7 @@ import edu.illinois.ncsa.versus.engine.impl.Job.ComparisonStatus;
 import edu.illinois.ncsa.versus.engine.impl.PairwiseComparison;
 import edu.illinois.ncsa.versus.registry.CompareRegistry;
 import edu.illinois.ncsa.versus.store.ComparisonServiceImpl;
+import edu.illinois.ncsa.versus.store.DistributionServiceImpl;
 import edu.illinois.ncsa.versus.store.RepositoryModule;
 
 /**
@@ -47,7 +51,7 @@ public class ComparisonsServerResource extends ServerResource {
 	 * 
 	 * @return
 	 */
-	@Get
+	@Get("html")
 	public Representation list() {
 
 		// Guice storage
@@ -74,6 +78,38 @@ public class ComparisonsServerResource extends ServerResource {
 			return representation;
 		}
 	}
+	
+	@Get("json")
+	public Representation asJSON(){
+
+		String id                               = (String) getRequest().getAttributes().get("id");
+		Injector injector                       = Guice.createInjector(new RepositoryModule());
+		ComparisonServiceImpl comparisonService = injector.getInstance(ComparisonServiceImpl.class);
+		Comparison comparison                   = comparisonService.getComparison(id);
+		
+		try {
+			JSONObject jsonObject = new JSONObject();
+			
+			jsonObject.put("id", comparison.getId() );
+			jsonObject.put("adapter",comparison.getAdapterId() );
+			jsonObject.put("extractor",comparison.getExtractorId() );
+			jsonObject.put("measure",comparison.getMeasureId() );
+			jsonObject.put("status", comparison.getStatus() );
+			jsonObject.put("firstDataSet", comparison.getFirstDataset() );
+			jsonObject.put("secondDataSet", comparison.getSecondDataset() );
+						
+			return new JsonRepresentation(jsonObject);
+
+		} catch (JSONException e) {
+			e.printStackTrace();
+			setStatus(Status.CLIENT_ERROR_NOT_FOUND);
+			return new StringRepresentation("Error creating json",	MediaType.TEXT_HTML);
+		}
+	}
+	
+	
+	
+	
 
 	/**
 	 * Submit new comparison.
@@ -123,8 +159,7 @@ public class ComparisonsServerResource extends ServerResource {
 		return comparison;
 	}
 
-	private Representation createLocalJob(Comparison comparison)
-			throws IOException {
+	private Representation createLocalJob(Comparison comparison) throws IOException {
 
 		// TODO find a better way to manage comparisons
 		PairwiseComparison pairwiseComparison = new PairwiseComparison();
@@ -146,14 +181,40 @@ public class ComparisonsServerResource extends ServerResource {
 		// Submit to engine
 		submit(pairwiseComparison);
 		setStatus(Status.SUCCESS_CREATED);
-		String comparisonURL = getRequest().getResourceRef().getIdentifier()
-				+ "/" + comparison.getId();
-		Representation representation = new StringRepresentation(comparisonURL,
-				MediaType.TEXT_PLAIN);
+		
+		String comparisonURL = getRequest().getResourceRef().getIdentifier() + "/" + comparison.getId();
+		
+		Representation representation = new StringRepresentation(comparisonURL,	MediaType.TEXT_PLAIN);
 		representation.setLocationRef(comparisonURL);
 		return representation;
 	}
+	
+	public void createJob(Comparison comparison) throws IOException {
 
+		// TODO find a better way to manage comparisons
+		PairwiseComparison pairwiseComparison = new PairwiseComparison();
+		pairwiseComparison.setId(comparison.getId());
+		pairwiseComparison
+				.setFirstDataset(getFile(comparison.getFirstDataset()));
+		pairwiseComparison.setSecondDataset(getFile(comparison
+				.getSecondDataset()));
+		pairwiseComparison.setAdapterId(comparison.getAdapterId());
+		pairwiseComparison.setExtractorId(comparison.getExtractorId());
+		pairwiseComparison.setMeasureId(comparison.getMeasureId());
+
+		// Guice storage
+		Injector injector = Guice.createInjector(new RepositoryModule());
+		ComparisonServiceImpl comparisonService = injector
+				.getInstance(ComparisonServiceImpl.class);
+		comparisonService.addComparison(comparison);
+
+		// Submit to engine
+		submit(pairwiseComparison);
+		setStatus(Status.SUCCESS_CREATED);
+		
+	}
+	
+	
 	/**
 	 * Find which slaves support requested methods. Forward to the first slave
 	 * in the list.
@@ -235,7 +296,7 @@ public class ComparisonsServerResource extends ServerResource {
 		}
 	}
 
-	private boolean checkRequirements(Comparison comparison) {
+	public boolean checkRequirements(Comparison comparison) {
 		CompareRegistry registry = ((ServerApplication) getApplication())
 				.getRegistry();
 		if (registry.getAvailableAdaptersIds().contains(

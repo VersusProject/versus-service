@@ -82,23 +82,33 @@ public class ServerApplication extends Application {
 
 	@Override
 	public Restlet createInboundRoot() {
+		
 		Router router = new Router(getContext());
+		
 		router.attach("/comparisons", ComparisonsServerResource.class);
-		router.attach("/comparisons/{id}/status",
-				ComparisonStatusServerResource.class);
-		router.attach("/comparisons/{id}/value",
-				ComparisonValueServerResource.class);
+		router.attach("/comparisons/{id}/status", ComparisonStatusServerResource.class);
+		router.attach("/comparisons/{id}/value", ComparisonValueServerResource.class);
 		router.attach("/comparisons/{id}", ComparisonServerResource.class);
+		
 		router.attach("/adapters", AdaptersServerResource.class);
 		router.attach("/adapters/{id}", AdapterServerResource.class);
+		
 		router.attach("/extractors", ExtractorsServerResource.class);
 		router.attach("/extractors/{id}", ExtractorServerResource.class);
+		
 		router.attach("/measures", MeasuresServerResource.class);
 		router.attach("/measures/{id}", MeasureServerResource.class);
+		
 		router.attach("/slaves", SlavesServerResource.class);
+		
 		router.attach("/files/upload", UploadServerResource.class);
 		router.attach("/files/{id}", FileServerResource.class);
+		
+		router.attach("/distributions",DistributionsServerResource.class);
+		router.attach("/distributions/{id}",DistributionServerResource.class);
+		
 		router.attachDefault(VersusServerResource.class);
+		
 		return router;
 	}
 

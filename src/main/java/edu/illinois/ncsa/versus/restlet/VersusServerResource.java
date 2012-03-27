@@ -23,7 +23,8 @@ public class VersusServerResource extends ServerResource {
 				+ "<li><a href='/versus/api/extractors'>Extractors</a></li>"
 				+ "<li><a href='/versus/api/measures'>Measures</a></li>"
 				+ "<li><a href='/versus/api/comparisons'>Comparisons</a></li>"
-				+ "<li><a href='/versus/api/slaves'>Slaves</a></li>" + "</ul>");
+				+ "<li><a href='/versus/api/slaves'>Slaves</a></li>"
+				+ "<li><a href='/versus/api/distributions'>Distributions</a></li>" + "</ul>");
 		Representation representation = new StringRepresentation(content,
 				MediaType.TEXT_HTML);
 		return representation;
