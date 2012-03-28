@@ -22,7 +22,6 @@ import org.w3c.dom.Element;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 
-import edu.illinois.ncsa.versus.measure.Measure;
 import edu.illinois.ncsa.versus.store.DistributionServiceImpl;
 import edu.illinois.ncsa.versus.store.RepositoryModule;
 
