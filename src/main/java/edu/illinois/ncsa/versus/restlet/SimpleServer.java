@@ -12,65 +12,58 @@ import org.restlet.ext.jetty.JettyServerHelper;
 
 /**
  * Main restlet server.
- * 
+ *
  * @author Luigi Marini <lmarini@ncsa.illinois.edu>
- * 
+ *
  */
 public class SimpleServer {
 
-	private static int port = 8182;
-	private static String master;
-	private static Logger logger = Logger
-			.getLogger("edu.illinois.ncsa.versus.restlet.SimpleServer");
+    private static int port = 8182;
 
-	public static void main(String[] args) throws Exception {
-		if (args.length > 0) {
-			try {
-				port = Integer.parseInt(args[0]);
-			} catch (NumberFormatException e) {
-				logger.log(Level.SEVERE,
-						"First argument must be the port number. "
-								+ "Using default port number " + getPort(), e);
-				System.exit(1);
-			}
-		}
-		if (args.length > 1) {
-			master = args[1];
-			logger.log(Level.INFO,
-					"The following master was specified on the command line: "
-							+ master);
-		}
-		Component component = new Component();
-		// Server add = component.getServers().add(Protocol.HTTP, getPort());
-		// add.getContext().getParameters().add("soLingerTime", "500");
-		component.getClients().add(Protocol.HTTP);
-		component.getDefaultHost().attach("/versus/api",
-				new ServerApplication(getPort()));
+    private static String master;
 
-		Server embedingJettyServer = new Server(component.getContext(),
-				Protocol.HTTP, getPort(), component);
+    private static String baseUrl = "/versus/api";
 
-		JettyServerHelper jettyServerHelper = new HttpServerHelper(
-				embedingJettyServer);
-		jettyServerHelper.start();
+    private static final Logger logger = Logger.getLogger(
+            SimpleServer.class.getName());
 
-		// HACK get rid of first 500 message
-		try {
-			new URL("http://localhost:" + port + "/versus/api/measures")
-					.openStream().close();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
+    public static void main(String[] args) throws Exception {
+        if (args.length > 0) {
+            try {
+                port = Integer.parseInt(args[0]);
+            } catch (NumberFormatException e) {
+                logger.log(Level.SEVERE,
+                        "First argument must be the port number.", e);
+                System.exit(1);
+            }
+        }
+        if (args.length > 1) {
+            master = args[1];
+            logger.log(Level.INFO,
+                    "The following master was specified on the command line: {0}",
+                    master);
+        }
 
-		// component.getServers().add(embedingJettyServer);
-		// component.start();
-	}
+        Component component = new Component();
+        component.getClients().add(Protocol.HTTP);
+        component.getDefaultHost().attach(baseUrl,
+                new ServerApplication(port, baseUrl, master));
 
-	public static String getMaster() {
-		return master;
-	}
+        //create embedding jetty server
+        Server embedingJettyServer = new Server(
+                component.getContext().createChildContext(),
+                Protocol.HTTP,
+                port,
+                component);
+        //construct and start JettyServerHelper
+        JettyServerHelper jettyServerHelper = new HttpServerHelper(embedingJettyServer);
+        jettyServerHelper.start();
 
-	public static int getPort() {
-		return port;
-	}
+        // HACK get rid of first 500 message
+        try {
+            new URL("http://localhost:" + port + baseUrl + "/measures").openStream().close();
+        } catch (Exception e) {
+            logger.log(Level.INFO, null, e);
+        }
+    }
 }

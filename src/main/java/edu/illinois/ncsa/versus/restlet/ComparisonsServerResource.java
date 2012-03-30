@@ -8,6 +8,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import java.util.logging.Level;
 
@@ -164,7 +165,7 @@ public class ComparisonsServerResource extends ServerResource {
 	 */
 	private Representation querySlaves(Representation entity,
 			Comparison comparison) {
-		List<Slave> slaves = ((ServerApplication) getApplication()).getSlaves();
+		Set<Slave> slaves = ((ServerApplication) getApplication()).getSlaves();
 		List<Slave> supportingSlaves = new ArrayList<Slave>();
 		for (Slave slave : slaves) {
 			if (supportComparison(slave, comparison)) {

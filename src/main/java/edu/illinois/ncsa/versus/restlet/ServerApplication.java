@@ -1,12 +1,11 @@
 package edu.illinois.ncsa.versus.restlet;
 
-import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
-import java.util.Properties;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.logging.Level;
 
 import org.restlet.Application;
 import org.restlet.Restlet;
@@ -22,121 +21,208 @@ import edu.illinois.ncsa.versus.engine.impl.ExecutionEngine;
 import edu.illinois.ncsa.versus.extract.Extractor;
 import edu.illinois.ncsa.versus.measure.Measure;
 import edu.illinois.ncsa.versus.registry.CompareRegistry;
+import edu.illinois.ncsa.versus.restlet.adapter.AdapterDescriptor;
+import edu.illinois.ncsa.versus.restlet.adapter.AdapterServerResource;
+import edu.illinois.ncsa.versus.restlet.adapter.AdaptersServerResource;
+import edu.illinois.ncsa.versus.restlet.extractor.ExtractorDescriptor;
+import edu.illinois.ncsa.versus.restlet.extractor.ExtractorServerResource;
+import edu.illinois.ncsa.versus.restlet.extractor.ExtractorsServerResource;
+import edu.illinois.ncsa.versus.restlet.measure.MeasureDescriptor;
+import edu.illinois.ncsa.versus.restlet.measure.MeasureServerResource;
+import edu.illinois.ncsa.versus.restlet.measure.MeasuresServerResource;
 import edu.illinois.ncsa.versus.store.RepositoryModule;
 
 /**
  * Main restlet application.
- * 
+ *
  * @author Luigi Marini <lmarini@ncsa.illinois.edu>
- * 
+ *
  */
 public class ServerApplication extends Application {
 
-	private final CompareRegistry registry = new CompareRegistry();
-	private Properties properties;
-	private final List<Slave> slaves = new ArrayList<Slave>();
-	private String masterURL;
-	private final ExecutionEngine engine = new ExecutionEngine();
-	private int port;
-	private static Injector injector;
+    private final CompareRegistry registry = new CompareRegistry();
 
-	public ServerApplication() {
-		super();
-		port = 8080; // FIXME needs to be dynamic
-		injector = Guice.createInjector(new RepositoryModule());
-	}
+    private final Set<Slave> slaves = new HashSet<Slave>();
 
-	public ServerApplication(int port) {
-		this();
-		this.port = port;
-		try {
-			this.properties = PropertiesUtil.load();
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		masterURL = properties.getProperty("master");
+    private String masterURL;
 
-		if (SimpleServer.getMaster() != null) {
-			masterURL = SimpleServer.getMaster();
-			try {
-				registerWithMaster();
-			} catch (UnknownHostException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-		}
-	}
+    private final ExecutionEngine engine = new ExecutionEngine();
 
-	private void registerWithMaster() throws UnknownHostException {
-		// TODO find a better way of getting the full url
-		String slaveURL = "http://"
-				+ InetAddress.getLocalHost().getHostAddress() + ":" + port
-				+ "/versus/api";
-		getLogger().info("Connecting to " + slaveURL);
-		ClientResource masterResource = new ClientResource(masterURL
-				+ "/slaves");
-		Form form = new Form();
-		form.add("url", slaveURL);
-		masterResource.post(form.getWebRepresentation());
-	}
+    private int port;
 
-	@Override
-	public Restlet createInboundRoot() {
-		Router router = new Router(getContext());
-		router.attach("/comparisons", ComparisonsServerResource.class);
-		router.attach("/comparisons/{id}/status",
-				ComparisonStatusServerResource.class);
-		router.attach("/comparisons/{id}/value",
-				ComparisonValueServerResource.class);
-		router.attach("/comparisons/{id}", ComparisonServerResource.class);
-		router.attach("/adapters", AdaptersServerResource.class);
-		router.attach("/adapters/{id}", AdapterServerResource.class);
-		router.attach("/extractors", ExtractorsServerResource.class);
-		router.attach("/extractors/{id}", ExtractorServerResource.class);
-		router.attach("/measures", MeasuresServerResource.class);
-		router.attach("/measures/{id}", MeasureServerResource.class);
-		router.attach("/slaves", SlavesServerResource.class);
-		router.attach("/files/upload", UploadServerResource.class);
-		router.attach("/files/{id}", FileServerResource.class);
-		router.attachDefault(VersusServerResource.class);
-		return router;
-	}
+    private String baseUrl;
 
-	public Collection<Measure> getMeasures() {
-		return registry.getAvailableMeasures();
-	}
+    private static Injector injector;
 
-	public Collection<Adapter> getAdapters() {
-		return registry.getAvailableAdapters();
-	}
+    public ServerApplication() {
+        super();
+        port = 8080; // FIXME needs to be dynamic
+        baseUrl = "/versus/api";
+        injector = Guice.createInjector(new RepositoryModule());
+    }
 
-	public Collection<Extractor> getExtractors() {
-		return registry.getAvailableExtractors();
-	}
+    public ServerApplication(int port, String baseUrl, String masterUrl) {
+        this();
+        this.port = port;
+        this.baseUrl = baseUrl;
+        this.masterURL = masterUrl;
 
-	public Properties getProperties() {
-		return properties;
-	}
+        if (masterURL != null) {
+            try {
+                registerWithMaster();
+            } catch (UnknownHostException e) {
+                getLogger().log(Level.SEVERE, "Cannot register with master", e);
+            }
+        }
+    }
 
-	public List<Slave> getSlaves() {
-		return slaves;
-	}
+    private void registerWithMaster() throws UnknownHostException {
+        String slaveURL = "http://"
+                + InetAddress.getLocalHost().getHostAddress() + ":" + port
+                + baseUrl;
+        getLogger().log(Level.INFO, "Registering slave {0} to {1}",
+                new Object[]{slaveURL, masterURL});
+        ClientResource masterResource = new ClientResource(masterURL
+                + "/slaves");
+        Form form = new Form();
+        form.add("url", slaveURL);
+        masterResource.post(form.getWebRepresentation());
+    }
 
-	public ExecutionEngine getEngine() {
-		return engine;
-	}
+    @Override
+    public Restlet createInboundRoot() {
+        Router router = new Router(getContext());
+        router.attach(AdaptersServerResource.PATH_TEMPLATE, AdaptersServerResource.class);
+        router.attach(AdapterServerResource.PATH_TEMPLATE, AdapterServerResource.class);
+        router.attach(ExtractorsServerResource.PATH_TEMPLATE, ExtractorsServerResource.class);
+        router.attach(ExtractorServerResource.PATH_TEMPLATE, ExtractorServerResource.class);
+        router.attach(MeasuresServerResource.PATH_TEMPLATE, MeasuresServerResource.class);
+        router.attach(MeasureServerResource.PATH_TEMPLATE, MeasureServerResource.class);
 
-	public CompareRegistry getRegistry() {
-		return registry;
-	}
+        router.attach("/comparisons", ComparisonsServerResource.class);
+        router.attach("/comparisons/{id}/status",
+                ComparisonStatusServerResource.class);
+        router.attach("/comparisons/{id}/value",
+                ComparisonValueServerResource.class);
+        router.attach("/comparisons/{id}", ComparisonServerResource.class);
+        router.attach("/slaves", SlavesServerResource.class);
+        router.attach("/files/upload", UploadServerResource.class);
+        router.attach("/files/{id}", FileServerResource.class);
+        router.attachDefault(VersusServerResource.class);
+        return router;
+    }
 
-	public void addSlave(String url) {
-		if (!slaves.contains(url)) {
-			slaves.add(new Slave(url));
-		}
-	}
+    public AdapterDescriptor getAdapter(String id) throws NotFoundException {
+        Adapter adapter = registry.getAdapter(id);
+        if (adapter != null) {
+            return new AdapterDescriptor(adapter);
+        }
 
-	public static Injector getInjector() {
-		return injector;
-	}
+        for (Slave slave : slaves) {
+            AdapterDescriptor ad = slave.getAdapter(id);
+            if (ad != null) {
+                return ad;
+            }
+        }
+        throw new NotFoundException();
+    }
+
+    public HashSet<AdapterDescriptor> getAdapters() {
+        Collection<Adapter> adapters = registry.getAvailableAdapters();
+        HashSet<AdapterDescriptor> result =
+                new HashSet<AdapterDescriptor>(adapters.size());
+
+        for (Adapter adapter : adapters) {
+            result.add(new AdapterDescriptor(adapter));
+        }
+
+        for (Slave slave : slaves) {
+            result.addAll(slave.getAdapters());
+        }
+        return result;
+    }
+
+    public ExtractorDescriptor getExtractor(String id) throws NotFoundException {
+        Extractor extractor = registry.getExtractor(id);
+        if (extractor != null) {
+            return new ExtractorDescriptor(extractor, registry);
+        }
+
+        for (Slave slave : slaves) {
+            ExtractorDescriptor ed = slave.getExtractor(id);
+            if (ed != null) {
+                return ed;
+            }
+        }
+        throw new NotFoundException();
+    }
+
+    public HashSet<ExtractorDescriptor> getExtractors() {
+        Collection<Extractor> extractors = registry.getAvailableExtractors();
+        HashSet<ExtractorDescriptor> result =
+                new HashSet<ExtractorDescriptor>(extractors.size());
+
+        for (Extractor extractor : extractors) {
+            result.add(new ExtractorDescriptor(extractor, registry));
+        }
+
+        for (Slave slave : slaves) {
+            result.addAll(slave.getExtractors());
+        }
+        return result;
+    }
+
+    public MeasureDescriptor getMeasure(String id) throws NotFoundException {
+        Measure measure = registry.getMeasure(id);
+        if (measure != null) {
+            return new MeasureDescriptor(measure);
+        }
+
+        for (Slave slave : slaves) {
+            MeasureDescriptor md = slave.getMeasure(id);
+            if (md != null) {
+                return md;
+            }
+        }
+        throw new NotFoundException();
+    }
+
+    public HashSet<MeasureDescriptor> getMeasures() {
+        Collection<Measure> measures = registry.getAvailableMeasures();
+        HashSet<MeasureDescriptor> result =
+                new HashSet<MeasureDescriptor>(measures.size());
+
+        for (Measure measure : measures) {
+            result.add(new MeasureDescriptor(measure));
+        }
+
+        for (Slave slave : slaves) {
+            result.addAll(slave.getMeasures());
+        }
+        return result;
+    }
+
+    public Set<Slave> getSlaves() {
+        return slaves;
+    }
+
+    public boolean addSlave(String url) {
+        return slaves.add(new Slave(url));
+    }
+
+    public ExecutionEngine getEngine() {
+        return engine;
+    }
+
+    public String getBaseUrl() {
+        return baseUrl;
+    }
+
+    public CompareRegistry getRegistry() {
+        return registry;
+    }
+
+    public static Injector getInjector() {
+        return injector;
+    }
 }

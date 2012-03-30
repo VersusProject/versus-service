@@ -3,7 +3,8 @@
  */
 package edu.illinois.ncsa.versus.restlet;
 
-import java.util.List;
+import java.util.Set;
+import java.util.logging.Level;
 
 import org.restlet.data.Form;
 import org.restlet.data.MediaType;
@@ -27,8 +28,8 @@ public class SlavesServerResource extends ServerResource {
 	 */
 	@Get
 	public Representation list() {
-		List<Slave> slaves = ((ServerApplication) getApplication()).getSlaves();
-		if (slaves.size() == 0) {
+		Set<Slave> slaves = ((ServerApplication) getApplication()).getSlaves();
+		if (slaves.isEmpty()) {
 			Representation representation = new StringRepresentation(
 					"No slaves", MediaType.TEXT_HTML);
 			return representation;
@@ -52,12 +53,11 @@ public class SlavesServerResource extends ServerResource {
 	 */
 	@Post
 	public void submit(Representation entity) {
-		getLogger().info(
-				"Slave registration from "
-						+ getRequest().getResourceRef().getIdentifier());
+		getLogger().log(Level.INFO, "Slave registration from {0}",
+                getRequest().getResourceRef().getIdentifier());
 		Form form = new Form(entity);
 		String url = form.getFirstValue("url");
-		getLogger().info("Slave registered: " + url);
+		getLogger().log(Level.INFO, "Slave registered: {0}", url);
 		((ServerApplication) getApplication()).addSlave(url);
 		setStatus(Status.SUCCESS_CREATED);
 	}
