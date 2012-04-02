@@ -4,7 +4,6 @@ import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Collection;
 import java.util.HashSet;
-import java.util.Set;
 import java.util.logging.Level;
 
 import org.restlet.Application;
@@ -42,7 +41,7 @@ public class ServerApplication extends Application {
 
     private final CompareRegistry registry = new CompareRegistry();
 
-    private final Set<Slave> slaves = new HashSet<Slave>();
+    private final HashSet<Slave> slaves = new HashSet<Slave>();
 
     private String masterURL;
 
@@ -83,7 +82,7 @@ public class ServerApplication extends Application {
         getLogger().log(Level.INFO, "Registering slave {0} to {1}",
                 new Object[]{slaveURL, masterURL});
         ClientResource masterResource = new ClientResource(masterURL
-                + "/slaves");
+                + SlavesServerResource.URL);
         Form form = new Form();
         form.add("url", slaveURL);
         masterResource.post(form.getWebRepresentation());
@@ -99,13 +98,14 @@ public class ServerApplication extends Application {
         router.attach(MeasuresServerResource.PATH_TEMPLATE, MeasuresServerResource.class);
         router.attach(MeasureServerResource.PATH_TEMPLATE, MeasureServerResource.class);
 
+        router.attach(SlavesServerResource.PATH_TEMPLATE, SlavesServerResource.class);
+        
         router.attach("/comparisons", ComparisonsServerResource.class);
         router.attach("/comparisons/{id}/status",
                 ComparisonStatusServerResource.class);
         router.attach("/comparisons/{id}/value",
                 ComparisonValueServerResource.class);
         router.attach("/comparisons/{id}", ComparisonServerResource.class);
-        router.attach("/slaves", SlavesServerResource.class);
         router.attach("/files/upload", UploadServerResource.class);
         router.attach("/files/{id}", FileServerResource.class);
         router.attachDefault(VersusServerResource.class);
@@ -202,7 +202,7 @@ public class ServerApplication extends Application {
         return result;
     }
 
-    public Set<Slave> getSlaves() {
+    public HashSet<Slave> getSlaves() {
         return slaves;
     }
 

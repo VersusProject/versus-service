@@ -40,7 +40,7 @@ public class ExtractorsServerResource extends ServerResource {
                     "No extractors", MediaType.TEXT_HTML);
             return representation;
         } else {
-            String href = server.getBaseUrl() + URL;
+            String href = server.getBaseUrl() + URL + '/';
             StringBuilder sb = new StringBuilder("<h3>Versus > Extractors</h3>"
                     + "<ul>");
             for (ExtractorDescriptor extractor : extractors) {

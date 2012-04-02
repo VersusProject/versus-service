@@ -1,8 +1,9 @@
 /**
- * 
+ *
  */
 package edu.illinois.ncsa.versus.restlet;
 
+import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
 
@@ -17,48 +18,58 @@ import org.restlet.resource.ServerResource;
 
 /**
  * @author Luigi Marini <lmarini@ncsa.illinois.edu>
- * 
+ *
  */
 public class SlavesServerResource extends ServerResource {
 
-	/**
-	 * Get list of slaves known to this node.
-	 * 
-	 * @return
-	 */
-	@Get
-	public Representation list() {
-		Set<Slave> slaves = ((ServerApplication) getApplication()).getSlaves();
-		if (slaves.isEmpty()) {
-			Representation representation = new StringRepresentation(
-					"No slaves", MediaType.TEXT_HTML);
-			return representation;
-		} else {
-			String content = new String("<h3>Versus > Slaves</h3>" + "<ul>");
-			for (Slave slave : slaves) {
-				content += "<li><a href='" + slave.getUrl() + "'>"
-						+ slave.getUrl() + "</a></li>";
-			}
-			content += "</ul>";
-			Representation representation = new StringRepresentation(content,
-					MediaType.TEXT_HTML);
-			return representation;
-		}
-	}
+    public static final String URL = "/slaves";
 
-	/**
-	 * Register with this node as a slave.
-	 * 
-	 * @param entity
-	 */
-	@Post
-	public void submit(Representation entity) {
-		getLogger().log(Level.INFO, "Slave registration from {0}",
+    public static final String PATH_TEMPLATE = URL;
+
+    @Get()
+    public HashSet<Slave> retrieve() {
+        return ((ServerApplication) getApplication()).getSlaves();
+    }
+    
+    /**
+     * Get list of slaves known to this node as html.
+     *
+     * @return
+     */
+    @Get("html") 
+    public Representation asHtml() {
+        Set<Slave> slaves = ((ServerApplication) getApplication()).getSlaves();
+        if (slaves.isEmpty()) {
+            Representation representation = new StringRepresentation(
+                    "No slaves", MediaType.TEXT_HTML);
+            return representation;
+        } else {
+            StringBuilder content = new StringBuilder("<h3>Versus > Slaves</h3>"
+                    + "<ul>");
+            for (Slave slave : slaves) {
+                content.append("<li><a href='").append(slave.getUrl()).
+                        append("'>").append(slave.getUrl()).append("</a></li>");
+            }
+            content.append("</ul>");
+            Representation representation = new StringRepresentation(content,
+                    MediaType.TEXT_HTML);
+            return representation;
+        }
+    }
+
+    /**
+     * Register with this node as a slave.
+     *
+     * @param entity
+     */
+    @Post
+    public void submit(Representation entity) {
+        getLogger().log(Level.INFO, "Slave registration from {0}",
                 getRequest().getResourceRef().getIdentifier());
-		Form form = new Form(entity);
-		String url = form.getFirstValue("url");
-		getLogger().log(Level.INFO, "Slave registered: {0}", url);
-		((ServerApplication) getApplication()).addSlave(url);
-		setStatus(Status.SUCCESS_CREATED);
-	}
+        Form form = new Form(entity);
+        String url = form.getFirstValue("url");
+        getLogger().log(Level.INFO, "Slave registered: {0}", url);
+        ((ServerApplication) getApplication()).addSlave(url);
+        setStatus(Status.SUCCESS_CREATED);
+    }
 }

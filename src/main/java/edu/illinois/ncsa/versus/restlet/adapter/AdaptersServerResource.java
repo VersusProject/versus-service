@@ -40,7 +40,7 @@ public class AdaptersServerResource extends ServerResource {
                     "No adapters", MediaType.TEXT_HTML);
             return representation;
         } else {
-            String href = server.getBaseUrl() + URL;
+            String href = server.getBaseUrl() + URL + '/';
             StringBuilder sb = new StringBuilder("<h3>Versus > Adapters</h3>"
                     + "<ul>");
             for (AdapterDescriptor adapter : adapters) {

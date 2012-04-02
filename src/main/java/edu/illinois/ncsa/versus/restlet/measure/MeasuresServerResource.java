@@ -39,7 +39,7 @@ public class MeasuresServerResource extends ServerResource {
                     "No measures", MediaType.TEXT_HTML);
             return representation;
         } else {
-            String href = server.getBaseUrl() + URL;
+            String href = server.getBaseUrl() + URL + '/';
             StringBuilder sb = new StringBuilder("<h3>Versus > Mesures</h3>"
                     + "<ul>");
             for (MeasureDescriptor measure : measures) {
