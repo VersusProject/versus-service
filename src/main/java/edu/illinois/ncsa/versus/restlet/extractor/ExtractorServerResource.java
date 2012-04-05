@@ -46,8 +46,7 @@ public class ExtractorServerResource extends ServerResource {
                     ((ServerApplication) getApplication()).getExtractor(id);
             StringBuilder sb = new StringBuilder(128);
             sb.append("Name: ").append(extractor.getName()).append("<br>");
-            sb.append("Type: ").append(extractor.getClass().getName()).
-                    append("<br>");
+            sb.append("Type: ").append(extractor.getType()).append("<br>");
             sb.append("Supported Adapters:<br>");
             for (String adapter : extractor.getSupportedAdapters()) {
                 sb.append('\t').append(adapter).append("<br>");
