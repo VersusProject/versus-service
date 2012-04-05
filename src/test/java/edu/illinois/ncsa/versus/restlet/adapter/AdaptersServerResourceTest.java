@@ -24,12 +24,13 @@ import org.restlet.resource.ClientResource;
 
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.json.JettisonMappedXmlDriver;
+
 import org.junit.After;
 import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.Test;
 import static org.junit.Assert.*;
+import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Test;
 
 import edu.illinois.ncsa.versus.restlet.ServerApplication;
 
@@ -54,7 +55,7 @@ public class AdaptersServerResourceTest {
         component = new Component();
         component.getServers().add(Protocol.HTTP, port);
         component.getDefaultHost().attach("/versus",
-                new ServerApplication());
+                new ServerApplication(port, "/versus"));
         component.start();
     }
 

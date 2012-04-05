@@ -5,7 +5,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
 import edu.illinois.ncsa.versus.engine.impl.Job.ComparisonStatus;
-import edu.illinois.ncsa.versus.restlet.Comparison;
+import edu.illinois.ncsa.versus.restlet.comparison.Comparison;
 
 /**
  * In memory storage of comparisons.
@@ -38,7 +38,6 @@ public class InMemoryComparisonProcessor implements ComparisonProcessor {
 		if (comparison != null) {
 			comparison.setValue(value);
 		}
-		comparisons.put(comparison.getId(), comparison);
 	}
 
 	@Override
@@ -47,7 +46,6 @@ public class InMemoryComparisonProcessor implements ComparisonProcessor {
 		if (comparison != null) {
 			comparison.setStatus(status);
 		}
-		comparisons.put(comparison.getId(), comparison);
 	}
 
 	@Override

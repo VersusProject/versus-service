@@ -3,7 +3,6 @@ package edu.illinois.ncsa.versus.restlet;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.util.Properties;
-import java.util.UUID;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -11,6 +10,8 @@ import org.restlet.data.Form;
 import org.restlet.representation.Representation;
 import org.restlet.resource.ClientResource;
 import org.restlet.resource.ResourceException;
+
+import edu.illinois.ncsa.versus.restlet.comparison.Comparison;
 
 /**
  * Simple client to versus web service.
@@ -44,8 +45,7 @@ public class SimpleClient {
 			}
 			try {
 				// first comparison
-				String firstComparisonId = UUID.randomUUID().toString();
-				Comparison comparison = new Comparison(firstComparisonId,
+				Comparison comparison = new Comparison(
 						properties.getProperty("dataset1"),
 						properties.getProperty("dataset2"),
 						properties.getProperty("adapter"),

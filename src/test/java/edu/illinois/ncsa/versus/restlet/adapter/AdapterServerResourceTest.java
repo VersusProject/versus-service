@@ -53,7 +53,8 @@ public class AdapterServerResourceTest {
 
         component = new Component();
         component.getServers().add(Protocol.HTTP, port);
-        component.getDefaultHost().attach("/versus", new ServerApplication());
+        component.getDefaultHost().attach("/versus",
+                new ServerApplication(port, "/versus"));
         component.start();
     }
 

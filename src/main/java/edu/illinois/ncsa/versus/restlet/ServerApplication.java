@@ -23,6 +23,11 @@ import edu.illinois.ncsa.versus.registry.CompareRegistry;
 import edu.illinois.ncsa.versus.restlet.adapter.AdapterDescriptor;
 import edu.illinois.ncsa.versus.restlet.adapter.AdapterServerResource;
 import edu.illinois.ncsa.versus.restlet.adapter.AdaptersServerResource;
+import edu.illinois.ncsa.versus.restlet.comparison.ComparisonServerResource;
+import edu.illinois.ncsa.versus.restlet.comparison.ComparisonStatusServerResource;
+import edu.illinois.ncsa.versus.restlet.comparison.ComparisonSupportServerResource;
+import edu.illinois.ncsa.versus.restlet.comparison.ComparisonValueServerResource;
+import edu.illinois.ncsa.versus.restlet.comparison.ComparisonsServerResource;
 import edu.illinois.ncsa.versus.restlet.extractor.ExtractorDescriptor;
 import edu.illinois.ncsa.versus.restlet.extractor.ExtractorServerResource;
 import edu.illinois.ncsa.versus.restlet.extractor.ExtractorsServerResource;
@@ -51,17 +56,15 @@ public class ServerApplication extends Application {
 
     private String baseUrl;
 
-    private static Injector injector;
+    private static final Injector injector =
+            Guice.createInjector(new RepositoryModule());
 
-    public ServerApplication() {
-        super();
-        port = 8080; // FIXME needs to be dynamic
-        baseUrl = "/versus/api";
-        injector = Guice.createInjector(new RepositoryModule());
+    public ServerApplication(int port, String baseUrl) {
+        this(port, baseUrl, null);
     }
 
     public ServerApplication(int port, String baseUrl, String masterUrl) {
-        this();
+        super();
         this.port = port;
         this.baseUrl = baseUrl;
         this.masterURL = masterUrl;
@@ -99,13 +102,15 @@ public class ServerApplication extends Application {
         router.attach(MeasureServerResource.PATH_TEMPLATE, MeasureServerResource.class);
 
         router.attach(SlavesServerResource.PATH_TEMPLATE, SlavesServerResource.class);
-        
-        router.attach("/comparisons", ComparisonsServerResource.class);
+
+        router.attach(ComparisonsServerResource.PATH_TEMPLATE, ComparisonsServerResource.class);
         router.attach("/comparisons/{id}/status",
                 ComparisonStatusServerResource.class);
         router.attach("/comparisons/{id}/value",
                 ComparisonValueServerResource.class);
-        router.attach("/comparisons/{id}", ComparisonServerResource.class);
+        router.attach(ComparisonServerResource.PATH_TEMPLATE, ComparisonServerResource.class);
+        router.attach(ComparisonSupportServerResource.PATH_TEMPLATE, ComparisonSupportServerResource.class);
+        
         router.attach("/files/upload", UploadServerResource.class);
         router.attach("/files/{id}", FileServerResource.class);
         router.attachDefault(VersusServerResource.class);

@@ -6,7 +6,7 @@ import java.util.Collection;
 import com.google.inject.Inject;
 
 import edu.illinois.ncsa.versus.engine.impl.Job.ComparisonStatus;
-import edu.illinois.ncsa.versus.restlet.Comparison;
+import edu.illinois.ncsa.versus.restlet.comparison.Comparison;
 
 /**
  * Implementation of repository service for comparisons.

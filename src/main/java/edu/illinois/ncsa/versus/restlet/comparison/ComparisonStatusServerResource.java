@@ -1,7 +1,7 @@
 /**
  * 
  */
-package edu.illinois.ncsa.versus.restlet;
+package edu.illinois.ncsa.versus.restlet.comparison;
 
 import org.restlet.data.MediaType;
 import org.restlet.representation.Representation;
@@ -10,6 +10,7 @@ import org.restlet.resource.Get;
 import org.restlet.resource.ServerResource;
 
 import edu.illinois.ncsa.versus.engine.impl.Job.ComparisonStatus;
+import edu.illinois.ncsa.versus.restlet.ServerApplication;
 import edu.illinois.ncsa.versus.store.ComparisonServiceImpl;
 
 /**

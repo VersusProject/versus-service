@@ -10,7 +10,7 @@ import java.util.Collection;
 
 import edu.illinois.ncsa.versus.engine.impl.Job;
 import edu.illinois.ncsa.versus.engine.impl.Job.ComparisonStatus;
-import edu.illinois.ncsa.versus.restlet.Comparison;
+import edu.illinois.ncsa.versus.restlet.comparison.Comparison;
 
 public class JDBCComparisonProcessor implements ComparisonProcessor {
 

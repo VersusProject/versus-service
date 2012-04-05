@@ -3,7 +3,7 @@ package edu.illinois.ncsa.versus.store;
 import java.io.InputStream;
 import java.util.Collection;
 
-import edu.illinois.ncsa.versus.restlet.Comparison;
+import edu.illinois.ncsa.versus.restlet.comparison.Comparison;
 
 /**
  * Handles the manipulation of comparisons in the repository.
