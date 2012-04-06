@@ -42,8 +42,8 @@ public class ComparisonServiceImpl implements ComparisonService {
 	}
 
 	@Override
-	public void updateValue(String id, double value) {
-		transactionLog.updateValue(id, String.valueOf(value));
+	public void updateValue(String id, String value) {
+		transactionLog.updateValue(id, value);
 	}
 
 	@Override

@@ -3,6 +3,7 @@ package edu.illinois.ncsa.versus.restlet;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.logging.Level;
 
@@ -46,7 +47,7 @@ public class ServerApplication extends Application {
 
     private final CompareRegistry registry = new CompareRegistry();
 
-    private final HashSet<Slave> slaves = new HashSet<Slave>();
+    private final HashMap<String, Slave> slaves = new HashMap<String, Slave>();
 
     private String masterURL;
 
@@ -110,7 +111,7 @@ public class ServerApplication extends Application {
                 ComparisonValueServerResource.class);
         router.attach(ComparisonServerResource.PATH_TEMPLATE, ComparisonServerResource.class);
         router.attach(ComparisonSupportServerResource.PATH_TEMPLATE, ComparisonSupportServerResource.class);
-        
+
         router.attach("/files/upload", UploadServerResource.class);
         router.attach("/files/{id}", FileServerResource.class);
         router.attachDefault(VersusServerResource.class);
@@ -123,7 +124,7 @@ public class ServerApplication extends Application {
             return new AdapterDescriptor(adapter);
         }
 
-        for (Slave slave : slaves) {
+        for (Slave slave : slaves.values()) {
             AdapterDescriptor ad = slave.getAdapter(id);
             if (ad != null) {
                 return ad;
@@ -141,7 +142,7 @@ public class ServerApplication extends Application {
             result.add(new AdapterDescriptor(adapter));
         }
 
-        for (Slave slave : slaves) {
+        for (Slave slave : slaves.values()) {
             result.addAll(slave.getAdapters());
         }
         return result;
@@ -153,7 +154,7 @@ public class ServerApplication extends Application {
             return new ExtractorDescriptor(extractor, registry);
         }
 
-        for (Slave slave : slaves) {
+        for (Slave slave : slaves.values()) {
             ExtractorDescriptor ed = slave.getExtractor(id);
             if (ed != null) {
                 return ed;
@@ -171,7 +172,7 @@ public class ServerApplication extends Application {
             result.add(new ExtractorDescriptor(extractor, registry));
         }
 
-        for (Slave slave : slaves) {
+        for (Slave slave : slaves.values()) {
             result.addAll(slave.getExtractors());
         }
         return result;
@@ -183,7 +184,7 @@ public class ServerApplication extends Application {
             return new MeasureDescriptor(measure);
         }
 
-        for (Slave slave : slaves) {
+        for (Slave slave : slaves.values()) {
             MeasureDescriptor md = slave.getMeasure(id);
             if (md != null) {
                 return md;
@@ -201,18 +202,24 @@ public class ServerApplication extends Application {
             result.add(new MeasureDescriptor(measure));
         }
 
-        for (Slave slave : slaves) {
+        for (Slave slave : slaves.values()) {
             result.addAll(slave.getMeasures());
         }
         return result;
     }
 
-    public HashSet<Slave> getSlaves() {
-        return slaves;
+    public Slave getSlave(String url) {
+        return slaves.get(url);
     }
 
-    public boolean addSlave(String url) {
-        return slaves.add(new Slave(url));
+    public Collection<Slave> getSlaves() {
+        return slaves.values();
+    }
+
+    public void addSlave(String url) {
+        if (!slaves.containsKey(url)) {
+            slaves.put(url, new Slave(url));
+        }
     }
 
     public ExecutionEngine getEngine() {

@@ -46,6 +46,9 @@ public class Comparison implements Serializable {
     @XStreamAlias("status")
     private ComparisonStatus status;
 
+    @XStreamAlias("slave")
+    private String slave;
+
     public Comparison() {
         id = UUID.randomUUID().toString();
     }
@@ -123,6 +126,14 @@ public class Comparison implements Serializable {
     public void setStatus(ComparisonStatus status) {
         this.status = status;
 
+    }
+
+    public String getSlave() {
+        return slave;
+    }
+
+    public void setSlave(String slave) {
+        this.slave = slave;
     }
 
     PairwiseComparison toPairwiseComparison() throws IOException {

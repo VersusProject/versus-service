@@ -3,8 +3,7 @@
  */
 package edu.illinois.ncsa.versus.restlet;
 
-import java.util.HashSet;
-import java.util.Set;
+import java.util.Collection;
 import java.util.logging.Level;
 
 import org.restlet.data.Form;
@@ -27,7 +26,7 @@ public class SlavesServerResource extends ServerResource {
     public static final String PATH_TEMPLATE = URL;
 
     @Get()
-    public HashSet<Slave> retrieve() {
+    public Collection<Slave> retrieve() {
         return ((ServerApplication) getApplication()).getSlaves();
     }
     
@@ -38,7 +37,7 @@ public class SlavesServerResource extends ServerResource {
      */
     @Get("html") 
     public Representation asHtml() {
-        Set<Slave> slaves = ((ServerApplication) getApplication()).getSlaves();
+        Collection<Slave> slaves = ((ServerApplication) getApplication()).getSlaves();
         if (slaves.isEmpty()) {
             Representation representation = new StringRepresentation(
                     "No slaves", MediaType.TEXT_HTML);

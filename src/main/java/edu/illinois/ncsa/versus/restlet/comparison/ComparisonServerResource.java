@@ -9,6 +9,9 @@ import org.restlet.resource.ServerResource;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 
+import edu.illinois.ncsa.versus.engine.impl.Job.ComparisonStatus;
+import edu.illinois.ncsa.versus.restlet.ServerApplication;
+import edu.illinois.ncsa.versus.restlet.Slave;
 import edu.illinois.ncsa.versus.store.ComparisonServiceImpl;
 import edu.illinois.ncsa.versus.store.RepositoryModule;
 
@@ -34,7 +37,21 @@ public class ComparisonServerResource extends ServerResource {
         Injector injector = Guice.createInjector(new RepositoryModule());
         ComparisonServiceImpl comparisonService =
                 injector.getInstance(ComparisonServiceImpl.class);
-        return comparisonService.getComparison(id);
+        Comparison comparison = comparisonService.getComparison(id);
+
+        if (comparison.getSlave() != null) {
+            ComparisonStatus status = comparison.getStatus();
+            if (status != ComparisonStatus.DONE
+                    && status != ComparisonStatus.FAILED
+                    && status != ComparisonStatus.ABORTED) {
+                ServerApplication server = (ServerApplication)getApplication();
+                Slave slave = server.getSlave(comparison.getSlave());
+                comparison = slave.getComparison(comparison);
+                comparisonService.updateValue(comparison.getId(), comparison.getValue());
+                comparisonService.setStatus(comparison.getId(), comparison.getStatus());
+            }
+        }
+        return comparison;
     }
 
     @Get("html")
@@ -54,6 +71,14 @@ public class ComparisonServerResource extends ServerResource {
         sb.append("Measure: ").append(comparison.getMeasureId()).append("<br>");
         sb.append("Value: ").append(comparison.getValue()).append("<br>");
         sb.append("Status: ").append(comparison.getStatus()).append("<br>");
+        sb.append("Slave: ");
+        String slave = comparison.getSlave();
+        if (slave != null) {
+            sb.append("<a href='").append(slave).append("'>").
+                    append(slave).append("</a>");
+        } else {
+            sb.append("none");
+        }
 
         return new StringRepresentation(sb, MediaType.TEXT_HTML);
     }

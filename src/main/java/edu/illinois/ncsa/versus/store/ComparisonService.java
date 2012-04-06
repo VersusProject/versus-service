@@ -45,7 +45,7 @@ public interface ComparisonService {
 	 * @param value
 	 *            the new similarity score
 	 */
-	void updateValue(String id, double value);
+	void updateValue(String id, String value);
 
 	/**
 	 * Store file stream.

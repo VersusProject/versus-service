@@ -174,7 +174,7 @@ public class ComparisonsServerResource extends ServerResource {
     private Comparison querySlaves(Comparison comparison) {
         // TODO: each slave should give a score telling how it is willing to
         // run the comparison
-        Set<Slave> slaves = ((ServerApplication) getApplication()).getSlaves();
+        Collection<Slave> slaves = ((ServerApplication) getApplication()).getSlaves();
         List<Slave> supportingSlaves = new ArrayList<Slave>();
         for (Slave slave : slaves) {
             if (slave.supportComparison(comparison)) {
@@ -216,7 +216,7 @@ public class ComparisonsServerResource extends ServerResource {
                         new Object[]{comparison.getId(), value});
                 comparisonService.setStatus(comparison.getId(),
                         ComparisonStatus.DONE);
-                comparisonService.updateValue(comparison.getId(), value);
+                comparisonService.updateValue(comparison.getId(), String.valueOf(value));
             }
 
             @Override

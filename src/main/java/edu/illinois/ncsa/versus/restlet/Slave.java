@@ -61,8 +61,16 @@ public class Slave {
         return new MeasuresClient(url).getMeasures();
     }
 
+    public Comparison getComparison(Comparison comparison) {
+        comparison = new ComparisonClient(url).getComparison(comparison.getId());
+        comparison.setSlave(url);
+        return comparison;
+    }
+    
     public Comparison submit(Comparison comparison) {
-        return new ComparisonClient(url).submit(comparison);
+        comparison = new ComparisonClient(url).submit(comparison);
+        comparison.setSlave(url);
+        return comparison;
     }
 
     public boolean supportComparison(Comparison comparison) {
