@@ -27,14 +27,14 @@ public class AdaptersServerResource extends ServerResource {
     public static final String PATH_TEMPLATE = URL;
 
     @Get
-    public HashSet<AdapterDescriptor> retrieve() {
-        return ((ServerApplication) getApplication()).getAdapters();
+    public HashSet<String> retrieve() {
+        return ((ServerApplication) getApplication()).getAdaptersId();
     }
 
     @Get("html")
     public Representation asHtml() {
         ServerApplication server = (ServerApplication) getApplication();
-        Set<AdapterDescriptor> adapters = server.getAdapters();
+        Set<String> adapters = server.getAdaptersId();
         if (adapters.isEmpty()) {
             Representation representation = new StringRepresentation(
                     "No adapters", MediaType.TEXT_HTML);
@@ -43,10 +43,10 @@ public class AdaptersServerResource extends ServerResource {
             String href = server.getBaseUrl() + URL + '/';
             StringBuilder sb = new StringBuilder("<h3>Versus > Adapters</h3>"
                     + "<ul>");
-            for (AdapterDescriptor adapter : adapters) {
+            for (String adapter : adapters) {
                 sb.append("<li><a href='").append(href);
-                sb.append(adapter.getType()).append("'>");
-                sb.append(adapter.getType()).append("</a></li>");
+                sb.append(adapter).append("'>");
+                sb.append(adapter).append("</a></li>");
             }
             sb.append("</ul>");
             Representation representation = new StringRepresentation(sb,

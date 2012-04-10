@@ -11,17 +11,10 @@
  */
 package edu.illinois.ncsa.versus.restlet.extractor;
 
-import java.io.IOException;
 import java.util.HashSet;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
-import org.restlet.data.MediaType;
-import org.restlet.representation.Representation;
 import org.restlet.resource.ClientResource;
 
-import com.thoughtworks.xstream.XStream;
-import com.thoughtworks.xstream.io.json.JettisonMappedXmlDriver;
 
 /**
  *
@@ -35,18 +28,13 @@ public class ExtractorsClient {
         this.host = host;
     }
 
-    public HashSet<ExtractorDescriptor> getExtractors() {
+    public HashSet<String> getExtractors() {
         ClientResource cr = new ClientResource(host + ExtractorsServerResource.URL);
-        try {
-            Representation jsonRepresentation = cr.get(MediaType.APPLICATION_JSON);
-            XStream xstream = new XStream(new JettisonMappedXmlDriver());
-            xstream.processAnnotations(ExtractorDescriptor.class);
-            return (HashSet<ExtractorDescriptor>) xstream.fromXML(
-                    jsonRepresentation.getStream());
-        } catch (IOException ex) {
-            Logger.getLogger(ExtractorsClient.class.getName()).log(Level.WARNING,
-                    "Cannot get adapters list from host " + host, ex);
-            return new HashSet<ExtractorDescriptor>();
-        }
+        return cr.get(HashSet.class);
+    }
+    
+    public ExtractorDescriptor getExtractorDescriptor(String id) {
+        ClientResource cr = new ClientResource(host + ExtractorServerResource.URL + id);
+        return cr.get(ExtractorDescriptor.class);
     }
 }

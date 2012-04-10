@@ -80,15 +80,12 @@ public class ServerApplication extends Application {
     }
 
     private void registerWithMaster() throws UnknownHostException {
-        String slaveURL = "http://"
-                + InetAddress.getLocalHost().getHostAddress() + ":" + port
-                + baseUrl;
-        getLogger().log(Level.INFO, "Registering slave {0} to {1}",
-                new Object[]{slaveURL, masterURL});
+        getLogger().log(Level.INFO, "Registering to master {0}", masterURL);
         ClientResource masterResource = new ClientResource(masterURL
                 + SlavesServerResource.URL);
         Form form = new Form();
-        form.add("url", slaveURL);
+        form.add("port", String.valueOf(port));
+        form.add("baseUrl", baseUrl);
         masterResource.post(form.getWebRepresentation());
     }
 
@@ -133,17 +130,16 @@ public class ServerApplication extends Application {
         throw new NotFoundException();
     }
 
-    public HashSet<AdapterDescriptor> getAdapters() {
-        Collection<Adapter> adapters = registry.getAvailableAdapters();
-        HashSet<AdapterDescriptor> result =
-                new HashSet<AdapterDescriptor>(adapters.size());
+    public HashSet<String> getAdaptersId() {
+        Collection<String> adapters = registry.getAvailableAdaptersIds();
+        HashSet<String> result = new HashSet<String>(adapters.size());
 
-        for (Adapter adapter : adapters) {
-            result.add(new AdapterDescriptor(adapter));
+        for (String adapter : adapters) {
+            result.add(adapter);
         }
 
         for (Slave slave : slaves.values()) {
-            result.addAll(slave.getAdapters());
+            result.addAll(slave.getAdaptersId());
         }
         return result;
     }
@@ -163,17 +159,16 @@ public class ServerApplication extends Application {
         throw new NotFoundException();
     }
 
-    public HashSet<ExtractorDescriptor> getExtractors() {
-        Collection<Extractor> extractors = registry.getAvailableExtractors();
-        HashSet<ExtractorDescriptor> result =
-                new HashSet<ExtractorDescriptor>(extractors.size());
+    public HashSet<String> getExtractorsId() {
+        Collection<String> extractors = registry.getAvailableExtractorsId();
+        HashSet<String> result = new HashSet<String>(extractors.size());
 
-        for (Extractor extractor : extractors) {
-            result.add(new ExtractorDescriptor(extractor, registry));
+        for (String extractor : extractors) {
+            result.add(extractor);
         }
 
         for (Slave slave : slaves.values()) {
-            result.addAll(slave.getExtractors());
+            result.addAll(slave.getExtractorsId());
         }
         return result;
     }
@@ -193,17 +188,16 @@ public class ServerApplication extends Application {
         throw new NotFoundException();
     }
 
-    public HashSet<MeasureDescriptor> getMeasures() {
-        Collection<Measure> measures = registry.getAvailableMeasures();
-        HashSet<MeasureDescriptor> result =
-                new HashSet<MeasureDescriptor>(measures.size());
+    public HashSet<String> getMeasuresId() {
+        Collection<String> measures = registry.getAvailableMeasuresId();
+        HashSet<String> result = new HashSet<String>(measures.size());
 
-        for (Measure measure : measures) {
-            result.add(new MeasureDescriptor(measure));
+        for (String measure : measures) {
+            result.add(measure);
         }
 
         for (Slave slave : slaves.values()) {
-            result.addAll(slave.getMeasures());
+            result.addAll(slave.getMeasuresId());
         }
         return result;
     }

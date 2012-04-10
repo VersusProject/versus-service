@@ -75,7 +75,7 @@ public class AdaptersServerResourceTest {
     @Test
     public void test() throws IOException {
         AdaptersClient adaptersClient = new AdaptersClient("http://127.0.0.1:" + port + "/versus");
-        HashSet<AdapterDescriptor> adapters = adaptersClient.getAdapters();
+        HashSet<String> adapters = adaptersClient.getAdapters();
         assertNotNull(adapters);
         assertFalse(adapters.isEmpty());
 

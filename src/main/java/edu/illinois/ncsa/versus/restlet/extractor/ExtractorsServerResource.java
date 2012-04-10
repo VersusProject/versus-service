@@ -27,14 +27,14 @@ public class ExtractorsServerResource extends ServerResource {
     public static final String PATH_TEMPLATE = URL;
 
     @Get
-    public HashSet<ExtractorDescriptor> retrieve() {
-        return ((ServerApplication) getApplication()).getExtractors();
+    public HashSet<String> retrieve() {
+        return ((ServerApplication) getApplication()).getExtractorsId();
     }
 
     @Get("html")
     public Representation asHtml() {
         ServerApplication server = (ServerApplication) getApplication();
-        Collection<ExtractorDescriptor> extractors = server.getExtractors();
+        Collection<String> extractors = server.getExtractorsId();
         if (extractors.isEmpty()) {
             Representation representation = new StringRepresentation(
                     "No extractors", MediaType.TEXT_HTML);
@@ -43,10 +43,10 @@ public class ExtractorsServerResource extends ServerResource {
             String href = server.getBaseUrl() + URL + '/';
             StringBuilder sb = new StringBuilder("<h3>Versus > Extractors</h3>"
                     + "<ul>");
-            for (ExtractorDescriptor extractor : extractors) {
+            for (String extractor : extractors) {
                 sb.append("<li><a href='").append(href);
-                sb.append(extractor.getType()).append("'>");
-                sb.append(extractor.getType()).append("</a></li>");
+                sb.append(extractor).append("'>");
+                sb.append(extractor).append("</a></li>");
             }
             sb.append("</ul>");
             Representation representation = new StringRepresentation(sb,

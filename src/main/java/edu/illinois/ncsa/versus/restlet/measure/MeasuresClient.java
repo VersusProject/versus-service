@@ -11,41 +11,29 @@
  */
 package edu.illinois.ncsa.versus.restlet.measure;
 
-import java.io.IOException;
 import java.util.HashSet;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
-import org.restlet.data.MediaType;
-import org.restlet.representation.Representation;
 import org.restlet.resource.ClientResource;
-
-import com.thoughtworks.xstream.XStream;
-import com.thoughtworks.xstream.io.json.JettisonMappedXmlDriver;
 
 /**
  *
  * @author antoinev
  */
 public class MeasuresClient {
-     private String host;
+
+    private String host;
 
     public MeasuresClient(String host) {
         this.host = host;
     }
 
-    public HashSet<MeasureDescriptor> getMeasures() {
+    public HashSet<String> getMeasures() {
         ClientResource cr = new ClientResource(host + MeasuresServerResource.URL);
-        try {
-            Representation jsonRepresentation = cr.get(MediaType.APPLICATION_JSON);
-            XStream xstream = new XStream(new JettisonMappedXmlDriver());
-            xstream.processAnnotations(MeasureDescriptor.class);
-            return (HashSet<MeasureDescriptor>) xstream.fromXML(
-                    jsonRepresentation.getStream());
-        } catch (IOException ex) {
-            Logger.getLogger(MeasuresClient.class.getName()).log(Level.WARNING,
-                    "Cannot get adapters list from host " + host, ex);
-            return new HashSet<MeasureDescriptor>();
-        }
-    }   
+        return cr.get(HashSet.class);
+    }
+
+    public MeasureDescriptor getMeasureDescriptor(String id) {
+        ClientResource cr = new ClientResource(host + MeasureServerResource.URL + id);
+        return cr.get(MeasureDescriptor.class);
+    }
 }

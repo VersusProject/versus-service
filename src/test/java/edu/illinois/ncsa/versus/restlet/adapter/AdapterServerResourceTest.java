@@ -80,8 +80,8 @@ public class AdapterServerResourceTest {
         assertNotNull(adapter);
         assertEquals(expected, adapter);
 
-        AdapterClient adapterClient = new AdapterClient("http://127.0.0.1:" + port + "/versus");
-        AdapterDescriptor adapter2 = adapterClient.getAdapterDescriptor("edu.illinois.ncsa.versus.adapter.impl.DummyAdapter");
+        AdaptersClient adaptersClient = new AdaptersClient("http://127.0.0.1:" + port + "/versus");
+        AdapterDescriptor adapter2 = adaptersClient.getAdapterDescriptor("edu.illinois.ncsa.versus.adapter.impl.DummyAdapter");
         assertNotNull(adapter2);
         assertEquals(expected, adapter2);
 

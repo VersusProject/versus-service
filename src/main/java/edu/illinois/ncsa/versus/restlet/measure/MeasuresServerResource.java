@@ -26,14 +26,14 @@ public class MeasuresServerResource extends ServerResource {
     public static final String PATH_TEMPLATE = URL;
 
     @Get
-    public HashSet<MeasureDescriptor> retrieve() {
-        return ((ServerApplication) getApplication()).getMeasures();
+    public HashSet<String> retrieve() {
+        return ((ServerApplication) getApplication()).getMeasuresId();
     }
 
     @Get("html")
     public Representation asHtml() {
         ServerApplication server = (ServerApplication) getApplication();
-        HashSet<MeasureDescriptor> measures = server.getMeasures();
+        HashSet<String> measures = server.getMeasuresId();
         if (measures.isEmpty()) {
             Representation representation = new StringRepresentation(
                     "No measures", MediaType.TEXT_HTML);
@@ -42,10 +42,10 @@ public class MeasuresServerResource extends ServerResource {
             String href = server.getBaseUrl() + URL + '/';
             StringBuilder sb = new StringBuilder("<h3>Versus > Mesures</h3>"
                     + "<ul>");
-            for (MeasureDescriptor measure : measures) {
+            for (String measure : measures) {
                 sb.append("<li><a href='").append(href);
-                sb.append(measure.getType()).append("'>");
-                sb.append(measure.getType()).append("</a></li>");
+                sb.append(measure).append("'>");
+                sb.append(measure).append("</a></li>");
             }
             sb.append("</ul>");
             Representation representation = new StringRepresentation(sb,

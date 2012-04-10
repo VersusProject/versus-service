@@ -11,17 +11,10 @@
  */
 package edu.illinois.ncsa.versus.restlet.adapter;
 
-import java.io.IOException;
 import java.util.HashSet;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 
-import org.restlet.data.MediaType;
-import org.restlet.representation.Representation;
 import org.restlet.resource.ClientResource;
 
-import com.thoughtworks.xstream.XStream;
-import com.thoughtworks.xstream.io.json.JettisonMappedXmlDriver;
 
 /**
  *
@@ -35,18 +28,13 @@ public class AdaptersClient {
         this.host = host;
     }
 
-    public HashSet<AdapterDescriptor> getAdapters() {
+    public HashSet<String> getAdapters() {
         ClientResource cr = new ClientResource(host + AdaptersServerResource.URL);
-        try {
-            Representation jsonRepresentation = cr.get(MediaType.APPLICATION_JSON);
-            XStream xstream = new XStream(new JettisonMappedXmlDriver());
-            xstream.processAnnotations(AdapterDescriptor.class);
-            return (HashSet<AdapterDescriptor>) xstream.fromXML(
-                    jsonRepresentation.getStream());
-        } catch (IOException ex) {
-            Logger.getLogger(AdaptersClient.class.getName()).log(Level.WARNING,
-                    "Cannot get adapters list from host " + host, ex);
-            return new HashSet<AdapterDescriptor>();
-        }
+        return cr.get(HashSet.class);
+    }
+    
+    public AdapterDescriptor getAdapterDescriptor(String id) {
+        ClientResource cr = new ClientResource(host + AdapterServerResource.URL + id);
+        return cr.get(AdapterDescriptor.class);
     }
 }

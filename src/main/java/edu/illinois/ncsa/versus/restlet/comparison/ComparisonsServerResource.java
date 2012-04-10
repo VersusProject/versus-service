@@ -45,12 +45,17 @@ public class ComparisonsServerResource extends ServerResource {
     public static final String PATH_TEMPLATE = URL;
 
     @Get()
-    public Collection<Comparison> retrieve() {
+    public Collection<String> retrieve() {
         // Guice storage
         Injector injector = Guice.createInjector(new RepositoryModule());
         ComparisonServiceImpl comparisonService = 
                 injector.getInstance(ComparisonServiceImpl.class);
-        return comparisonService.listAll();
+        Collection<Comparison> comparisons = comparisonService.listAll();
+        Collection<String> result = new ArrayList<String>(comparisons.size());
+        for(Comparison comparison : comparisonService.listAll()) {
+            result.add(comparison.getId());
+        }
+        return result;
     }
 
     /**
@@ -60,7 +65,7 @@ public class ComparisonsServerResource extends ServerResource {
      */
     @Get("html")
     public Representation asHtml() {
-        Collection<Comparison> comparisons = retrieve();
+        Collection<String> comparisons = retrieve();
         if (comparisons.isEmpty()) {
             Representation representation = new StringRepresentation(
                     "No comparisons", MediaType.TEXT_HTML);
@@ -70,8 +75,7 @@ public class ComparisonsServerResource extends ServerResource {
             String baseUrl = server.getBaseUrl();
             StringBuilder content =
                     new StringBuilder("<h3>Versus > Comparisons</h3><ul>");
-            for (Comparison comparison : comparisons) {
-                String id = comparison.getId();
+            for (String id : comparisons) {
                 content.append("<li><a href='").append(baseUrl).
                         append(ComparisonServerResource.URL).append(id).
                         append("'>").append(id).append("</a></li>");

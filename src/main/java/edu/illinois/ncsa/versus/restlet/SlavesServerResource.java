@@ -29,13 +29,13 @@ public class SlavesServerResource extends ServerResource {
     public Collection<Slave> retrieve() {
         return ((ServerApplication) getApplication()).getSlaves();
     }
-    
+
     /**
      * Get list of slaves known to this node as html.
      *
      * @return
      */
-    @Get("html") 
+    @Get("html")
     public Representation asHtml() {
         Collection<Slave> slaves = ((ServerApplication) getApplication()).getSlaves();
         if (slaves.isEmpty()) {
@@ -66,7 +66,10 @@ public class SlavesServerResource extends ServerResource {
         getLogger().log(Level.INFO, "Slave registration from {0}",
                 getRequest().getResourceRef().getIdentifier());
         Form form = new Form(entity);
-        String url = form.getFirstValue("url");
+        String address = getClientInfo().getAddress();
+        String port = form.getFirstValue("port");
+        String baseUrl = form.getFirstValue("baseUrl");
+        String url = "http://" + address + ':' + port + baseUrl;
         getLogger().log(Level.INFO, "Slave registered: {0}", url);
         ((ServerApplication) getApplication()).addSlave(url);
         setStatus(Status.SUCCESS_CREATED);
