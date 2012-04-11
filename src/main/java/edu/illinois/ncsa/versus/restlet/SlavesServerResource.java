@@ -66,10 +66,7 @@ public class SlavesServerResource extends ServerResource {
         getLogger().log(Level.INFO, "Slave registration from {0}",
                 getRequest().getResourceRef().getIdentifier());
         Form form = new Form(entity);
-        String address = getClientInfo().getAddress();
-        String port = form.getFirstValue("port");
-        String baseUrl = form.getFirstValue("baseUrl");
-        String url = "http://" + address + ':' + port + baseUrl;
+        String url = form.getFirstValue("url");
         getLogger().log(Level.INFO, "Slave registered: {0}", url);
         ((ServerApplication) getApplication()).addSlave(url);
         setStatus(Status.SUCCESS_CREATED);

@@ -1,11 +1,17 @@
 package edu.illinois.ncsa.versus.restlet;
 
+import java.net.Inet4Address;
 import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.restlet.Application;
 import org.restlet.Restlet;
@@ -73,19 +79,36 @@ public class ServerApplication extends Application {
         if (masterURL != null) {
             try {
                 registerWithMaster();
-            } catch (UnknownHostException e) {
+            } catch (Exception e) {
                 getLogger().log(Level.SEVERE, "Cannot register with master", e);
             }
         }
     }
 
-    private void registerWithMaster() throws UnknownHostException {
+    private void registerWithMaster() throws UnknownHostException, SocketException {
         getLogger().log(Level.INFO, "Registering to master {0}", masterURL);
+
+        ArrayList<String> ips = new ArrayList<String>();
+        Enumeration<NetworkInterface> nis = NetworkInterface.getNetworkInterfaces();
+        while (nis.hasMoreElements()) {
+            NetworkInterface ni = nis.nextElement();
+            if (ni.isUp() && !ni.isLoopback()) {
+                Enumeration<InetAddress> inetAddresses = ni.getInetAddresses();
+                while (inetAddresses.hasMoreElements()) {
+                    InetAddress ia = inetAddresses.nextElement();
+                    if (ia instanceof Inet4Address) {
+                        ips.add(ia.getHostAddress());
+                    }
+                }
+            }
+        }
+        String ip = ips.get(0); //TODO choose the good IP on computers with multiple network interfaces
+
         ClientResource masterResource = new ClientResource(masterURL
                 + SlavesServerResource.URL);
+        String slaveUrl = "http://" + ip + ':' + port + baseUrl;
         Form form = new Form();
-        form.add("port", String.valueOf(port));
-        form.add("baseUrl", baseUrl);
+        form.add("url", slaveUrl);
         masterResource.post(form.getWebRepresentation());
     }
 
