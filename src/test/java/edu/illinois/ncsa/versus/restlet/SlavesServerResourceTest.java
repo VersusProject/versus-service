@@ -11,12 +11,17 @@
  */
 package edu.illinois.ncsa.versus.restlet;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.apache.mina.util.AvailablePortFinder;
 import org.restlet.Component;
 import org.restlet.data.Protocol;
+import org.restlet.data.Status;
 import org.restlet.representation.Representation;
+import org.restlet.resource.ResourceException;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -64,28 +69,34 @@ public class SlavesServerResourceTest {
     public void tearDown() {
     }
 
+    private Component connectSlave() throws Exception {
+        int slavePort = AvailablePortFinder.getNextAvailable(8080);
+        ServerApplication slaveApplication = new ServerApplication(slavePort, "/versus", "http://127.0.0.1:" + port + "/versus");
+        Component slaveComponent = new Component();
+        slaveComponent.getServers().add(Protocol.HTTP, slavePort);
+        slaveComponent.getDefaultHost().attach("/versus", slaveApplication);
+        slaveComponent.start();
+        return slaveComponent;
+    }
+
     @Test
     public void test() throws Exception {
 
-        assertTrue(masterApplication.getSlaves().isEmpty());
+        SlavesManager slavesManager = masterApplication.getSlavesManager();
 
-        int slavePort = AvailablePortFinder.getNextAvailable(8080);
-        ServerApplication slaveApplication = new ServerApplication(slavePort, "/versus", "http://127.0.0.1:" + port + "/versus");
+        assertTrue(slavesManager.getSlaves().isEmpty());
 
-        assertFalse(masterApplication.getSlaves().isEmpty());
-
-        Component slaveComponent = new Component();
-        try {
-            slaveComponent.getServers().add(Protocol.HTTP, slavePort);
-            slaveComponent.getDefaultHost().attach("/versus", slaveApplication);
-            slaveComponent.start();
-
-            assertFalse(masterApplication.getSlaves().isEmpty());
-            Slave slave = masterApplication.getSlaves().iterator().next();
-            slave.getAdaptersId();
-
-        } finally {
-            slaveComponent.stop();
+        ArrayList<Component> slaves = new ArrayList<Component>(10);
+        for (int i = 1; i <= 10; i++) {
+            slaves.add(connectSlave());
+            assertEquals(i, slavesManager.getSlavesNumber());
         }
+        masterApplication.getAdaptersId();
+        for(Component slave : slaves) {
+            slave.stop();
+        }
+        masterApplication.getAdaptersId();
+        
+        assertTrue(slavesManager.getSlaves().isEmpty());
     }
 }

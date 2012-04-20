@@ -8,10 +8,9 @@ import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Enumeration;
-import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Set;
 import java.util.logging.Level;
-import java.util.logging.Logger;
 
 import org.restlet.Application;
 import org.restlet.Restlet;
@@ -27,6 +26,7 @@ import edu.illinois.ncsa.versus.engine.impl.ExecutionEngine;
 import edu.illinois.ncsa.versus.extract.Extractor;
 import edu.illinois.ncsa.versus.measure.Measure;
 import edu.illinois.ncsa.versus.registry.CompareRegistry;
+import edu.illinois.ncsa.versus.restlet.SlavesManager.SlaveQuery;
 import edu.illinois.ncsa.versus.restlet.adapter.AdapterDescriptor;
 import edu.illinois.ncsa.versus.restlet.adapter.AdapterServerResource;
 import edu.illinois.ncsa.versus.restlet.adapter.AdaptersServerResource;
@@ -53,7 +53,7 @@ public class ServerApplication extends Application {
 
     private final CompareRegistry registry = new CompareRegistry();
 
-    private final HashMap<String, Slave> slaves = new HashMap<String, Slave>();
+    private final SlavesManager slavesManager = new SlavesManager();
 
     private String masterURL;
 
@@ -138,17 +138,22 @@ public class ServerApplication extends Application {
         return router;
     }
 
-    public AdapterDescriptor getAdapter(String id) throws NotFoundException {
+    public AdapterDescriptor getAdapter(final String id) throws NotFoundException {
         Adapter adapter = registry.getAdapter(id);
         if (adapter != null) {
             return new AdapterDescriptor(adapter);
         }
+        AdapterDescriptor ad = slavesManager.querySlavesFirstNotNull(
+                new SlaveQuery<AdapterDescriptor>() {
 
-        for (Slave slave : slaves.values()) {
-            AdapterDescriptor ad = slave.getAdapter(id);
-            if (ad != null) {
-                return ad;
-            }
+                    @Override
+                    public AdapterDescriptor executeQuery(Slave slave) {
+                        return slave.getAdapter(id);
+                    }
+                });
+
+        if (ad != null) {
+            return ad;
         }
         throw new NotFoundException();
     }
@@ -160,24 +165,37 @@ public class ServerApplication extends Application {
         for (String adapter : adapters) {
             result.add(adapter);
         }
+        Collection<Set<String>> slavesResults = slavesManager.querySlaves(
+                new SlaveQuery<Set<String>>() {
 
-        for (Slave slave : slaves.values()) {
-            result.addAll(slave.getAdaptersId());
+                    @Override
+                    public Set<String> executeQuery(Slave slave) {
+                        return slave.getAdaptersId();
+                    }
+                });
+        for (Set<String> slaveResult : slavesResults) {
+            result.addAll(slaveResult);
         }
         return result;
     }
 
-    public ExtractorDescriptor getExtractor(String id) throws NotFoundException {
+    public ExtractorDescriptor getExtractor(final String id)
+            throws NotFoundException {
         Extractor extractor = registry.getExtractor(id);
         if (extractor != null) {
             return new ExtractorDescriptor(extractor, registry);
         }
 
-        for (Slave slave : slaves.values()) {
-            ExtractorDescriptor ed = slave.getExtractor(id);
-            if (ed != null) {
-                return ed;
-            }
+        ExtractorDescriptor ed = slavesManager.querySlavesFirstNotNull(
+                new SlaveQuery<ExtractorDescriptor>() {
+
+                    @Override
+                    public ExtractorDescriptor executeQuery(Slave slave) {
+                        return slave.getExtractor(id);
+                    }
+                });
+        if (ed != null) {
+            return ed;
         }
         throw new NotFoundException();
     }
@@ -189,24 +207,34 @@ public class ServerApplication extends Application {
         for (String extractor : extractors) {
             result.add(extractor);
         }
+        Collection<Set<String>> slavesResult = slavesManager.querySlaves(
+                new SlaveQuery<Set<String>>() {
 
-        for (Slave slave : slaves.values()) {
-            result.addAll(slave.getExtractorsId());
+                    @Override
+                    public Set<String> executeQuery(Slave slave) {
+                        return slave.getExtractorsId();
+                    }
+                });
+        for (Set<String> slaveResult : slavesResult) {
+            result.addAll(slaveResult);
         }
         return result;
     }
 
-    public MeasureDescriptor getMeasure(String id) throws NotFoundException {
+    public MeasureDescriptor getMeasure(final String id) throws NotFoundException {
         Measure measure = registry.getMeasure(id);
         if (measure != null) {
             return new MeasureDescriptor(measure);
         }
+        MeasureDescriptor md = slavesManager.querySlavesFirstNotNull(new SlaveQuery<MeasureDescriptor>() {
 
-        for (Slave slave : slaves.values()) {
-            MeasureDescriptor md = slave.getMeasure(id);
-            if (md != null) {
-                return md;
+            @Override
+            public MeasureDescriptor executeQuery(Slave slave) {
+                return slave.getMeasure(id);
             }
+        });
+        if (md != null) {
+            return md;
         }
         throw new NotFoundException();
     }
@@ -218,25 +246,22 @@ public class ServerApplication extends Application {
         for (String measure : measures) {
             result.add(measure);
         }
+        Collection<Set<String>> slavesResult = slavesManager.querySlaves(
+                new SlaveQuery<Set<String>>() {
 
-        for (Slave slave : slaves.values()) {
-            result.addAll(slave.getMeasuresId());
+                    @Override
+                    public Set<String> executeQuery(Slave slave) {
+                        return slave.getMeasuresId();
+                    }
+                });
+        for (Set<String> slaveResult : slavesResult) {
+            result.addAll(slaveResult);
         }
         return result;
     }
 
-    public Slave getSlave(String url) {
-        return slaves.get(url);
-    }
-
-    public Collection<Slave> getSlaves() {
-        return slaves.values();
-    }
-
-    public void addSlave(String url) {
-        if (!slaves.containsKey(url)) {
-            slaves.put(url, new Slave(url));
-        }
+    public SlavesManager getSlavesManager() {
+        return slavesManager;
     }
 
     public ExecutionEngine getEngine() {

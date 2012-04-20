@@ -29,6 +29,7 @@ import edu.illinois.ncsa.versus.restlet.NoSlaveAvailableException;
 import edu.illinois.ncsa.versus.restlet.RankSlaves;
 import edu.illinois.ncsa.versus.restlet.ServerApplication;
 import edu.illinois.ncsa.versus.restlet.Slave;
+import edu.illinois.ncsa.versus.restlet.SlavesManager;
 import edu.illinois.ncsa.versus.store.ComparisonServiceImpl;
 import edu.illinois.ncsa.versus.store.RepositoryModule;
 
@@ -48,11 +49,11 @@ public class ComparisonsServerResource extends ServerResource {
     public Collection<String> retrieve() {
         // Guice storage
         Injector injector = Guice.createInjector(new RepositoryModule());
-        ComparisonServiceImpl comparisonService = 
+        ComparisonServiceImpl comparisonService =
                 injector.getInstance(ComparisonServiceImpl.class);
         Collection<Comparison> comparisons = comparisonService.listAll();
         Collection<String> result = new ArrayList<String>(comparisons.size());
-        for(Comparison comparison : comparisonService.listAll()) {
+        for (Comparison comparison : comparisonService.listAll()) {
             result.add(comparison.getId());
         }
         return result;
@@ -175,19 +176,20 @@ public class ComparisonsServerResource extends ServerResource {
      * @param comparison
      * @return
      */
-    private Comparison querySlaves(Comparison comparison) {
+    private Comparison querySlaves(final Comparison comparison) {
         // TODO: each slave should give a score telling how it is willing to
         // run the comparison
-        Collection<Slave> slaves = ((ServerApplication) getApplication()).getSlaves();
-        List<Slave> supportingSlaves = new ArrayList<Slave>();
-        for (Slave slave : slaves) {
-            if (slave.supportComparison(comparison)) {
-                getLogger().log(Level.INFO,
-                        "Adding {0} to slaves that can support the requested comparison.",
-                        slave.getUrl());
-                supportingSlaves.add(slave);
+        Set<Slave> supportingSlavesSet =
+                ((ServerApplication) getApplication()).getSlavesManager().
+                getSlaves(new SlavesManager.SlaveQuery<Boolean>() {
+
+            @Override
+            public Boolean executeQuery(Slave slave) {
+                return slave.supportComparison(comparison);
             }
-        }
+        });
+
+        List<Slave> supportingSlaves = new ArrayList<Slave>(supportingSlavesSet);
         // rank slaves
         supportingSlaves = RankSlaves.rank(supportingSlaves);
         // forward to first slave

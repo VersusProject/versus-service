@@ -45,7 +45,7 @@ public class ComparisonServerResource extends ServerResource {
                     && status != ComparisonStatus.FAILED
                     && status != ComparisonStatus.ABORTED) {
                 ServerApplication server = (ServerApplication)getApplication();
-                Slave slave = server.getSlave(comparison.getSlave());
+                Slave slave = server.getSlavesManager().getSlave(comparison.getSlave());
                 comparison = slave.getComparison(comparison);
                 comparisonService.updateValue(comparison.getId(), comparison.getValue());
                 comparisonService.setStatus(comparison.getId(), comparison.getStatus());

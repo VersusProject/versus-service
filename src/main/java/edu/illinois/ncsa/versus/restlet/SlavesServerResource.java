@@ -27,7 +27,7 @@ public class SlavesServerResource extends ServerResource {
 
     @Get()
     public Collection<Slave> retrieve() {
-        return ((ServerApplication) getApplication()).getSlaves();
+        return ((ServerApplication) getApplication()).getSlavesManager().getSlaves();
     }
 
     /**
@@ -37,7 +37,8 @@ public class SlavesServerResource extends ServerResource {
      */
     @Get("html")
     public Representation asHtml() {
-        Collection<Slave> slaves = ((ServerApplication) getApplication()).getSlaves();
+        Collection<Slave> slaves = ((ServerApplication) getApplication()).
+                getSlavesManager().getSlaves();
         if (slaves.isEmpty()) {
             Representation representation = new StringRepresentation(
                     "No slaves", MediaType.TEXT_HTML);
@@ -68,7 +69,7 @@ public class SlavesServerResource extends ServerResource {
         Form form = new Form(entity);
         String url = form.getFirstValue("url");
         getLogger().log(Level.INFO, "Slave registered: {0}", url);
-        ((ServerApplication) getApplication()).addSlave(url);
+        ((ServerApplication) getApplication()).getSlavesManager().addSlave(url);
         setStatus(Status.SUCCESS_CREATED);
     }
 }
