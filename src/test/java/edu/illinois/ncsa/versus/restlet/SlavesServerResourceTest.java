@@ -13,6 +13,10 @@ package edu.illinois.ncsa.versus.restlet;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -71,12 +75,28 @@ public class SlavesServerResourceTest {
 
     private Component connectSlave() throws Exception {
         int slavePort = AvailablePortFinder.getNextAvailable(8080);
+        return connectSlave(slavePort);
+    }
+
+    private Component connectSlave(int slavePort) throws Exception {
         ServerApplication slaveApplication = new ServerApplication(slavePort, "/versus", "http://127.0.0.1:" + port + "/versus");
         Component slaveComponent = new Component();
         slaveComponent.getServers().add(Protocol.HTTP, slavePort);
         slaveComponent.getDefaultHost().attach("/versus", slaveApplication);
         slaveComponent.start();
         return slaveComponent;
+    }
+
+    private static ArrayList<Integer> getNextAvailablesPorts(int fromPort, int number) {
+        ArrayList<Integer> result = new ArrayList<Integer>(number);
+
+        for (int i = 0; i < number; i++) {
+            int avPort = AvailablePortFinder.getNextAvailable(fromPort);
+            result.add(avPort);
+            fromPort = avPort + 1;
+        }
+
+        return result;
     }
 
     @Test
@@ -92,11 +112,69 @@ public class SlavesServerResourceTest {
             assertEquals(i, slavesManager.getSlavesNumber());
         }
         masterApplication.getAdaptersId();
-        for(Component slave : slaves) {
+        for (Component slave : slaves) {
             slave.stop();
         }
         masterApplication.getAdaptersId();
-        
+
         assertTrue(slavesManager.getSlaves().isEmpty());
+    }
+
+    @Test
+    public void testThreadSafety() throws Exception {
+        SlavesManager slavesManager = masterApplication.getSlavesManager();
+
+        final int slavesNumber = 10;
+        ExecutorService executor = Executors.newFixedThreadPool(slavesNumber);
+        // Get 10 availabes port
+        ArrayList<Integer> slavesPorts = getNextAvailablesPorts(8080, slavesNumber);
+
+        // Connect 10 slaves at the same time
+        ArrayList<Future<Component>> futures = new ArrayList<Future<Component>>(slavesNumber);
+        for (final int slavePort : slavesPorts) {
+            Future<Component> future = executor.submit(new Callable<Component>() {
+
+                @Override
+                public Component call() throws Exception {
+                    return connectSlave(slavePort);
+                }
+            });
+            futures.add(future);
+        }
+
+        ArrayList<Component> slaves = new ArrayList<Component>(slavesNumber);
+        for (Future<Component> future : futures) {
+            Component slave = future.get();
+            slaves.add(slave);
+        }
+
+        masterApplication.getAdaptersId();
+        assertEquals(slavesNumber, slavesManager.getSlavesNumber());
+
+        // Shutdown the slaves
+        for (Component slave : slaves) {
+            slave.stop();
+        }
+        
+        assertEquals(slavesNumber, slavesManager.getSlavesNumber());
+
+        // Start parallel queries which should all try to remove the disconnected slaves
+        ArrayList<Future<?>> submits = new ArrayList<Future<?>>(slavesNumber);
+        for (int i = 0; i < 20; i++) {
+            Future<?> submit = executor.submit(new Runnable() {
+
+                @Override
+                public void run() {
+                    masterApplication.getAdaptersId();
+                }
+            });
+            submits.add(submit);
+        }
+        
+        for (Future<?> submit : submits) {
+            submit.get();
+        }
+
+        assertEquals(0, slavesManager.getSlavesNumber());
     }
 }
