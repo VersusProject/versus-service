@@ -11,8 +11,13 @@
  */
 package edu.illinois.ncsa.versus.restlet;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Scanner;
+import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -20,12 +25,18 @@ import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.mina.util.AvailablePortFinder;
 import org.restlet.Component;
+import org.restlet.data.MediaType;
 import org.restlet.data.Protocol;
 import org.restlet.data.Status;
 import org.restlet.representation.Representation;
+import org.restlet.resource.ClientResource;
 import org.restlet.resource.ResourceException;
+
+import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.io.json.JettisonMappedXmlDriver;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -41,7 +52,7 @@ public class SlavesServerResourceTest {
 
     private static Component masterComponent;
 
-    private static int port;
+    private static String uri;
 
     private static ServerApplication masterApplication;
 
@@ -50,7 +61,10 @@ public class SlavesServerResourceTest {
 
     @BeforeClass
     public static void setUpClass() throws Exception {
-        port = AvailablePortFinder.getNextAvailable(8080);
+        int port = AvailablePortFinder.getNextAvailable(8080);
+
+        uri = "http://127.0.0.1:" + port + "/versus";
+
         masterApplication = new ServerApplication(port, "/versus");
 
         masterComponent = new Component();
@@ -79,7 +93,7 @@ public class SlavesServerResourceTest {
     }
 
     private Component connectSlave(int slavePort) throws Exception {
-        ServerApplication slaveApplication = new ServerApplication(slavePort, "/versus", "http://127.0.0.1:" + port + "/versus");
+        ServerApplication slaveApplication = new ServerApplication(slavePort, "/versus", uri);
         Component slaveComponent = new Component();
         slaveComponent.getServers().add(Protocol.HTTP, slavePort);
         slaveComponent.getDefaultHost().attach("/versus", slaveApplication);
@@ -100,10 +114,8 @@ public class SlavesServerResourceTest {
     }
 
     @Test
-    public void test() throws Exception {
-
+    public void testStartStop() throws Exception {
         SlavesManager slavesManager = masterApplication.getSlavesManager();
-
         assertTrue(slavesManager.getSlaves().isEmpty());
 
         ArrayList<Component> slaves = new ArrayList<Component>(10);
@@ -116,8 +128,67 @@ public class SlavesServerResourceTest {
             slave.stop();
         }
         masterApplication.getAdaptersId();
-
         assertTrue(slavesManager.getSlaves().isEmpty());
+    }
+
+    @Test
+    public void testWebService() throws Exception {
+        Component slave1 = connectSlave();
+        Component slave2 = connectSlave();
+
+        try {
+            ClientResource clientResource = new ClientResource(uri + SlavesServerResource.URL);
+
+            HashSet<String> slaves = clientResource.get(HashSet.class);
+            assertNotNull(slaves);
+            assertEquals(2, slaves.size());
+
+            Representation xmlRep = clientResource.get(MediaType.TEXT_XML);
+            HashSet<String> slavesXml = getSlavesFromRepresentation(new XStream(), xmlRep);
+            assertNotNull(slavesXml);
+            CollectionUtils.isEqualCollection(slaves, slavesXml);
+
+            Representation jsonRep = clientResource.get(MediaType.APPLICATION_JSON);
+            HashSet<String> slavesJson = getSlavesFromRepresentation(new XStream(new JettisonMappedXmlDriver()), jsonRep);
+            assertNotNull(slavesJson);
+            CollectionUtils.isEqualCollection(slaves, slavesJson);
+
+            Representation htmlRep = clientResource.get(MediaType.TEXT_HTML);
+            String html = streamToString(htmlRep.getStream());
+            assertNotNull(html);
+            assertFalse(html.isEmpty());
+
+        } finally {
+            slave1.stop();
+            slave2.stop();
+            masterApplication.getAdaptersId();
+        }
+    }
+
+    private HashSet<String> getSlavesFromRepresentation(XStream xstream, Representation representation) throws IOException {
+        xstream.alias("slaves", Set.class);
+        xstream.registerConverter(new StringCollectionConverter() {
+
+            @Override
+            protected String getNodeName() {
+                return "slave";
+            }
+
+            @Override
+            protected Collection getNewT() {
+                return new HashSet();
+            }
+
+            @Override
+            public boolean canConvert(Class type) {
+                return HashSet.class.isAssignableFrom(type);
+            }
+        });
+        return (HashSet<String>) xstream.fromXML(representation.getStream());
+    }
+
+    private String streamToString(InputStream inStream) {
+        return new Scanner(inStream).useDelimiter("\\A").next();
     }
 
     @Test
@@ -155,7 +226,7 @@ public class SlavesServerResourceTest {
         for (Component slave : slaves) {
             slave.stop();
         }
-        
+
         assertEquals(slavesNumber, slavesManager.getSlavesNumber());
 
         // Start parallel queries which should all try to remove the disconnected slaves
@@ -170,7 +241,7 @@ public class SlavesServerResourceTest {
             });
             submits.add(submit);
         }
-        
+
         for (Future<?> submit : submits) {
             submit.get();
         }

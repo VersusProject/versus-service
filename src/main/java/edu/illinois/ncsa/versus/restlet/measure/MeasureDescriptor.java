@@ -18,6 +18,7 @@ import java.util.List;
 import java.util.Set;
 
 import com.thoughtworks.xstream.annotations.XStreamAlias;
+import com.thoughtworks.xstream.annotations.XStreamConverter;
 
 import edu.illinois.ncsa.versus.descriptor.Descriptor;
 import edu.illinois.ncsa.versus.measure.Measure;
@@ -36,6 +37,7 @@ public class MeasureDescriptor implements Serializable {
     private String type;
 
     @XStreamAlias("supportedFeatures")
+    @XStreamConverter(SupportedFeaturesConverter.class)
     private List<String> supportedFeatures;
 
     public MeasureDescriptor(Measure measure) {

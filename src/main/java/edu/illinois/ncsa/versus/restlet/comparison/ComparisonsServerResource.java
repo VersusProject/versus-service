@@ -3,6 +3,7 @@ package edu.illinois.ncsa.versus.restlet.comparison;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
@@ -16,6 +17,8 @@ import org.restlet.resource.Get;
 import org.restlet.resource.Post;
 import org.restlet.resource.ServerResource;
 
+import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.io.json.JettisonMappedXmlDriver;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 
@@ -30,6 +33,7 @@ import edu.illinois.ncsa.versus.restlet.RankSlaves;
 import edu.illinois.ncsa.versus.restlet.ServerApplication;
 import edu.illinois.ncsa.versus.restlet.Slave;
 import edu.illinois.ncsa.versus.restlet.SlavesManager;
+import edu.illinois.ncsa.versus.restlet.StringCollectionConverter;
 import edu.illinois.ncsa.versus.store.ComparisonServiceImpl;
 import edu.illinois.ncsa.versus.store.RepositoryModule;
 
@@ -46,17 +50,54 @@ public class ComparisonsServerResource extends ServerResource {
     public static final String PATH_TEMPLATE = URL;
 
     @Get()
-    public Collection<String> retrieve() {
+    public HashSet<String> retrieve() {
         // Guice storage
         Injector injector = Guice.createInjector(new RepositoryModule());
         ComparisonServiceImpl comparisonService =
                 injector.getInstance(ComparisonServiceImpl.class);
         Collection<Comparison> comparisons = comparisonService.listAll();
-        Collection<String> result = new ArrayList<String>(comparisons.size());
+        HashSet<String> result = new HashSet<String>(comparisons.size());
         for (Comparison comparison : comparisonService.listAll()) {
             result.add(comparison.getId());
         }
         return result;
+    }
+    
+    @Get("xml")
+    public String asXml() {
+        XStream xstream = new XStream();
+        return fillAndConvert(xstream);
+    }
+
+    @Get("json")
+    public String asJson() {
+        XStream xstream = new XStream(new JettisonMappedXmlDriver());
+        xstream.setMode(XStream.NO_REFERENCES);
+        return fillAndConvert(xstream);
+    }
+
+    private String fillAndConvert(XStream xstream) {
+        xstream.alias("comparisons", HashSet.class);
+        xstream.registerConverter(
+                new StringCollectionConverter<HashSet<String>>() {
+
+                    @Override
+                    protected String getNodeName() {
+                        return "comparison";
+                    }
+
+                    @Override
+                    protected HashSet<String> getNewT() {
+                        return new HashSet<String>();
+                    }
+
+                    @Override
+                    public boolean canConvert(Class type) {
+                        return HashSet.class.isAssignableFrom(type);
+                    }
+                });
+
+        return xstream.toXML(retrieve());
     }
 
     /**

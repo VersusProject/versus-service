@@ -18,6 +18,7 @@ import java.util.Collections;
 import java.util.List;
 
 import com.thoughtworks.xstream.annotations.XStreamAlias;
+import com.thoughtworks.xstream.annotations.XStreamConverter;
 
 import edu.illinois.ncsa.versus.extract.Extractor;
 import edu.illinois.ncsa.versus.registry.CompareRegistry;
@@ -36,6 +37,7 @@ public class ExtractorDescriptor implements Serializable {
     private String type;
 
     @XStreamAlias("supportedAdapters")
+    @XStreamConverter(SupportedAdaptersConverter.class)
     private List<String> supportedAdapters;
 
     @XStreamAlias("supportedFeature")

@@ -4,6 +4,8 @@
 package edu.illinois.ncsa.versus.restlet;
 
 import java.util.Collection;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.logging.Level;
 
 import org.restlet.data.Form;
@@ -14,6 +16,9 @@ import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.Get;
 import org.restlet.resource.Post;
 import org.restlet.resource.ServerResource;
+
+import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.io.json.JettisonMappedXmlDriver;
 
 /**
  * @author Luigi Marini <lmarini@ncsa.illinois.edu>
@@ -26,8 +31,44 @@ public class SlavesServerResource extends ServerResource {
     public static final String PATH_TEMPLATE = URL;
 
     @Get()
-    public Collection<Slave> retrieve() {
-        return ((ServerApplication) getApplication()).getSlavesManager().getSlaves();
+    public HashSet<String> retrieve() {
+        return ((ServerApplication) getApplication()).getSlavesManager().getSlavesUrl();
+    }
+
+    @Get("xml")
+    public String asXml() {
+        XStream xstream = new XStream();
+        return fillAndConvert(xstream);
+    }
+
+    @Get("json")
+    public String asJson() {
+        XStream xstream = new XStream(new JettisonMappedXmlDriver());
+        xstream.setMode(XStream.NO_REFERENCES);
+        return fillAndConvert(xstream);
+    }
+
+    private String fillAndConvert(XStream xstream) {
+        xstream.alias("slaves", Set.class);
+        xstream.registerConverter(new StringCollectionConverter<HashSet<String>>() {
+
+            @Override
+            protected String getNodeName() {
+                return "slave";
+            }
+
+            @Override
+            protected HashSet<String> getNewT() {
+                return new HashSet<String>();
+            }
+
+            @Override
+            public boolean canConvert(Class type) {
+                return HashSet.class.isAssignableFrom(type);
+            }
+        });
+
+        return xstream.toXML(retrieve());
     }
 
     /**
@@ -37,8 +78,7 @@ public class SlavesServerResource extends ServerResource {
      */
     @Get("html")
     public Representation asHtml() {
-        Collection<Slave> slaves = ((ServerApplication) getApplication()).
-                getSlavesManager().getSlaves();
+        Collection<String> slaves = retrieve();
         if (slaves.isEmpty()) {
             Representation representation = new StringRepresentation(
                     "No slaves", MediaType.TEXT_HTML);
@@ -46,9 +86,9 @@ public class SlavesServerResource extends ServerResource {
         } else {
             StringBuilder content = new StringBuilder("<h3>Versus > Slaves</h3>"
                     + "<ul>");
-            for (Slave slave : slaves) {
-                content.append("<li><a href='").append(slave.getUrl()).
-                        append("'>").append(slave.getUrl()).append("</a></li>");
+            for (String slave : slaves) {
+                content.append("<li><a href='").append(slave).
+                        append("'>").append(slave).append("</a></li>");
             }
             content.append("</ul>");
             Representation representation = new StringRepresentation(content,

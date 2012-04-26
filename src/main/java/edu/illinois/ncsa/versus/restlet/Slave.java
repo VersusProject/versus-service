@@ -5,8 +5,6 @@ package edu.illinois.ncsa.versus.restlet;
 
 import java.util.Set;
 
-import com.thoughtworks.xstream.annotations.XStreamAlias;
-
 import edu.illinois.ncsa.versus.restlet.adapter.AdapterDescriptor;
 import edu.illinois.ncsa.versus.restlet.adapter.AdaptersClient;
 import edu.illinois.ncsa.versus.restlet.comparison.Comparison;
@@ -20,10 +18,8 @@ import edu.illinois.ncsa.versus.restlet.measure.MeasuresClient;
  * @author lmarini
  *
  */
-@XStreamAlias("slave")
 public class Slave {
 
-    @XStreamAlias("url")
     private String url;
 
     public Slave(String hostRef) {

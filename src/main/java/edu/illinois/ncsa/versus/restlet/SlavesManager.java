@@ -13,7 +13,6 @@ package edu.illinois.ncsa.versus.restlet;
 
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
@@ -61,8 +60,12 @@ public class SlavesManager {
         return slaves.size();
     }
 
-    public Set<Slave> getSlaves() {
-        return Collections.unmodifiableSet(new HashSet(slaves.values()));
+    public HashSet<Slave> getSlaves() {
+        return new HashSet(slaves.values());
+    }
+    
+    public HashSet<String> getSlavesUrl() {
+        return new HashSet(slaves.keySet());
     }
 
     private <T> HashMap<Future<T>, Slave> submitQueryToSlaves(

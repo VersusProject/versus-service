@@ -138,7 +138,8 @@ public class ServerApplication extends Application {
         return router;
     }
 
-    public AdapterDescriptor getAdapter(final String id) throws NotFoundException {
+    public AdapterDescriptor getAdapter(final String id)
+            throws NotFoundException {
         Adapter adapter = registry.getAdapter(id);
         if (adapter != null) {
             return new AdapterDescriptor(adapter);
@@ -221,18 +222,20 @@ public class ServerApplication extends Application {
         return result;
     }
 
-    public MeasureDescriptor getMeasure(final String id) throws NotFoundException {
+    public MeasureDescriptor getMeasure(final String id)
+            throws NotFoundException {
         Measure measure = registry.getMeasure(id);
         if (measure != null) {
             return new MeasureDescriptor(measure);
         }
-        MeasureDescriptor md = slavesManager.querySlavesFirstNotNull(new SlaveQuery<MeasureDescriptor>() {
+        MeasureDescriptor md = slavesManager.querySlavesFirstNotNull(
+                new SlaveQuery<MeasureDescriptor>() {
 
-            @Override
-            public MeasureDescriptor executeQuery(Slave slave) {
-                return slave.getMeasure(id);
-            }
-        });
+                    @Override
+                    public MeasureDescriptor executeQuery(Slave slave) {
+                        return slave.getMeasure(id);
+                    }
+                });
         if (md != null) {
             return md;
         }

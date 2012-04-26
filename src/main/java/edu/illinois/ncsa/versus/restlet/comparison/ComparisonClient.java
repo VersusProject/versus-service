@@ -11,6 +11,8 @@
  */
 package edu.illinois.ncsa.versus.restlet.comparison;
 
+import java.util.HashSet;
+
 import org.restlet.resource.ClientResource;
 
 /**
@@ -29,6 +31,11 @@ public class ComparisonClient {
         ClientResource cr = new ClientResource(host + ComparisonServerResource.URL + id);
         return cr.get(Comparison.class);
     }
+    
+    public HashSet<String> getComparisons() {
+        ClientResource cr = new ClientResource(host + ComparisonsServerResource.URL);
+        return cr.get(HashSet.class);
+    }
 
     public Comparison submit(Comparison comparison) {
         ClientResource clientResource = new ClientResource(host + ComparisonsServerResource.URL);
@@ -39,6 +46,6 @@ public class ComparisonClient {
         ClientResource cr = new ClientResource(host
                 + ComparisonSupportServerResource.URL
                 + adapterId + '/' + extractorId + '/' + measureId);
-        return cr.get(boolean.class);
+        return cr.get(Boolean.class);
     }
 }

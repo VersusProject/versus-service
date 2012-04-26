@@ -13,8 +13,18 @@ package edu.illinois.ncsa.versus.restlet.adapter;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.util.Collection;
 import java.util.HashSet;
+import java.util.NoSuchElementException;
+import java.util.Scanner;
+import java.util.Set;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.mina.util.AvailablePortFinder;
 import org.restlet.Component;
 import org.restlet.data.MediaType;
@@ -23,7 +33,12 @@ import org.restlet.representation.Representation;
 import org.restlet.resource.ClientResource;
 
 import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.io.HierarchicalStreamDriver;
+import com.thoughtworks.xstream.io.HierarchicalStreamReader;
+import com.thoughtworks.xstream.io.copy.HierarchicalStreamCopier;
 import com.thoughtworks.xstream.io.json.JettisonMappedXmlDriver;
+import com.thoughtworks.xstream.io.xml.PrettyPrintWriter;
+
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -33,6 +48,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import edu.illinois.ncsa.versus.restlet.ServerApplication;
+import edu.illinois.ncsa.versus.restlet.StringCollectionConverter;
 
 /**
  *
@@ -42,14 +58,15 @@ public class AdaptersServerResourceTest {
 
     private static Component component;
 
-    private static int port;
+    private static String url;
 
     public AdaptersServerResourceTest() {
     }
 
     @BeforeClass
     public static void setUpClass() throws Exception {
-        port = AvailablePortFinder.getNextAvailable(8080);
+        int port = AvailablePortFinder.getNextAvailable(8080);
+        url = "http://127.0.0.1:" + port + "/versus";
 
         // Create a new Component.  
         component = new Component();
@@ -74,32 +91,55 @@ public class AdaptersServerResourceTest {
 
     @Test
     public void test() throws IOException {
-        AdaptersClient adaptersClient = new AdaptersClient("http://127.0.0.1:" + port + "/versus");
+        AdaptersClient adaptersClient = new AdaptersClient(url);
         HashSet<String> adapters = adaptersClient.getAdapters();
         assertNotNull(adapters);
         assertFalse(adapters.isEmpty());
 
-        ClientResource clientResource = new ClientResource("http://127.0.0.1:" + port + "/versus/adapters");
+        ClientResource clientResource = new ClientResource(url + AdaptersServerResource.URL);
 
         Representation xmlRepresentation = clientResource.get(MediaType.TEXT_XML);
         XStream xstream = new XStream();
-        xstream.processAnnotations(AdapterDescriptor.class);
-        HashSet<AdapterDescriptor> adaptersFromXML = (HashSet<AdapterDescriptor>) xstream.fromXML(xmlRepresentation.getStream());
+        HashSet<String> adaptersFromXML = getAdaptersFromRepresentation(xstream, xmlRepresentation);
         assertNotNull(adaptersFromXML);
-        assertFalse(adaptersFromXML.isEmpty());
+        assertTrue(CollectionUtils.isEqualCollection(adapters, adaptersFromXML));
+
 
         Representation jsonRepresentation = clientResource.get(MediaType.APPLICATION_JSON);
         XStream jsonXstream = new XStream(new JettisonMappedXmlDriver());
-        jsonXstream.processAnnotations(AdapterDescriptor.class);
-        HashSet<AdapterDescriptor> adaptersFromJSON = (HashSet<AdapterDescriptor>) jsonXstream.fromXML(jsonRepresentation.getStream());
+        HashSet<String> adaptersFromJSON = getAdaptersFromRepresentation(jsonXstream, jsonRepresentation);
         assertNotNull(adaptersFromJSON);
-        assertFalse(adaptersFromJSON.isEmpty());
+        assertTrue(CollectionUtils.isEqualCollection(adapters, adaptersFromJSON));
 
         Representation htmlRepresentation = clientResource.get(MediaType.TEXT_HTML);
-        ByteArrayOutputStream baos = new ByteArrayOutputStream();
-        htmlRepresentation.write(baos);
-        String html = baos.toString();
+        String html = streamToString(htmlRepresentation.getStream());
         assertNotNull(html);
         assertFalse(html.isEmpty());
+    }
+
+    private HashSet<String> getAdaptersFromRepresentation(XStream xstream, Representation representation) throws IOException {
+        xstream.alias("adapters", Set.class);
+        xstream.registerConverter(new StringCollectionConverter() {
+
+            @Override
+            protected String getNodeName() {
+                return "adapter";
+            }
+
+            @Override
+            protected Collection getNewT() {
+                return new HashSet();
+            }
+
+            @Override
+            public boolean canConvert(Class type) {
+                return HashSet.class.isAssignableFrom(type);
+            }
+        });
+        return (HashSet<String>) xstream.fromXML(representation.getStream());
+    }
+
+    private String streamToString(InputStream inStream) {
+        return new Scanner(inStream).useDelimiter("\\A").next();
     }
 }

@@ -10,6 +10,9 @@ import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.Get;
 import org.restlet.resource.ServerResource;
 
+import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.io.json.JettisonMappedXmlDriver;
+
 import edu.illinois.ncsa.versus.restlet.NotFoundException;
 import edu.illinois.ncsa.versus.restlet.ServerApplication;
 
@@ -36,6 +39,24 @@ public class MeasureServerResource extends ServerResource {
             setStatus(Status.CLIENT_ERROR_NOT_FOUND);
             return null;
         }
+    }
+    
+    @Get("xml")
+    public String asXml() {
+        XStream xstream = new XStream();
+        return fillAndConvert(xstream);
+    }
+
+    @Get("json")
+    public String asJson() {
+        XStream xstream = new XStream(new JettisonMappedXmlDriver());
+        xstream.setMode(XStream.NO_REFERENCES);
+        return fillAndConvert(xstream);
+    }
+
+    private String fillAndConvert(XStream xstream) {
+        xstream.processAnnotations(MeasureDescriptor.class);
+        return xstream.toXML(retrieve());
     }
 
     @Get("html")

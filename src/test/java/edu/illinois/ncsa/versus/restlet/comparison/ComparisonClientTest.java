@@ -11,9 +11,23 @@
  */
 package edu.illinois.ncsa.versus.restlet.comparison;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.Scanner;
+import java.util.Set;
+
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.mina.util.AvailablePortFinder;
 import org.restlet.Component;
+import org.restlet.data.MediaType;
 import org.restlet.data.Protocol;
+import org.restlet.representation.Representation;
+import org.restlet.resource.ClientResource;
+
+import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.io.json.JettisonMappedXmlDriver;
 
 import org.junit.After;
 import org.junit.AfterClass;
@@ -23,9 +37,11 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import edu.illinois.ncsa.versus.adapter.impl.DummyAdapter;
+import edu.illinois.ncsa.versus.extract.impl.DummyExtractor;
 import edu.illinois.ncsa.versus.extract.impl.DummyExtractor2;
 import edu.illinois.ncsa.versus.measure.impl.DummyMeasure;
 import edu.illinois.ncsa.versus.restlet.ServerApplication;
+import edu.illinois.ncsa.versus.restlet.StringCollectionConverter;
 
 /**
  *
@@ -34,8 +50,10 @@ import edu.illinois.ncsa.versus.restlet.ServerApplication;
 public class ComparisonClientTest {
 
     private static Component component;
-    
+
     private static ComparisonClient client;
+
+    private static String host;
 
     public ComparisonClientTest() {
     }
@@ -43,9 +61,9 @@ public class ComparisonClientTest {
     @BeforeClass
     public static void setUpClass() throws Exception {
         int port = AvailablePortFinder.getNextAvailable(8080);
-        String host = "http://127.0.0.1:" + port + "/versus";
+        host = "http://127.0.0.1:" + port + "/versus";
         client = new ComparisonClient(host);
-        
+
         component = new Component();
         component.getServers().add(Protocol.HTTP, port);
         component.getDefaultHost().attach("/versus",
@@ -70,7 +88,7 @@ public class ComparisonClientTest {
      * Test of getComparison method, of class ComparisonClient.
      */
     @Test
-    public void testGetComparison() {
+    public void testGetComparison() throws IOException {
         System.out.println("getComparison");
         Comparison comparison = new Comparison(
                 "http://isda.ncsa.illinois.edu/img/ISDA-logo.png",
@@ -82,6 +100,93 @@ public class ComparisonClientTest {
         Comparison result = client.getComparison(submitted.getId());
         assertNotNull(result);
         assertEquals(submitted, result);
+
+        ClientResource cr = new ClientResource(host + ComparisonServerResource.URL + submitted.getId());
+
+        Representation xmlRep = cr.get(MediaType.TEXT_XML);
+        Comparison comparisonFromXml = getComparisonFromRepresentation(new XStream(), xmlRep);
+        assertNotNull(comparisonFromXml);
+        assertEquals(comparison, comparisonFromXml);
+
+        Representation jsonRep = cr.get(MediaType.APPLICATION_JSON);
+        Comparison comparisonFromJson = getComparisonFromRepresentation(new XStream(new JettisonMappedXmlDriver()), jsonRep);
+        assertNotNull(comparisonFromJson);
+        assertEquals(comparison, comparisonFromJson);
+
+        Representation htmlRep = cr.get(MediaType.TEXT_HTML);
+        String html = streamToString(htmlRep.getStream());
+        assertNotNull(html);
+        assertFalse(html.isEmpty());
+    }
+
+    private Comparison getComparisonFromRepresentation(XStream xstream, Representation representation) throws IOException {
+        xstream.processAnnotations(Comparison.class);
+        return (Comparison) xstream.fromXML(representation.getStream());
+    }
+
+    @Test
+    public void testGetComparisons() throws IOException {
+        Comparison comparison1 = new Comparison(
+                "http://isda.ncsa.illinois.edu/img/ISDA-logo.png",
+                "http://isda.ncsa.illinois.edu/img/uiuc-logo-bold50_2.gif",
+                DummyAdapter.class.getName(),
+                DummyExtractor2.class.getName(),
+                DummyMeasure.class.getName());
+        Comparison comparison2 = new Comparison(
+                "http://isda.ncsa.illinois.edu/img/ISDA-logo.png",
+                "http://isda.ncsa.illinois.edu/img/uiuc-logo-bold50_2.gif",
+                DummyAdapter.class.getName(),
+                DummyExtractor.class.getName(),
+                DummyMeasure.class.getName());
+        comparison1 = client.submit(comparison1);
+        comparison2 = client.submit(comparison2);
+
+        HashSet<String> comparisons = client.getComparisons();
+        assertNotNull(comparisons);
+        assertFalse(comparisons.isEmpty());
+
+        ClientResource cr = new ClientResource(host + ComparisonsServerResource.URL);
+
+        Representation xmlRep = cr.get(MediaType.TEXT_XML);
+        HashSet<String> comparisonsFromXml = getComparisonsFromRepresentation(new XStream(), xmlRep);
+        assertNotNull(comparisonsFromXml);
+        CollectionUtils.isEqualCollection(comparisons, comparisonsFromXml);
+
+        Representation jsonRep = cr.get(MediaType.APPLICATION_JSON);
+        HashSet<String> comparisonsFromJson = getComparisonsFromRepresentation(new XStream(new JettisonMappedXmlDriver()), jsonRep);
+        assertNotNull(comparisonsFromJson);
+        CollectionUtils.isEqualCollection(comparisons, comparisonsFromJson);
+
+        Representation htmlRep = cr.get(MediaType.TEXT_HTML);
+        String html = streamToString(htmlRep.getStream());
+        assertNotNull(html);
+        assertFalse(html.isEmpty());
+    }
+
+    private HashSet<String> getComparisonsFromRepresentation(XStream xstream, Representation representation) throws IOException {
+        xstream.alias("comparisons", Set.class);
+        xstream.registerConverter(new StringCollectionConverter() {
+
+            @Override
+            protected String getNodeName() {
+                return "comparison";
+            }
+
+            @Override
+            protected Collection getNewT() {
+                return new HashSet();
+            }
+
+            @Override
+            public boolean canConvert(Class type) {
+                return HashSet.class.isAssignableFrom(type);
+            }
+        });
+        return (HashSet<String>) xstream.fromXML(representation.getStream());
+    }
+
+    private String streamToString(InputStream inStream) {
+        return new Scanner(inStream).useDelimiter("\\A").next();
     }
 
     /**

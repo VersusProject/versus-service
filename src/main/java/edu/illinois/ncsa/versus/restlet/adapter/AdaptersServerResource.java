@@ -12,7 +12,11 @@ import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.Get;
 import org.restlet.resource.ServerResource;
 
+import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.io.json.JettisonMappedXmlDriver;
+
 import edu.illinois.ncsa.versus.restlet.ServerApplication;
+import edu.illinois.ncsa.versus.restlet.StringCollectionConverter;
 
 /**
  * Multiple adapters.
@@ -29,6 +33,43 @@ public class AdaptersServerResource extends ServerResource {
     @Get
     public HashSet<String> retrieve() {
         return ((ServerApplication) getApplication()).getAdaptersId();
+    }
+
+    @Get("xml")
+    public String asXml() {
+        XStream xstream = new XStream();
+        return fillAndConvert(xstream);
+    }
+
+    @Get("json")
+    public String asJson() {
+        XStream xstream = new XStream(new JettisonMappedXmlDriver());
+        xstream.setMode(XStream.NO_REFERENCES);
+        return fillAndConvert(xstream);
+    }
+
+    private String fillAndConvert(XStream xstream) {
+        xstream.alias("adapters", Set.class);
+        xstream.registerConverter(
+                new StringCollectionConverter<HashSet<String>>() {
+
+                    @Override
+                    protected String getNodeName() {
+                        return "adapter";
+                    }
+
+                    @Override
+                    protected HashSet<String> getNewT() {
+                        return new HashSet<String>();
+                    }
+
+                    @Override
+                    public boolean canConvert(Class type) {
+                        return HashSet.class.isAssignableFrom(type);
+                    }
+                });
+
+        return xstream.toXML(retrieve());
     }
 
     @Get("html")

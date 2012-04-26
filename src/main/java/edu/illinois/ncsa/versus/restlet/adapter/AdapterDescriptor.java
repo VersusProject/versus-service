@@ -16,6 +16,7 @@ import java.util.Collections;
 import java.util.List;
 
 import com.thoughtworks.xstream.annotations.XStreamAlias;
+import com.thoughtworks.xstream.annotations.XStreamConverter;
 
 import edu.illinois.ncsa.versus.adapter.Adapter;
 
@@ -30,14 +31,15 @@ public class AdapterDescriptor implements Serializable {
     private String name;
 
     @XStreamAlias("id")
-    private String type;
+    private String id;
 
     @XStreamAlias("supportedTypes")
+    @XStreamConverter(SupportedMediaConverter.class)
     private List<String> supportedMedia;
 
     public AdapterDescriptor(Adapter adapter) {
         name = adapter.getName();
-        type = adapter.getClass().getName();
+        id = adapter.getClass().getName();
         supportedMedia = adapter.getSupportedMediaTypes();
     }
 
@@ -45,8 +47,8 @@ public class AdapterDescriptor implements Serializable {
         return name;
     }
 
-    public String getType() {
-        return type;
+    public String getId() {
+        return id;
     }
 
     public List<String> getSupportedMediaTypes() {
@@ -62,13 +64,13 @@ public class AdapterDescriptor implements Serializable {
             return false;
         }
         AdapterDescriptor other = (AdapterDescriptor) anObject;
-        return type.equals(other.type);
+        return id.equals(other.id);
     }
 
     @Override
     public int hashCode() {
         int hash = 5;
-        hash = 79 * hash + (this.type != null ? this.type.hashCode() : 0);
+        hash = 79 * hash + (this.id != null ? this.id.hashCode() : 0);
         return hash;
     }
 }

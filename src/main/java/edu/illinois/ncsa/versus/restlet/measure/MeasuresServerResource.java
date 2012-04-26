@@ -3,7 +3,9 @@
  */
 package edu.illinois.ncsa.versus.restlet.measure;
 
+import java.util.Collection;
 import java.util.HashSet;
+import java.util.Set;
 
 import org.restlet.data.MediaType;
 import org.restlet.representation.Representation;
@@ -11,7 +13,10 @@ import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.Get;
 import org.restlet.resource.ServerResource;
 
+import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.io.json.JettisonMappedXmlDriver;
 import edu.illinois.ncsa.versus.restlet.ServerApplication;
+import edu.illinois.ncsa.versus.restlet.StringCollectionConverter;
 
 /**
  * Multiple measures.
@@ -30,6 +35,42 @@ public class MeasuresServerResource extends ServerResource {
         return ((ServerApplication) getApplication()).getMeasuresId();
     }
 
+    @Get("xml")
+    public String asXml() {
+        XStream xstream = new XStream();
+        return fillAndConvert(xstream);
+    }
+
+    @Get("json")
+    public String asJson() {
+        XStream xstream = new XStream(new JettisonMappedXmlDriver());
+        xstream.setMode(XStream.NO_REFERENCES);
+        return fillAndConvert(xstream);
+    }
+
+    private String fillAndConvert(XStream xstream) {
+        xstream.alias("measures", Set.class);
+        xstream.registerConverter(new StringCollectionConverter<HashSet<String>>() {
+
+            @Override
+            protected String getNodeName() {
+                return "measure";
+            }
+
+            @Override
+            protected HashSet<String> getNewT() {
+                return new HashSet<String>();
+            }
+
+            @Override
+            public boolean canConvert(Class type) {
+                return HashSet.class.isAssignableFrom(type);
+            }
+        });
+
+        return xstream.toXML(retrieve());
+    }
+    
     @Get("html")
     public Representation asHtml() {
         ServerApplication server = (ServerApplication) getApplication();

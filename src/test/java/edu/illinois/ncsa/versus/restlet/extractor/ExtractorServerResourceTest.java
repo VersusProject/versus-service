@@ -9,7 +9,7 @@
  * any other characteristic. We would appreciate acknowledgement if the
  * software is used.
  */
-package edu.illinois.ncsa.versus.restlet.adapter;
+package edu.illinois.ncsa.versus.restlet.extractor;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -32,20 +32,20 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import edu.illinois.ncsa.versus.adapter.impl.DummyAdapter;
+import edu.illinois.ncsa.versus.extract.impl.DummyExtractor;
+import edu.illinois.ncsa.versus.registry.CompareRegistry;
 import edu.illinois.ncsa.versus.restlet.ServerApplication;
 
 /**
  *
  * @author antoinev
  */
-public class AdapterServerResourceTest {
-
-    private static Component component;
+public class ExtractorServerResourceTest {
+        private static Component component;
 
     private static String url;
 
-    public AdapterServerResourceTest() {
+    public ExtractorServerResourceTest() {
     }
 
     @BeforeClass
@@ -76,31 +76,31 @@ public class AdapterServerResourceTest {
 
     @Test
     public void test() throws IOException {
-        AdapterDescriptor expected = new AdapterDescriptor((new DummyAdapter()));
+        ExtractorDescriptor expected = new ExtractorDescriptor(new DummyExtractor(), new CompareRegistry());
 
-        ClientResource clientResource = new ClientResource(url + AdapterServerResource.URL + DummyAdapter.class.getName());
-        AdapterDescriptor adapter = clientResource.get(AdapterDescriptor.class);
-        assertNotNull(adapter);
-        assertEquals(expected, adapter);
+        ClientResource clientResource = new ClientResource(url + ExtractorServerResource.URL + DummyExtractor.class.getName());
+        ExtractorDescriptor extractor = clientResource.get(ExtractorDescriptor.class);
+        assertNotNull(extractor);
+        assertEquals(expected, extractor);
 
-        AdaptersClient adaptersClient = new AdaptersClient(url);
-        AdapterDescriptor adapter2 = adaptersClient.getAdapterDescriptor(DummyAdapter.class.getName());
-        assertNotNull(adapter2);
-        assertEquals(expected, adapter2);
+        ExtractorsClient extractorsClient = new ExtractorsClient(url);
+        ExtractorDescriptor extractor2 = extractorsClient.getExtractorDescriptor(DummyExtractor.class.getName());
+        assertNotNull(extractor2);
+        assertEquals(expected, extractor2);
 
         Representation xmlRepresentation = clientResource.get(MediaType.TEXT_XML);
         XStream xstream = new XStream();
-        xstream.processAnnotations(AdapterDescriptor.class);
-        AdapterDescriptor adapterFromXML = (AdapterDescriptor) xstream.fromXML(xmlRepresentation.getStream());
-        assertNotNull(adapterFromXML);
-        assertEquals(expected, adapterFromXML);
+        xstream.processAnnotations(ExtractorDescriptor.class);
+        ExtractorDescriptor extractorFromXML = (ExtractorDescriptor) xstream.fromXML(xmlRepresentation.getStream());
+        assertNotNull(extractorFromXML);
+        assertEquals(expected, extractorFromXML);
 
         Representation jsonRepresentation = clientResource.get(MediaType.APPLICATION_JSON);
         xstream = new XStream(new JettisonMappedXmlDriver());
-        xstream.processAnnotations(AdapterDescriptor.class);
-        AdapterDescriptor adapterFromJSON = (AdapterDescriptor) xstream.fromXML(jsonRepresentation.getStream());
-        assertNotNull(adapterFromJSON);
-        assertEquals(expected, adapterFromJSON);
+        xstream.processAnnotations(ExtractorDescriptor.class);
+        ExtractorDescriptor extractorFromJSON = (ExtractorDescriptor) xstream.fromXML(jsonRepresentation.getStream());
+        assertNotNull(extractorFromJSON);
+        assertEquals(expected, extractorFromJSON);
 
         Representation htmlRepresentation = clientResource.get(MediaType.TEXT_HTML);
         String html = streamToString(htmlRepresentation.getStream());

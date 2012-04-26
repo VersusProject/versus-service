@@ -6,6 +6,9 @@ import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.Get;
 import org.restlet.resource.ServerResource;
 
+import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.io.json.JettisonMappedXmlDriver;
+
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 
@@ -44,7 +47,7 @@ public class ComparisonServerResource extends ServerResource {
             if (status != ComparisonStatus.DONE
                     && status != ComparisonStatus.FAILED
                     && status != ComparisonStatus.ABORTED) {
-                ServerApplication server = (ServerApplication)getApplication();
+                ServerApplication server = (ServerApplication) getApplication();
                 Slave slave = server.getSlavesManager().getSlave(comparison.getSlave());
                 comparison = slave.getComparison(comparison);
                 comparisonService.updateValue(comparison.getId(), comparison.getValue());
@@ -52,6 +55,24 @@ public class ComparisonServerResource extends ServerResource {
             }
         }
         return comparison;
+    }
+
+    @Get("xml")
+    public String asXml() {
+        XStream xstream = new XStream();
+        return fillAndConvert(xstream);
+    }
+
+    @Get("json")
+    public String asJson() {
+        XStream xstream = new XStream(new JettisonMappedXmlDriver());
+        xstream.setMode(XStream.NO_REFERENCES);
+        return fillAndConvert(xstream);
+    }
+
+    private String fillAndConvert(XStream xstream) {
+        xstream.processAnnotations(Comparison.class);
+        return xstream.toXML(retrieve());
     }
 
     @Get("html")

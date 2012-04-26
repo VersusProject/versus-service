@@ -16,6 +16,9 @@ import java.util.Map;
 import org.restlet.resource.Get;
 import org.restlet.resource.ServerResource;
 
+import com.thoughtworks.xstream.XStream;
+import com.thoughtworks.xstream.io.json.JettisonMappedXmlDriver;
+
 import edu.illinois.ncsa.versus.registry.CompareRegistry;
 import edu.illinois.ncsa.versus.restlet.ServerApplication;
 import edu.illinois.ncsa.versus.restlet.Slave;
@@ -41,7 +44,7 @@ public class ComparisonSupportServerResource extends ServerResource {
             + '{' + MEASURE_PARAMETER + '}';
 
     @Get
-    public boolean retrieve() {
+    public Boolean retrieve() {
         Map<String, Object> attributes = getRequest().getAttributes();
         final String adapterId = (String) attributes.get(ADAPTER_PARAMETER);
         final String extractorId = (String) attributes.get(EXTRACTOR_PARAMETER);
@@ -63,5 +66,24 @@ public class ComparisonSupportServerResource extends ServerResource {
                                 measureId);
                     }
                 });
+    }
+
+    @Get("xml")
+    public String asXml() {
+        XStream xstream = new XStream();
+        return fillAndConvert(xstream);
+    }
+
+    @Get("json")
+    public String asJson() {
+        XStream xstream = new XStream(new JettisonMappedXmlDriver());
+        xstream.setMode(XStream.NO_REFERENCES);
+        return fillAndConvert(xstream);
+    }
+
+    private String fillAndConvert(XStream xstream) {
+        xstream.alias("supported", Boolean.class);
+        xstream.alias("supported", boolean.class);
+        return xstream.toXML(retrieve());
     }
 }

@@ -9,12 +9,16 @@
  * any other characteristic. We would appreciate acknowledgement if the
  * software is used.
  */
-package edu.illinois.ncsa.versus.restlet.adapter;
+package edu.illinois.ncsa.versus.restlet.extractor;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Collection;
+import java.util.HashSet;
 import java.util.Scanner;
+import java.util.Set;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.mina.util.AvailablePortFinder;
 import org.restlet.Component;
 import org.restlet.data.MediaType;
@@ -32,28 +36,28 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
-import edu.illinois.ncsa.versus.adapter.impl.DummyAdapter;
 import edu.illinois.ncsa.versus.restlet.ServerApplication;
+import edu.illinois.ncsa.versus.restlet.StringCollectionConverter;
 
 /**
  *
  * @author antoinev
  */
-public class AdapterServerResourceTest {
+public class ExtractorsServerResourceTest {
 
     private static Component component;
 
     private static String url;
 
-    public AdapterServerResourceTest() {
+    public ExtractorsServerResourceTest() {
     }
 
     @BeforeClass
     public static void setUpClass() throws Exception {
         int port = AvailablePortFinder.getNextAvailable(8080);
-
         url = "http://127.0.0.1:" + port + "/versus";
 
+        // Create a new Component.  
         component = new Component();
         component.getServers().add(Protocol.HTTP, port);
         component.getDefaultHost().attach("/versus",
@@ -67,45 +71,61 @@ public class AdapterServerResourceTest {
     }
 
     @Before
-    public void setUp() throws Exception {
+    public void setUp() {
     }
 
     @After
-    public void tearDown() throws Exception {
+    public void tearDown() {
     }
 
     @Test
     public void test() throws IOException {
-        AdapterDescriptor expected = new AdapterDescriptor((new DummyAdapter()));
+        ExtractorsClient extractorsClient = new ExtractorsClient(url);
+        HashSet<String> extractors = extractorsClient.getExtractors();
+        assertNotNull(extractors);
+        assertFalse(extractors.isEmpty());
 
-        ClientResource clientResource = new ClientResource(url + AdapterServerResource.URL + DummyAdapter.class.getName());
-        AdapterDescriptor adapter = clientResource.get(AdapterDescriptor.class);
-        assertNotNull(adapter);
-        assertEquals(expected, adapter);
-
-        AdaptersClient adaptersClient = new AdaptersClient(url);
-        AdapterDescriptor adapter2 = adaptersClient.getAdapterDescriptor(DummyAdapter.class.getName());
-        assertNotNull(adapter2);
-        assertEquals(expected, adapter2);
+        ClientResource clientResource = new ClientResource(url + ExtractorsServerResource.URL);
 
         Representation xmlRepresentation = clientResource.get(MediaType.TEXT_XML);
         XStream xstream = new XStream();
-        xstream.processAnnotations(AdapterDescriptor.class);
-        AdapterDescriptor adapterFromXML = (AdapterDescriptor) xstream.fromXML(xmlRepresentation.getStream());
-        assertNotNull(adapterFromXML);
-        assertEquals(expected, adapterFromXML);
+        HashSet<String> extractorsFromXML = getExtractorsFromRepresentation(xstream, xmlRepresentation);
+        assertNotNull(extractorsFromXML);
+        assertTrue(CollectionUtils.isEqualCollection(extractors, extractorsFromXML));
+
 
         Representation jsonRepresentation = clientResource.get(MediaType.APPLICATION_JSON);
-        xstream = new XStream(new JettisonMappedXmlDriver());
-        xstream.processAnnotations(AdapterDescriptor.class);
-        AdapterDescriptor adapterFromJSON = (AdapterDescriptor) xstream.fromXML(jsonRepresentation.getStream());
-        assertNotNull(adapterFromJSON);
-        assertEquals(expected, adapterFromJSON);
+        XStream jsonXstream = new XStream(new JettisonMappedXmlDriver());
+        HashSet<String> extractorsFromJSON = getExtractorsFromRepresentation(jsonXstream, jsonRepresentation);
+        assertNotNull(extractorsFromJSON);
+        assertTrue(CollectionUtils.isEqualCollection(extractors, extractorsFromJSON));
 
         Representation htmlRepresentation = clientResource.get(MediaType.TEXT_HTML);
         String html = streamToString(htmlRepresentation.getStream());
         assertNotNull(html);
         assertFalse(html.isEmpty());
+    }
+
+    private HashSet<String> getExtractorsFromRepresentation(XStream xstream, Representation representation) throws IOException {
+        xstream.alias("extractors", Set.class);
+        xstream.registerConverter(new StringCollectionConverter() {
+
+            @Override
+            protected String getNodeName() {
+                return "extractor";
+            }
+
+            @Override
+            protected Collection getNewT() {
+                return new HashSet();
+            }
+
+            @Override
+            public boolean canConvert(Class type) {
+                return HashSet.class.isAssignableFrom(type);
+            }
+        });
+        return (HashSet<String>) xstream.fromXML(representation.getStream());
     }
 
     private String streamToString(InputStream inStream) {
