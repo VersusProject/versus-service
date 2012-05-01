@@ -38,6 +38,8 @@ public class RepositoryModule extends AbstractModule {
 					Singleton.class);
 			// distribution
 			bind(DistributionService.class).to(DistributionServiceImpl.class).in(Singleton.class);
+			//decision support
+			bind(DecisionSupportService.class).to(DecisionSupportServiceImpl.class).in(Singleton.class);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

@@ -13,7 +13,6 @@ import java.util.logging.Level;
 
 import org.restlet.data.Form;
 import org.restlet.data.MediaType;
-import org.restlet.data.Status;
 import org.restlet.representation.Representation;
 import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.Get;
@@ -21,7 +20,6 @@ import org.restlet.resource.Post;
 import org.restlet.resource.ServerResource;
 
 import com.google.inject.Guice;
-import com.google.inject.Inject;
 import com.google.inject.Injector;
 
 import edu.illinois.ncsa.versus.restlet.Distribution.DistributionStatus;
@@ -64,7 +62,7 @@ public class DistributionsServerResource extends ServerResource {
 	public Representation submit(Representation entity) {
 					
 		// Guice storage
-		Injector injector = Guice.createInjector(new RepositoryModule());
+		Injector injector                           = Guice.createInjector(new RepositoryModule());
 		DistributionServiceImpl distributionService = injector.getInstance(DistributionServiceImpl.class);
 		
 		Distribution distribution = new Distribution();
@@ -94,8 +92,7 @@ public class DistributionsServerResource extends ServerResource {
 		String extractor                        = distribution.getExtractorId();
 		String measure                          = distribution.getMeasureId();
 		List<String> comparisonIds              = new ArrayList<String>();
-		ComparisonsServerResource a = new ComparisonsServerResource(); 
-
+		ComparisonsServerResource a             = new ComparisonsServerResource(); 
 
 		while( fileUrls.size() > 0){			
 			for( int j=0; j<fileUrls.size(); j++){	
@@ -112,7 +109,6 @@ public class DistributionsServerResource extends ServerResource {
 						} catch (IOException e) {
 							getLogger().log(Level.SEVERE, "Error creating local job", e);
 						}
-						
 					} 
 					comparisonIds.add(id);
 				}

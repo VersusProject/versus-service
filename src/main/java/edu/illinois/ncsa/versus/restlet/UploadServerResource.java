@@ -3,8 +3,12 @@
  */
 package edu.illinois.ncsa.versus.restlet;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.Iterator;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
@@ -32,12 +36,15 @@ import edu.illinois.ncsa.versus.store.RepositoryModule;
  */
 public class UploadServerResource extends ServerResource {
 
+	private static Logger logger = Logger
+			.getLogger("edu.illinois.ncsa.versus.restlet.uploadServerResource");
+	
 	@Get("html")
 	public Representation getPage() {
 
 		String text = "<form action='' enctype='multipart/form-data' method='post'>"
 				+ "<input type='file' name='fileToUpload' size='40'>"
-				+ "<input type='submit' value='Send'>" + "</form>";
+				+ "<input type='submit' name='submit' value='Send'>" + "</form>";
 		return new StringRepresentation(text, MediaType.TEXT_HTML);
 
 	}
@@ -84,7 +91,14 @@ public class UploadServerResource extends ServerResource {
 						ComparisonServiceImpl comparisonService = injector
 								.getInstance(ComparisonServiceImpl.class);
 						String filename = fi.getName();
-						id = comparisonService.addFile(fi.getInputStream(), filename);
+						
+						try{
+							InputStream in = fi.getInputStream();
+							id             = comparisonService.addFile(in, filename);
+						}
+						catch(IOException e){
+							logger.log(Level.SEVERE, "Error Uploading File to server", e);
+						}
 					}
 				}
 
@@ -94,10 +108,12 @@ public class UploadServerResource extends ServerResource {
 					// Create a new representation based on disk file.
 					// The content is arbitrarily sent as plain text.
 					rep = new StringRepresentation(id, MediaType.TEXT_PLAIN);
+					logger.log(Level.INFO, "File uploaded "+id);
 				} else {
 					// Some problem occurs, sent back a simple line of text.
 					rep = new StringRepresentation("File not uploaded",
 							MediaType.TEXT_PLAIN);
+					logger.log(Level.SEVERE, "File not uploaded");
 				}
 			}
 		} else {
