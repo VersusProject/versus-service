@@ -4,6 +4,7 @@
 package edu.illinois.ncsa.versus.restlet;
 
 import java.io.IOException;
+import java.util.Collection;
 import java.util.logging.Level;
 
 import org.json.JSONException;
@@ -22,6 +23,7 @@ import org.w3c.dom.Element;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 
+import edu.illinois.ncsa.versus.store.DistributionService;
 import edu.illinois.ncsa.versus.store.DistributionServiceImpl;
 import edu.illinois.ncsa.versus.store.RepositoryModule;
 
@@ -58,6 +60,8 @@ public class DistributionServerResource extends ServerResource {
 			jsonObject.put("standardDeviation",distribution.getDeviation() );	
 			jsonObject.put("status", distribution.getStatus() );
 			
+			//TODO: calculate statistics..?
+			
 			String[] data = distribution.getDataset();
 			for(int i=0; i<data.length; i++){
 				jsonObject.put("file "+i, data[i]);
@@ -71,6 +75,42 @@ public class DistributionServerResource extends ServerResource {
 			return new StringRepresentation("Error creating json",	MediaType.TEXT_HTML);
 		}
 	}
+	
+//	@Get("html")
+//	public Representation asHTML() {
+//			
+//		String id                                   = (String) getRequest().getAttributes().get("id");
+//		Injector injector                           = Guice.createInjector(new RepositoryModule());
+//		DistributionServiceImpl distributionService = injector.getInstance(DistributionServiceImpl.class);
+//		Distribution distribution                   = distributionService.getDistribution(id);
+//
+//		if (distribution != null) {
+//			
+//			String status;
+//			if (distribution.getStatus() != null) {
+//				status = distribution.getStatus().name();
+//			} else {
+//				status = "N/A";
+//			}
+//			
+//			
+//			distribution.calculateStatistics();
+//			
+//			String content = new String("<h3>Distribution</h3>"	+ "<ul>");
+//			content += "<li>ID:" + id + "</li>";
+//			content += "<li>Status:" + status + "</li>";
+//			content += "<li>Mean:" + distribution.getMean() + "</li>";
+//			content += "<li>Sigma:" + distribution.getDeviation() + "</li>";
+//			content += "</ul>";
+//			Representation representation = new StringRepresentation(content, MediaType.TEXT_HTML);
+//			return representation;
+//		}
+//		else{
+//			Representation representation = new StringRepresentation("No distributions", MediaType.TEXT_HTML);
+//			return representation;
+//		}
+//	}
+	
 	
 	@Get("xml")
 	public Representation asXML() {		

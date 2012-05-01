@@ -107,6 +107,9 @@ public class ServerApplication extends Application {
 		router.attach("/distributions",DistributionsServerResource.class);
 		router.attach("/distributions/{id}",DistributionServerResource.class);
 		
+		router.attach("/decisionSupport",DecisionSupportsServerResource.class);
+		router.attach("/decisionSupport/{id}",DecisionSupportServerResource.class);
+		
 		router.attachDefault(VersusServerResource.class);
 		
 		return router;
