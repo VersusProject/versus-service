@@ -46,14 +46,16 @@ public class DiskFileProcessor implements FileProcessor {
 	public String addFile(InputStream inputStream, String filename) {
 		try {
 			File file;
+			File ff = new File(directory);
+			
 			if (filename == null) {
-				file = File.createTempFile("versus", ".tmp", new File(directory));
+				file = File.createTempFile("versus", ".tmp", ff);
 			} else {
 				int idx = filename.lastIndexOf(".");
 				if (idx != -1) {
-					file = File.createTempFile(filename.substring(0, idx), filename.substring(idx), new File(directory));
+					file = File.createTempFile(filename.substring(0, idx), filename.substring(idx), ff);
 				} else {
-					file = File.createTempFile(filename, ".tmp", new File(directory));
+					file = File.createTempFile(filename, ".tmp", ff);
 				}
 			}
 			OutputStream out = new FileOutputStream(file);

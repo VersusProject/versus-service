@@ -235,5 +235,15 @@
             <version>3.2.1</version>
             <scope>test</scope>
         </dependency>
+<!--		<dependency>
+			<groupId>edu-illinois.ncsa.isda</groupId>
+			<artifactId>versus-image-fiji</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>
+		<dependency>
+			<groupId>edu-illinois.ncsa.isda</groupId>
+			<artifactId>versus-image-opencv</artifactId>
+			<version>0.0.1-SNAPSHOT</version>
+		</dependency>-->
     </dependencies>
 </project>

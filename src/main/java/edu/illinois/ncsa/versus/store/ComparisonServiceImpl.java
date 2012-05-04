@@ -2,6 +2,7 @@ package edu.illinois.ncsa.versus.store;
 
 import java.io.InputStream;
 import java.util.Collection;
+import java.util.Iterator;
 
 import com.google.inject.Inject;
 
@@ -63,5 +64,27 @@ public class ComparisonServiceImpl implements ComparisonService {
 
 	public void setStatus(String id, ComparisonStatus status) {
 		transactionLog.setStatus(id, status);
+	}
+
+	@Override
+	public String findComparison(String file1, String file2, String adapter,
+			String extractor, String measure) {
+
+		String cid = null;
+		Collection<Comparison> comparisons = transactionLog.listAll();
+		
+		if(comparisons.size()==0){
+			return cid;
+		}
+		Iterator<Comparison> itr = comparisons.iterator(); 
+		while(itr.hasNext()){
+			Comparison c = itr.next();
+			if( adapter == c.getAdapterId() && extractor == c.getExtractorId() && measure == c.getMeasureId()
+					&& file1 == c.getFirstDataset() && file2 == c.getSecondDataset()){
+				cid = c.getId();
+			}
+		}	
+		
+		return cid;
 	}
 }

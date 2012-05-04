@@ -31,6 +31,25 @@ public interface ComparisonService {
 	Comparison getComparison(String id);
 
 	/**
+	 * Get a comparison by the relevant parameters.
+	 * 
+	 * @param file1
+	 * 				filename
+	 * @param file2
+	 * 				filename
+	 * @param adapter	
+	 * 				name of adapter
+	 * @param extractor	
+	 * 				name of extractor
+	 *@param measure	
+	 *				name of measure
+	 *
+	 * @return comparison that matches the input parameters
+	 */
+	String findComparison(String file1, String file2, String adapter, String extractor, String measure);
+	
+	
+	/**
 	 * Retrieve all known comparisons.
 	 * 
 	 * @return a collection of all known comparisons.
