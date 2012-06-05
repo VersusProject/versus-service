@@ -117,6 +117,7 @@ public class ServerApplication extends Application {
 
     @Override
     public Restlet createInboundRoot() {
+		
         Router router = new Router(getContext());
         router.attach(AdaptersServerResource.PATH_TEMPLATE, AdaptersServerResource.class);
         router.attach(AdapterServerResource.PATH_TEMPLATE, AdapterServerResource.class);
@@ -135,9 +136,21 @@ public class ServerApplication extends Application {
         router.attach(ComparisonServerResource.PATH_TEMPLATE, ComparisonServerResource.class);
         router.attach(ComparisonSupportServerResource.PATH_TEMPLATE, ComparisonSupportServerResource.class);
 
+		
+		
+		
+		
         router.attach("/files/upload", UploadServerResource.class);
         router.attach("/files/{id}", FileServerResource.class);
+		
+		router.attach("/distributions",DistributionsServerResource.class);
+		router.attach("/distributions/{id}",DistributionServerResource.class);
+		
+		router.attach("/decisionSupport",DecisionSupportsServerResource.class);
+		router.attach("/decisionSupport/{id}",DecisionSupportServerResource.class);
+		
         router.attachDefault(VersusServerResource.class);
+		
         return router;
     }
 

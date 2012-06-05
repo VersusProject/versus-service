@@ -3,11 +3,9 @@ package edu.illinois.ncsa.versus.restlet.comparison;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.logging.Level;
 
 import org.apache.commons.fileupload.FileItem;
@@ -30,16 +28,8 @@ import com.google.inject.Injector;
 
 import edu.illinois.ncsa.versus.core.StringCollectionConverter;
 import edu.illinois.ncsa.versus.core.comparison.Comparison;
-import edu.illinois.ncsa.versus.core.comparison.Comparison.ComparisonStatus;
-import edu.illinois.ncsa.versus.engine.impl.ComparisonStatusHandler;
-import edu.illinois.ncsa.versus.engine.impl.ExecutionEngine;
-import edu.illinois.ncsa.versus.engine.impl.PairwiseComparison;
-import edu.illinois.ncsa.versus.registry.CompareRegistry;
 import edu.illinois.ncsa.versus.restlet.NoSlaveAvailableException;
-import edu.illinois.ncsa.versus.restlet.RankSlaves;
 import edu.illinois.ncsa.versus.restlet.ServerApplication;
-import edu.illinois.ncsa.versus.restlet.Slave;
-import edu.illinois.ncsa.versus.restlet.SlavesManager;
 import edu.illinois.ncsa.versus.store.ComparisonServiceImpl;
 import edu.illinois.ncsa.versus.store.RepositoryModule;
 
@@ -244,114 +234,7 @@ public class ComparisonsServerResource extends ServerResource {
     private Comparison submitComparison(Comparison comparison, InputStream dataset1Stream, InputStream dataset2Stream)
             throws IOException, NoSlaveAvailableException {
         ServerApplication server = (ServerApplication) getApplication();
-        CompareRegistry registry = server.getRegistry();
-        if (registry.supportComparison(comparison.getAdapterId(),
-                comparison.getExtractorId(), comparison.getMeasureId())) {
-            PairwiseComparison pairwiseComparison = new PairwiseComparison();
-            pairwiseComparison.setId(comparison.getId());
-            pairwiseComparison.setAdapterId(comparison.getAdapterId());
-            pairwiseComparison.setExtractorId(comparison.getExtractorId());
-            pairwiseComparison.setMeasureId(comparison.getMeasureId());
-            pairwiseComparison.setFirstDataset(dataset1Stream);
-            pairwiseComparison.setSecondDataset(dataset2Stream);
-            submit(pairwiseComparison);
-        } else {
-            comparison = querySlaves(comparison, dataset1Stream, dataset2Stream);
-            if (comparison == null) {
-                throw new NoSlaveAvailableException();
-            }
-        }
-
-        // Guice storage
-        Injector injector = Guice.createInjector(new RepositoryModule());
-        ComparisonServiceImpl comparisonService =
-                injector.getInstance(ComparisonServiceImpl.class);
-        comparisonService.addComparison(comparison);
-
-        return comparison;
-    }
-
-    /**
-     * Find which slaves support requested methods. Forward to the first slave
-     * in the list.
-     *
-     * @param entity
-     * @param comparison
-     * @return
-     */
-    private Comparison querySlaves(final Comparison comparison, InputStream dataset1Stream, InputStream dataset2Stream) throws IOException {
-        // TODO: each slave should give a score telling how it is willing to
-        // run the comparison
-        Set<Slave> supportingSlavesSet =
-                ((ServerApplication) getApplication()).getSlavesManager().
-                getSlaves(new SlavesManager.SlaveQuery<Boolean>() {
-
-            @Override
-            public Boolean executeQuery(Slave slave) {
-                return slave.supportComparison(comparison);
-            }
-        });
-
-        List<Slave> supportingSlaves = new ArrayList<Slave>(supportingSlavesSet);
-        // rank slaves
-        supportingSlaves = RankSlaves.rank(supportingSlaves);
-        // forward to first slave
-        if (supportingSlaves.isEmpty()) {
-            return null;
-        }
-        Slave slave = supportingSlaves.get(0);
-        getLogger().log(Level.INFO, "Forwarding comparison request to {0}",
-                slave);
-        return slave.submit(comparison, dataset1Stream, dataset2Stream);
-    }
-
-    /**
-     * Submit to execution engine.
-     *
-     * @param comparison
-     */
-    private void submit(final PairwiseComparison comparison) {
-
-        ExecutionEngine engine = ((ServerApplication) getApplication()).getEngine();
-        final ComparisonServiceImpl comparisonService =
-                ServerApplication.getInjector().getInstance(ComparisonServiceImpl.class);
-
-        engine.submit(comparison, new ComparisonStatusHandler() {
-
-            @Override
-            public void onDone(double value) {
-                getLogger().log(
-                        Level.INFO, "Comparison {0} done. Result is: {1}",
-                        new Object[]{comparison.getId(), value});
-                comparisonService.setStatus(comparison.getId(),
-                        ComparisonStatus.DONE);
-                comparisonService.updateValue(comparison.getId(), String.valueOf(value));
-            }
-
-            @Override
-            public void onStarted() {
-                getLogger().log(Level.INFO, "Comparison {0} started.",
-                        comparison.getId());
-                comparisonService.setStatus(comparison.getId(),
-                        ComparisonStatus.STARTED);
-            }
-
-            @Override
-            public void onFailed(String msg, Throwable e) {
-                getLogger().log(Level.INFO,
-                        "Comparison " + comparison.getId() + " failed. " + msg, e);
-                comparisonService.setStatus(comparison.getId(),
-                        ComparisonStatus.FAILED);
-
-            }
-
-            @Override
-            public void onAborted(String msg) {
-                getLogger().log(Level.INFO, "Comparison {0} aborted. {1}",
-                        new Object[]{comparison.getId(), msg});
-                comparisonService.setStatus(comparison.getId(),
-                        ComparisonStatus.ABORTED);
-            }
-        });
+        ComparisonSubmitter submitter = new ComparisonSubmitter(server, comparison, dataset1Stream, dataset2Stream);
+        return submitter.submit();
     }
 }

@@ -38,7 +38,13 @@ public class VersusServerResource extends ServerResource {
                 append("'>Comparisons</a></li>");
         content.append("<li><a href='").
                 append(baseUrl).append(SlavesServerResource.URL).
-                append("'>Slaves</a></li></ul>");
+                append("'>Slaves</a></li>");
+        content.append("<li><a href='").
+                append(baseUrl).append("/distributions").
+                append("'>Distributions</a></li>");
+        content.append("<li><a href='").
+                append(baseUrl).append("/decisionSupport").
+                append("'>DecisionSupport</a></li></ul>");
         Representation representation = new StringRepresentation(content,
                 MediaType.TEXT_HTML);
         return representation;
