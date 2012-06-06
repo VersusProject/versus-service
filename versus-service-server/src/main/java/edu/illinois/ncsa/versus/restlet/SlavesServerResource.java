@@ -106,12 +106,11 @@ public class SlavesServerResource extends ServerResource {
      */
     @Post
     public void submit(Representation entity) {
-        getLogger().log(Level.INFO, "Slave registration from {0}",
-                getRequest().getResourceRef().getIdentifier());
         Form form = new Form(entity);
         String url = form.getFirstValue("url");
-        getLogger().log(Level.INFO, "Slave registered: {0}", url);
+        getLogger().log(Level.INFO, "registering slave {0}", url);
         ((ServerApplication) getApplication()).getSlavesManager().addSlave(url);
         setStatus(Status.SUCCESS_CREATED);
+        getLogger().log(Level.INFO, "Slave registered: {0}", url);
     }
 }

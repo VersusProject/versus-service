@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
@@ -36,7 +37,7 @@ public class SlavesManager {
 
         T executeQuery(Slave slave);
     }
-    private final HashMap<String, Slave> slaves = new HashMap<String, Slave>();
+    private final ConcurrentHashMap<String, Slave> slaves = new ConcurrentHashMap<String, Slave>();
 
     private static final int NUM_CORES =
             Runtime.getRuntime().availableProcessors();
@@ -51,9 +52,7 @@ public class SlavesManager {
     }
 
     public void addSlave(String url) {
-        if (!slaves.containsKey(url)) {
-            slaves.put(url, new Slave(url));
-        }
+        slaves.putIfAbsent(url, new Slave(url));
     }
 
     public int getSlavesNumber() {

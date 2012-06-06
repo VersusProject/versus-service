@@ -22,7 +22,7 @@ import edu.illinois.ncsa.versus.core.measure.MeasuresClient;
  */
 public class Slave {
 
-    private String url;
+    private final String url;
 
     public Slave(String hostRef) {
         url = hostRef;

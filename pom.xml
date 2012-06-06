@@ -12,7 +12,7 @@
     <packaging>pom</packaging>
     <name>Versus Service</name>
     <properties>
-        <restletVersion>2.1-RC4</restletVersion>
+        <restletVersion>2.1-RC5</restletVersion>
     </properties>
     <modules>
         <module>versus-service-client</module>

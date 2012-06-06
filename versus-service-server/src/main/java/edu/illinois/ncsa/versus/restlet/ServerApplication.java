@@ -22,6 +22,7 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 
 import edu.illinois.ncsa.versus.adapter.Adapter;
+import edu.illinois.ncsa.versus.core.ClientResourceFactory;
 import edu.illinois.ncsa.versus.core.adapter.AdapterDescriptor;
 import edu.illinois.ncsa.versus.core.extractor.ExtractorDescriptor;
 import edu.illinois.ncsa.versus.core.measure.MeasureDescriptor;
@@ -58,13 +59,13 @@ public class ServerApplication extends Application {
 
     private final SlavesManager slavesManager = new SlavesManager();
 
-    private String masterURL;
+    private final String masterURL;
 
     private final ExecutionEngine engine = new ExecutionEngine();
 
-    private int port;
+    private final int port;
 
-    private String baseUrl;
+    private final String baseUrl;
 
     private static final Injector injector =
             Guice.createInjector(new RepositoryModule());
@@ -86,6 +87,8 @@ public class ServerApplication extends Application {
                 getLogger().log(Level.SEVERE, "Cannot register with master", e);
             }
         }
+        
+        ClientResourceFactory.setRetryDelay(500);
     }
 
     private void registerWithMaster() throws UnknownHostException, SocketException {
