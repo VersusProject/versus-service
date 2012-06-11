@@ -40,6 +40,14 @@ public class Slave {
         return new AdaptersClient(url).getAdapters();
     }
 
+    public String getAdapterHelpSha1(String adapterId) {
+        return new AdaptersClient(url).getAdapterHelpSha1(adapterId);
+    }
+
+    public InputStream getAdapterZippedHelp(String adapterId) throws IOException {
+        return new AdaptersClient(url).getAdapterZippedHelp(adapterId);
+    }
+
     public ExtractorDescriptor getExtractor(String id) {
         return new ExtractorsClient(url).getExtractorDescriptor(id);
     }
@@ -48,12 +56,28 @@ public class Slave {
         return new ExtractorsClient(url).getExtractors();
     }
 
+    public String getExtractorHelpSha1(String extractorId) {
+        return new ExtractorsClient(url).getExtractorHelpSha1(extractorId);
+    }
+
+    public InputStream getExtractorZippedHelp(String extractorId) throws IOException {
+        return new AdaptersClient(url).getAdapterZippedHelp(extractorId);
+    }
+
     public MeasureDescriptor getMeasure(String id) {
         return new MeasuresClient(url).getMeasureDescriptor(id);
     }
 
     public Set<String> getMeasuresId() {
         return new MeasuresClient(url).getMeasures();
+    }
+
+    public String getMeasureHelpSha1(String measureId) {
+        return new MeasuresClient(url).getMeasureHelpSha1(measureId);
+    }
+
+    public InputStream getMeasureZippedHelp(String measureId) throws IOException {
+        return new MeasuresClient(url).getMeasureZippedHelp(measureId);
     }
 
     public Comparison getComparison(Comparison comparison) {
@@ -82,7 +106,7 @@ public class Slave {
     public String toString() {
         return url;
     }
-    
+
     @Override
     public boolean equals(Object obj) {
         if (this == obj) {

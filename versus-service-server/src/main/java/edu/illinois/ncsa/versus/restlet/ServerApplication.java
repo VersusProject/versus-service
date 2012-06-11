@@ -1,5 +1,7 @@
 package edu.illinois.ncsa.versus.restlet;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.net.Inet4Address;
 import java.net.InetAddress;
 import java.net.NetworkInterface;
@@ -11,12 +13,15 @@ import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.restlet.Application;
 import org.restlet.Restlet;
 import org.restlet.data.Form;
 import org.restlet.resource.ClientResource;
 import org.restlet.routing.Router;
+import org.restlet.routing.TemplateRoute;
+import org.restlet.routing.Variable;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -32,6 +37,8 @@ import edu.illinois.ncsa.versus.extract.Extractor;
 import edu.illinois.ncsa.versus.measure.Measure;
 import edu.illinois.ncsa.versus.registry.CompareRegistry;
 import edu.illinois.ncsa.versus.restlet.SlavesManager.SlaveQuery;
+import edu.illinois.ncsa.versus.restlet.adapter.AdapterHelpServerResource;
+import edu.illinois.ncsa.versus.restlet.adapter.AdapterHelpSha1ServerResource;
 import edu.illinois.ncsa.versus.restlet.adapter.AdapterServerResource;
 import edu.illinois.ncsa.versus.restlet.adapter.AdaptersServerResource;
 import edu.illinois.ncsa.versus.restlet.comparison.ComparisonServerResource;
@@ -39,8 +46,12 @@ import edu.illinois.ncsa.versus.restlet.comparison.ComparisonStatusServerResourc
 import edu.illinois.ncsa.versus.restlet.comparison.ComparisonSupportServerResource;
 import edu.illinois.ncsa.versus.restlet.comparison.ComparisonValueServerResource;
 import edu.illinois.ncsa.versus.restlet.comparison.ComparisonsServerResource;
+import edu.illinois.ncsa.versus.restlet.extractor.ExtractorHelpServerResource;
+import edu.illinois.ncsa.versus.restlet.extractor.ExtractorHelpSha1ServerResource;
 import edu.illinois.ncsa.versus.restlet.extractor.ExtractorServerResource;
 import edu.illinois.ncsa.versus.restlet.extractor.ExtractorsServerResource;
+import edu.illinois.ncsa.versus.restlet.measure.MeasureHelpServerResource;
+import edu.illinois.ncsa.versus.restlet.measure.MeasureHelpSha1ServerResource;
 import edu.illinois.ncsa.versus.restlet.measure.MeasureServerResource;
 import edu.illinois.ncsa.versus.restlet.measure.MeasuresServerResource;
 import edu.illinois.ncsa.versus.store.RepositoryModule;
@@ -87,7 +98,7 @@ public class ServerApplication extends Application {
                 getLogger().log(Level.SEVERE, "Cannot register with master", e);
             }
         }
-        
+
         ClientResourceFactory.setRetryDelay(500);
     }
 
@@ -120,14 +131,34 @@ public class ServerApplication extends Application {
 
     @Override
     public Restlet createInboundRoot() {
-		
+
         Router router = new Router(getContext());
         router.attach(AdaptersServerResource.PATH_TEMPLATE, AdaptersServerResource.class);
         router.attach(AdapterServerResource.PATH_TEMPLATE, AdapterServerResource.class);
+        router.attach(AdapterHelpServerResource.PATH_TEMPLATE, AdapterHelpServerResource.class);
+        TemplateRoute adapterHelpRoute = router.attach(AdapterHelpServerResource.PATH_TEMPLATE + '/' + "{file}",
+                AdapterHelpServerResource.class);
+        adapterHelpRoute.getTemplate().getVariables().put(HelpServerResource.FILE_PARAMETER,
+                new Variable(Variable.TYPE_ALL));
+        router.attach(AdapterHelpSha1ServerResource.PATH_TEMPLATE, AdapterHelpSha1ServerResource.class);
+
         router.attach(ExtractorsServerResource.PATH_TEMPLATE, ExtractorsServerResource.class);
         router.attach(ExtractorServerResource.PATH_TEMPLATE, ExtractorServerResource.class);
+        router.attach(ExtractorHelpServerResource.PATH_TEMPLATE, ExtractorHelpServerResource.class);
+        TemplateRoute extractorHelpRoute = router.attach(ExtractorHelpServerResource.PATH_TEMPLATE + '/' + "{file}",
+                ExtractorHelpServerResource.class);
+        extractorHelpRoute.getTemplate().getVariables().put(HelpServerResource.FILE_PARAMETER,
+                new Variable(Variable.TYPE_ALL));
+        router.attach(ExtractorHelpSha1ServerResource.PATH_TEMPLATE, ExtractorHelpSha1ServerResource.class);
+
         router.attach(MeasuresServerResource.PATH_TEMPLATE, MeasuresServerResource.class);
         router.attach(MeasureServerResource.PATH_TEMPLATE, MeasureServerResource.class);
+        router.attach(MeasureHelpServerResource.PATH_TEMPLATE, MeasureHelpServerResource.class);
+        TemplateRoute measureHelpRoute = router.attach(MeasureHelpServerResource.PATH_TEMPLATE + '/' + "{file}",
+                MeasureHelpServerResource.class);
+        measureHelpRoute.getTemplate().getVariables().put(HelpServerResource.FILE_PARAMETER,
+                new Variable(Variable.TYPE_ALL));
+        router.attach(MeasureHelpSha1ServerResource.PATH_TEMPLATE, MeasureHelpSha1ServerResource.class);
 
         router.attach(SlavesServerResource.PATH_TEMPLATE, SlavesServerResource.class);
 
@@ -139,21 +170,21 @@ public class ServerApplication extends Application {
         router.attach(ComparisonServerResource.PATH_TEMPLATE, ComparisonServerResource.class);
         router.attach(ComparisonSupportServerResource.PATH_TEMPLATE, ComparisonSupportServerResource.class);
 
-		
-		
-		
-		
+
+
+
+
         router.attach("/files/upload", UploadServerResource.class);
         router.attach("/files/{id}", FileServerResource.class);
-		
-		router.attach("/distributions",DistributionsServerResource.class);
-		router.attach("/distributions/{id}",DistributionServerResource.class);
-		
-		router.attach("/decisionSupport",DecisionSupportsServerResource.class);
-		router.attach("/decisionSupport/{id}",DecisionSupportServerResource.class);
-		
+
+        router.attach("/distributions", DistributionsServerResource.class);
+        router.attach("/distributions/{id}", DistributionServerResource.class);
+
+        router.attach("/decisionSupport", DecisionSupportsServerResource.class);
+        router.attach("/decisionSupport/{id}", DecisionSupportServerResource.class);
+
         router.attachDefault(VersusServerResource.class);
-		
+
         return router;
     }
 
@@ -202,6 +233,58 @@ public class ServerApplication extends Application {
             result.addAll(slaveResult);
         }
         return result;
+    }
+
+    public String getAdapterHelpSha1(final String adapterId) throws NotFoundException {
+        Adapter adapter = registry.getAdapter(adapterId);
+        if (adapter != null) {
+            if (!(adapter instanceof HasHelp)) {
+                throw new NotFoundException("The specified adapter has no help.");
+            }
+            HasHelp hasHelp = (HasHelp) adapter;
+            return hasHelp.getHelpSHA1();
+        }
+        String sha1 = slavesManager.querySlavesFirstNotNull(
+                new SlaveQuery<String>() {
+
+                    @Override
+                    public String executeQuery(Slave slave) {
+                        return slave.getAdapterHelpSha1(adapterId);
+                    }
+                });
+        if (sha1 != null) {
+            return sha1;
+        }
+        throw new NotFoundException("The specified adapter has no help.");
+    }
+
+    public InputStream getAdapterZippedHelp(final String adapterId) throws NotFoundException {
+        Adapter adapter = registry.getAdapter(adapterId);
+        if (adapter != null) {
+            if (!(adapter instanceof HasHelp)) {
+                throw new NotFoundException("The specified adapter has no help.");
+            }
+            HasHelp hasHelp = (HasHelp) adapter;
+            return hasHelp.getHelpZipped();
+        }
+        InputStream help = slavesManager.querySlavesFirstNotNull(
+                new SlaveQuery<InputStream>() {
+
+                    @Override
+                    public InputStream executeQuery(Slave slave) {
+                        try {
+                            return slave.getAdapterZippedHelp(adapterId);
+                        } catch (IOException ex) {
+                            Logger.getLogger(ServerApplication.class.getName()).
+                                    log(Level.WARNING, "IOException when querying slave " + slave, ex);
+                            return null;
+                        }
+                    }
+                });
+        if (help != null) {
+            return help;
+        }
+        throw new NotFoundException("The specified adapter has no help.");
     }
 
     public ExtractorDescriptor getExtractor(final String id)
@@ -253,6 +336,58 @@ public class ServerApplication extends Application {
         return result;
     }
 
+    public String getExtractorHelpSha1(final String extractorId) throws NotFoundException {
+        Extractor extractor = registry.getExtractor(extractorId);
+        if (extractor != null) {
+            if (!(extractor instanceof HasHelp)) {
+                throw new NotFoundException("The specified extractor has no help.");
+            }
+            HasHelp hasHelp = (HasHelp) extractor;
+            return hasHelp.getHelpSHA1();
+        }
+        String sha1 = slavesManager.querySlavesFirstNotNull(
+                new SlaveQuery<String>() {
+
+                    @Override
+                    public String executeQuery(Slave slave) {
+                        return slave.getExtractorHelpSha1(extractorId);
+                    }
+                });
+        if (sha1 != null) {
+            return sha1;
+        }
+        throw new NotFoundException("The specified extractor has no help.");
+    }
+
+    public InputStream getExtractorZippedHelp(final String extractorId) throws NotFoundException {
+        Extractor extractor = registry.getExtractor(extractorId);
+        if (extractor != null) {
+            if (!(extractor instanceof HasHelp)) {
+                throw new NotFoundException("The specified extractor has no help.");
+            }
+            HasHelp hasHelp = (HasHelp) extractor;
+            return hasHelp.getHelpZipped();
+        }
+        InputStream help = slavesManager.querySlavesFirstNotNull(
+                new SlaveQuery<InputStream>() {
+
+                    @Override
+                    public InputStream executeQuery(Slave slave) {
+                        try {
+                            return slave.getExtractorZippedHelp(extractorId);
+                        } catch (IOException ex) {
+                            Logger.getLogger(ServerApplication.class.getName()).
+                                    log(Level.WARNING, "IOException when querying slave " + slave, ex);
+                            return null;
+                        }
+                    }
+                });
+        if (help != null) {
+            return help;
+        }
+        throw new NotFoundException("The specified extractor has no help.");
+    }
+
     public MeasureDescriptor getMeasure(final String id)
             throws NotFoundException {
         Measure measure = registry.getMeasure(id);
@@ -262,7 +397,7 @@ public class ServerApplication extends Application {
             boolean hasHelp = measure instanceof HasHelp;
             Set<Class<? extends Descriptor>> supportedFeaturesTypes = measure.supportedFeaturesTypes();
             ArrayList<String> supportedFeatures = new ArrayList<String>(supportedFeaturesTypes.size());
-            for(Class<? extends Descriptor> descriptorClass : supportedFeaturesTypes) {
+            for (Class<? extends Descriptor> descriptorClass : supportedFeaturesTypes) {
                 supportedFeatures.add(descriptorClass.getName());
             }
             return new MeasureDescriptor(measure.getName(), id, category, supportedFeatures, hasHelp);
@@ -300,6 +435,58 @@ public class ServerApplication extends Application {
             result.addAll(slaveResult);
         }
         return result;
+    }
+
+    public String getMeasureHelpSha1(final String measureId) throws NotFoundException {
+        Measure measure = registry.getMeasure(measureId);
+        if (measure != null) {
+            if (!(measure instanceof HasHelp)) {
+                throw new NotFoundException("The specified measure has no help.");
+            }
+            HasHelp hasHelp = (HasHelp) measure;
+            return hasHelp.getHelpSHA1();
+        }
+        String sha1 = slavesManager.querySlavesFirstNotNull(
+                new SlaveQuery<String>() {
+
+                    @Override
+                    public String executeQuery(Slave slave) {
+                        return slave.getMeasureHelpSha1(measureId);
+                    }
+                });
+        if (sha1 != null) {
+            return sha1;
+        }
+        throw new NotFoundException("The specified extractor has no help.");
+    }
+
+    public InputStream getMeasureZippedHelp(final String measureId) throws NotFoundException {
+        Measure measure = registry.getMeasure(measureId);
+        if (measure != null) {
+            if (!(measure instanceof HasHelp)) {
+                throw new NotFoundException("The specified measure has no help.");
+            }
+            HasHelp hasHelp = (HasHelp) measure;
+            return hasHelp.getHelpZipped();
+        }
+        InputStream help = slavesManager.querySlavesFirstNotNull(
+                new SlaveQuery<InputStream>() {
+
+                    @Override
+                    public InputStream executeQuery(Slave slave) {
+                        try {
+                            return slave.getMeasureZippedHelp(measureId);
+                        } catch (IOException ex) {
+                            Logger.getLogger(ServerApplication.class.getName()).
+                                    log(Level.WARNING, "IOException when querying slave " + slave, ex);
+                            return null;
+                        }
+                    }
+                });
+        if (help != null) {
+            return help;
+        }
+        throw new NotFoundException("The specified measure has no help.");
     }
 
     public SlavesManager getSlavesManager() {

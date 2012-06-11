@@ -11,8 +11,11 @@
  */
 package edu.illinois.ncsa.versus.core.adapter;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashSet;
 
+import org.restlet.representation.Representation;
 import org.restlet.resource.ClientResource;
 
 import edu.illinois.ncsa.versus.core.ClientResourceFactory;
@@ -39,5 +42,16 @@ public class AdaptersClient {
     public AdapterDescriptor getAdapterDescriptor(String id) {
         ClientResource cr = ClientResourceFactory.getNew(host + URL + '/' + id);
         return cr.get(AdapterDescriptor.class);
+    }
+
+    public String getAdapterHelpSha1(String adapterId) {
+        ClientResource cr = ClientResourceFactory.getNew(host + URL + '/' + adapterId + "/helpsha1");
+        return cr.get(String.class);
+    }
+
+    public InputStream getAdapterZippedHelp(String adapterId) throws IOException {
+        ClientResource cr = ClientResourceFactory.getNew(host + URL + '/' + adapterId + "/help");
+        Representation representation = cr.get();
+        return representation.getStream();
     }
 }

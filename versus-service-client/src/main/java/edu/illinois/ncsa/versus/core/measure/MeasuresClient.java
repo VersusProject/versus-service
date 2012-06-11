@@ -11,8 +11,11 @@
  */
 package edu.illinois.ncsa.versus.core.measure;
 
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.HashSet;
 
+import org.restlet.representation.Representation;
 import org.restlet.resource.ClientResource;
 
 import edu.illinois.ncsa.versus.core.ClientResourceFactory;
@@ -39,5 +42,16 @@ public class MeasuresClient {
     public MeasureDescriptor getMeasureDescriptor(String id) {
         ClientResource cr = ClientResourceFactory.getNew(host + URL + '/' + id);
         return cr.get(MeasureDescriptor.class);
+    }
+
+    public String getMeasureHelpSha1(String measureId) {
+        ClientResource cr = ClientResourceFactory.getNew(host + URL + '/' + measureId + "/helpsha1");
+        return cr.get(String.class);
+    }
+
+    public InputStream getMeasureZippedHelp(String measureId) throws IOException {
+        ClientResource cr = ClientResourceFactory.getNew(host + URL + '/' + measureId + "/help");
+        Representation representation = cr.get();
+        return representation.getStream();
     }
 }
