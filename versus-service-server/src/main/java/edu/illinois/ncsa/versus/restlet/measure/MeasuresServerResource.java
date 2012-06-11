@@ -81,7 +81,7 @@ public class MeasuresServerResource extends ServerResource {
             return representation;
         } else {
             String href = server.getBaseUrl() + URL + '/';
-            StringBuilder sb = new StringBuilder("<h3>Versus > Mesures</h3>"
+            StringBuilder sb = new StringBuilder("<h3>Versus > Measures</h3>"
                     + "<ul>");
             for (String measure : measures) {
                 sb.append("<li><a href='").append(href);
