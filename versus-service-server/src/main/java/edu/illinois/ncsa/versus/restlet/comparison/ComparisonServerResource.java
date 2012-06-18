@@ -1,6 +1,7 @@
 package edu.illinois.ncsa.versus.restlet.comparison;
 
 import org.restlet.data.MediaType;
+import org.restlet.data.Status;
 import org.restlet.representation.Representation;
 import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.Get;
@@ -43,6 +44,11 @@ public class ComparisonServerResource extends ServerResource {
                 injector.getInstance(ComparisonServiceImpl.class);
         Comparison comparison = comparisonService.getComparison(id);
 
+        if(comparison == null) {
+            setStatus(Status.CLIENT_ERROR_NOT_FOUND);
+            return null;
+        }
+        
         if (comparison.getSlave() != null) {
             ComparisonStatus status = comparison.getStatus();
             if (status != ComparisonStatus.DONE
@@ -53,6 +59,7 @@ public class ComparisonServerResource extends ServerResource {
                 comparison = slave.getComparison(comparison);
                 comparisonService.updateValue(comparison.getId(), comparison.getValue());
                 comparisonService.setStatus(comparison.getId(), comparison.getStatus());
+                comparisonService.setError(comparison.getId(), comparison.getError());
             }
         }
         return comparison;
@@ -79,6 +86,9 @@ public class ComparisonServerResource extends ServerResource {
     @Get("html")
     public Representation asHtml() {
         Comparison comparison = retrieve();
+        if(comparison == null) {
+            return new StringRepresentation("Comparison not found.");
+        }
         StringBuilder sb = new StringBuilder();
         sb.append("<h3>Comparison ").append(comparison.getId()).
                 append("</h3><br><br>");
@@ -93,6 +103,7 @@ public class ComparisonServerResource extends ServerResource {
         sb.append("Measure: ").append(comparison.getMeasureId()).append("<br>");
         sb.append("Value: ").append(comparison.getValue()).append("<br>");
         sb.append("Status: ").append(comparison.getStatus()).append("<br>");
+        sb.append("Error: ").append(comparison.getError()).append("<br>");
         sb.append("Slave: ");
         String slave = comparison.getSlave();
         if (slave != null) {

@@ -48,6 +48,8 @@ public interface ComparisonProcessor {
 	void updateValue(String id, String value);
 
 	void setStatus(String id, ComparisonStatus status);
+    
+    void setError(String id, String error);
 
 	ComparisonStatus getStatus(String id);
 

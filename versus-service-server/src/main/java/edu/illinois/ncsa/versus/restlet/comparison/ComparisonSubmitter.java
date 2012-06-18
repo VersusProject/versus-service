@@ -21,9 +21,6 @@ import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import com.google.inject.Guice;
-import com.google.inject.Injector;
-
 import edu.illinois.ncsa.versus.core.comparison.Comparison;
 import edu.illinois.ncsa.versus.core.comparison.Comparison.ComparisonStatus;
 import edu.illinois.ncsa.versus.engine.impl.ComparisonStatusHandler;
@@ -36,7 +33,6 @@ import edu.illinois.ncsa.versus.restlet.ServerApplication;
 import edu.illinois.ncsa.versus.restlet.Slave;
 import edu.illinois.ncsa.versus.restlet.SlavesManager;
 import edu.illinois.ncsa.versus.store.ComparisonServiceImpl;
-import edu.illinois.ncsa.versus.store.RepositoryModule;
 
 /**
  *
@@ -74,11 +70,15 @@ public class ComparisonSubmitter {
 
     public Comparison submit()
             throws IOException, NoSlaveAvailableException {
+
+        final ComparisonServiceImpl comparisonService =
+                ServerApplication.getInjector().getInstance(ComparisonServiceImpl.class);
         Comparison result = comparison;
 
         CompareRegistry registry = server.getRegistry();
         if (registry.supportComparison(comparison.getAdapterId(),
                 comparison.getExtractorId(), comparison.getMeasureId())) {
+            comparisonService.addComparison(result);
             PairwiseComparison pairwiseComparison = new PairwiseComparison();
             pairwiseComparison.setId(comparison.getId());
             pairwiseComparison.setAdapterId(comparison.getAdapterId());
@@ -89,13 +89,8 @@ public class ComparisonSubmitter {
             submit(pairwiseComparison);
         } else {
             result = querySlaves();
+            comparisonService.addComparison(result);
         }
-
-        // Guice storage
-        Injector injector = Guice.createInjector(new RepositoryModule());
-        ComparisonServiceImpl comparisonService =
-                injector.getInstance(ComparisonServiceImpl.class);
-        comparisonService.addComparison(result);
 
         return result;
     }
@@ -170,7 +165,7 @@ public class ComparisonSubmitter {
                         "Comparison " + comparison.getId() + " failed. " + msg, e);
                 comparisonService.setStatus(comparison.getId(),
                         ComparisonStatus.FAILED);
-
+                comparisonService.setError(comparison.getId(), msg);
             }
 
             @Override

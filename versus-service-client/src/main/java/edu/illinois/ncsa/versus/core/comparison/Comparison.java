@@ -42,6 +42,9 @@ public class Comparison implements Serializable {
 
     @XStreamAlias("status")
     private ComparisonStatus status;
+    
+    @XStreamAlias("error")
+    private String error;
 
     @XStreamAlias("slave")
     private String slave;
@@ -124,7 +127,15 @@ public class Comparison implements Serializable {
         this.status = status;
 
     }
+    
+    public String getError() {
+        return error;
+    }
 
+    public void  setError(String error) {
+        this.error = error;
+    }
+    
     public String getSlave() {
         return slave;
     }
