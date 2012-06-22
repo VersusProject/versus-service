@@ -183,7 +183,7 @@ public class ServerApplication extends Application {
         router.attach("/decisionSupport", DecisionSupportsServerResource.class);
         router.attach("/decisionSupport/{id}", DecisionSupportServerResource.class);
 
-        router.attachDefault(VersusServerResource.class);
+        router.attachDefault(DefaultServerResource.class);
 
         return router;
     }

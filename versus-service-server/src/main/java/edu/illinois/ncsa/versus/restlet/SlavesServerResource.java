@@ -15,7 +15,6 @@ import org.restlet.representation.Representation;
 import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.Get;
 import org.restlet.resource.Post;
-import org.restlet.resource.ServerResource;
 
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.json.JettisonMappedXmlDriver;
@@ -26,7 +25,7 @@ import edu.illinois.ncsa.versus.core.StringCollectionConverter;
  * @author Luigi Marini <lmarini@ncsa.illinois.edu>
  *
  */
-public class SlavesServerResource extends ServerResource {
+public class SlavesServerResource extends VersusServerResource {
 
     public static final String URL = "/slaves";
 

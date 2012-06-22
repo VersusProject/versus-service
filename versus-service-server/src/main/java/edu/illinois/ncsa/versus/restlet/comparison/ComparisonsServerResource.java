@@ -18,7 +18,6 @@ import org.restlet.representation.Representation;
 import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.Get;
 import org.restlet.resource.Post;
-import org.restlet.resource.ServerResource;
 
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.json.JettisonMappedXmlDriver;
@@ -30,6 +29,7 @@ import edu.illinois.ncsa.versus.core.StringCollectionConverter;
 import edu.illinois.ncsa.versus.core.comparison.Comparison;
 import edu.illinois.ncsa.versus.restlet.NoSlaveAvailableException;
 import edu.illinois.ncsa.versus.restlet.ServerApplication;
+import edu.illinois.ncsa.versus.restlet.VersusServerResource;
 import edu.illinois.ncsa.versus.store.ComparisonServiceImpl;
 import edu.illinois.ncsa.versus.store.RepositoryModule;
 
@@ -39,7 +39,7 @@ import edu.illinois.ncsa.versus.store.RepositoryModule;
  * @author Luigi Marini <lmarini@ncsa.illinois.edu>
  *
  */
-public class ComparisonsServerResource extends ServerResource {
+public class ComparisonsServerResource extends VersusServerResource {
 
     public static final String URL = "/comparisons";
 

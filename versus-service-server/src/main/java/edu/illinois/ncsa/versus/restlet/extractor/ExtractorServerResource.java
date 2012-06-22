@@ -8,7 +8,6 @@ import org.restlet.data.Status;
 import org.restlet.representation.Representation;
 import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.Get;
-import org.restlet.resource.ServerResource;
 
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.json.JettisonMappedXmlDriver;
@@ -16,6 +15,7 @@ import com.thoughtworks.xstream.io.json.JettisonMappedXmlDriver;
 import edu.illinois.ncsa.versus.core.extractor.ExtractorDescriptor;
 import edu.illinois.ncsa.versus.restlet.NotFoundException;
 import edu.illinois.ncsa.versus.restlet.ServerApplication;
+import edu.illinois.ncsa.versus.restlet.VersusServerResource;
 
 /**
  * Single extractor.
@@ -23,7 +23,7 @@ import edu.illinois.ncsa.versus.restlet.ServerApplication;
  * @author Luigi Marini <lmarini@ncsa.illinois.edu>
  *
  */
-public class ExtractorServerResource extends ServerResource {
+public class ExtractorServerResource extends VersusServerResource {
 
     public static final String ID_PARAMETER = "id";
 

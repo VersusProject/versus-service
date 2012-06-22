@@ -4,19 +4,13 @@
 package edu.illinois.ncsa.versus.restlet;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.logging.Level;
 
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.restlet.data.MediaType;
-import org.restlet.data.Status;
-import org.restlet.ext.json.JsonRepresentation;
 import org.restlet.ext.xml.DomRepresentation;
 import org.restlet.representation.Representation;
 import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.Get;
-import org.restlet.resource.ServerResource;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -26,7 +20,7 @@ import com.google.inject.Injector;
 import edu.illinois.ncsa.versus.store.DecisionSupportServiceImpl;
 import edu.illinois.ncsa.versus.store.RepositoryModule;
 
-public class DecisionSupportServerResource extends ServerResource {
+public class DecisionSupportServerResource extends VersusServerResource {
 	
 	
 	@Get

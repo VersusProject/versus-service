@@ -30,7 +30,6 @@ import org.restlet.representation.Representation;
 import org.restlet.representation.StreamRepresentation;
 import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.Get;
-import org.restlet.resource.ServerResource;
 
 import edu.illinois.ncsa.versus.restlet.adapter.AdapterHelpServerResource;
 import javax.activation.MimetypesFileTypeMap;
@@ -39,7 +38,7 @@ import javax.activation.MimetypesFileTypeMap;
  *
  * @author antoinev
  */
-public abstract class HelpServerResource extends ServerResource {
+public abstract class HelpServerResource extends VersusServerResource {
 
     public static final String ID_PARAMETER = "id";
 

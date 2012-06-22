@@ -10,13 +10,13 @@ import org.restlet.data.MediaType;
 import org.restlet.representation.Representation;
 import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.Get;
-import org.restlet.resource.ServerResource;
 
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.json.JettisonMappedXmlDriver;
 
 import edu.illinois.ncsa.versus.core.StringCollectionConverter;
 import edu.illinois.ncsa.versus.restlet.ServerApplication;
+import edu.illinois.ncsa.versus.restlet.VersusServerResource;
 
 /**
  * Multiple adapters.
@@ -24,7 +24,7 @@ import edu.illinois.ncsa.versus.restlet.ServerApplication;
  * @author Luigi Marini <lmarini@ncsa.illinois.edu>
  *
  */
-public class AdaptersServerResource extends ServerResource {
+public class AdaptersServerResource extends VersusServerResource {
 
     public static final String URL = "/adapters";
 

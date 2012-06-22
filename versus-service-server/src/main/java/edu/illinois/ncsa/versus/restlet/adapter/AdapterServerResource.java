@@ -8,7 +8,6 @@ import org.restlet.data.Status;
 import org.restlet.representation.Representation;
 import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.Get;
-import org.restlet.resource.ServerResource;
 
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.json.JettisonMappedXmlDriver;
@@ -16,6 +15,7 @@ import com.thoughtworks.xstream.io.json.JettisonMappedXmlDriver;
 import edu.illinois.ncsa.versus.core.adapter.AdapterDescriptor;
 import edu.illinois.ncsa.versus.restlet.NotFoundException;
 import edu.illinois.ncsa.versus.restlet.ServerApplication;
+import edu.illinois.ncsa.versus.restlet.VersusServerResource;
 
 /**
  * Single adapter.
@@ -23,7 +23,7 @@ import edu.illinois.ncsa.versus.restlet.ServerApplication;
  * @author Luigi Marini <lmarini@ncsa.illinois.edu>
  *
  */
-public class AdapterServerResource extends ServerResource {
+public class AdapterServerResource extends VersusServerResource {
 
     public static final String ID_PARAMETER = "id";
 
@@ -41,7 +41,7 @@ public class AdapterServerResource extends ServerResource {
             return null;
         }
     }
-    
+
     @Get("xml")
     public String asXml() {
         XStream xstream = new XStream();

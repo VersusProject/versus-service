@@ -5,7 +5,6 @@ import org.restlet.data.Status;
 import org.restlet.representation.Representation;
 import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.Get;
-import org.restlet.resource.ServerResource;
 
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.json.JettisonMappedXmlDriver;
@@ -17,6 +16,7 @@ import edu.illinois.ncsa.versus.core.comparison.Comparison;
 import edu.illinois.ncsa.versus.core.comparison.Comparison.ComparisonStatus;
 import edu.illinois.ncsa.versus.restlet.ServerApplication;
 import edu.illinois.ncsa.versus.restlet.Slave;
+import edu.illinois.ncsa.versus.restlet.VersusServerResource;
 import edu.illinois.ncsa.versus.store.ComparisonServiceImpl;
 import edu.illinois.ncsa.versus.store.RepositoryModule;
 
@@ -26,7 +26,7 @@ import edu.illinois.ncsa.versus.store.RepositoryModule;
  * @author Luigi Marini <lmarini@ncsa.illinois.edu>
  *
  */
-public class ComparisonServerResource extends ServerResource {
+public class ComparisonServerResource extends VersusServerResource {
 
     public static final String ID_PARAMETER = "id";
 
