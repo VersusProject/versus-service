@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
@@ -21,18 +22,15 @@ import edu.illinois.ncsa.versus.store.ComparisonServiceImpl;
 import edu.illinois.ncsa.versus.store.RepositoryModule;
 import edu.illinois.ncsa.versus.adapter.Adapter;
 
-
 @SuppressWarnings("serial")
 public class DecisionSupport implements Serializable {
 	
 	private String id;
 	private String adapterId;
-	private List<String> similarData                                    = new ArrayList<String>();
-	private List<String> dissimilarData                                 = new ArrayList<String>();	
+	private List<String> similarData                                    = new ArrayList<String>(); //comparison ids
+	private List<String> dissimilarData                                 = new ArrayList<String>(); //comparison ids	
 	private DS_Status status                                            = DS_Status.UNINITIALZED;
-	private List<String> extractorIds                                   = new ArrayList<String>(); // deprecated
-	private HashMap<String, String> E_M_Pair                            = new HashMap<String, String>();
-	private HashMap<String, ArrayList<String>> extractorMeasurePair     = new HashMap<String, ArrayList<String>>();
+		
 	private List<ArrayList<String>> similarComparisonLists              = new ArrayList< ArrayList<String> >();
 	private List<ArrayList<String>> dissimilarComparisonLists           = new ArrayList< ArrayList<String> >();
 	
@@ -40,6 +38,10 @@ public class DecisionSupport implements Serializable {
 	private List<Measure> availableMeasures;
 	
 	private String decidedMethod = "Not Available";
+	private String rankedResults = " ";
+	
+	private List<DSInfo> decisionSupportData = new ArrayList<DSInfo>();
+	private boolean computationFinished      = false;
 	
 	public enum DS_Status {
 		UNINITIALZED, STARTED, RUNNING, DONE, FAILED
@@ -55,12 +57,16 @@ public class DecisionSupport implements Serializable {
 		Collections.addAll(dissimilarData, dd);
 	}
 
-	public String getExtractor(int index){
-		return this.extractorIds.get(index);
+	public ArrayList<DSInfo> getDecisionSupportData(){
+		return (ArrayList<DSInfo>) decisionSupportData;
 	}
 	
-	public String getMeasure(String extractor){
-		return this.E_M_Pair.get(extractor);
+	public void setDecisionSupportData(ArrayList<DSInfo> dsd){
+		decisionSupportData = dsd;
+	}
+
+	public String getBestResultsList(){
+		return rankedResults;
 	}
 	
 	public void append2SimilarComparisonList(int index, ArrayList<String> cl){
@@ -113,31 +119,17 @@ public class DecisionSupport implements Serializable {
 		return sd;
 	}
 	
-	public String extractors2String(){
-		
-		String el = "";
-		
-		for( int i=0; i<this.extractorIds.size(); i++){
-			el = el + this.extractorIds.get(i) + "  ";
-		}
-		return el;
-	}
-	
-	public String measures2String(){
-		
-		String ms                 = "";
-		Collection<String> values = this.E_M_Pair.values();
-		Iterator<String> itr      = values.iterator();
-		
-		while(itr.hasNext()){
-			ms = ms + itr.next() + "  ";
-		}
-		
-		return ms;
-	}
-	
 	public int getNumPairs(){
-		return this.E_M_Pair.size();
+		
+		return decisionSupportData.size();
+	}
+	
+	public int getNumExtractors(){
+		return availableExtractors.size();
+	}
+	
+	public int getNumMeasures(){
+		return availableMeasures.size();
 	}
 	
 	public void setId(String id) {
@@ -178,32 +170,22 @@ public class DecisionSupport implements Serializable {
 	
 	public String availableExtractors2String(){
 		
-		String ae = "";
-		
-		Set<String> extractors = this.extractorMeasurePair.keySet();
-		Iterator<String> itr           = extractors.iterator();
+		String ae            = "";
+		Iterator<DSInfo> itr = decisionSupportData.iterator();
 		
 		while( itr.hasNext() ){			
-			ae = ae + itr.next() + " ";
+			ae = ae + itr.next().extractorID + " ";
 		}		
 		return ae;
 	}
 	
 	public String availableMeasures2String(){
 		
-		String am = "";
-		
-		Collection<ArrayList<String>> measures = this.extractorMeasurePair.values();
-		Iterator<ArrayList<String>> itr        = measures.iterator();
+		String am            = "";
+		Iterator<DSInfo> itr = decisionSupportData.iterator();
 		
 		while( itr.hasNext() ){			
-			
-			Iterator<String> mItr = (itr.next()).iterator();
-			
-			while( mItr.hasNext() ){
-				am = am + mItr.next() + " ";
-			}
-			
+			am = am + itr.next().measureID + " ";	
 		}		
 		
 		return am;
@@ -219,8 +201,6 @@ public class DecisionSupport implements Serializable {
 			Extractor e                              = e_itr.next();
 			Set<Class<? extends Adapter>> a          = e.supportedAdapters();			
 			Iterator<Class<? extends Adapter>> a_itr = a.iterator();
-			ArrayList<String> supportedMeasures      = new ArrayList<String>();
-			boolean extractorIsSupported             = false;
 			
 			while( a_itr.hasNext() ){ //iterate through all supported adapters for given extractor
 				
@@ -234,84 +214,126 @@ public class DecisionSupport implements Serializable {
 					
 					while( m_itr.hasNext() ){
 						
-						Measure m                           = m_itr.next();	
+						Measure m  = m_itr.next();	
 						
 						if( m.getFeatureType().equals(descriptorName) ){ //check if the measure supports the descriptor (provided by the extractor)
 							
-							if( !this.extractorIds.contains( e.getClass().getName() ) ){
-								this.extractorIds.add(e.getClass().getName());	//only add extractor if there is a readily available measure
+							if( !this.availableExtractors.contains( e.getClass().getName() ) ){// if there is an EM pair, create DSInfo and push to list
+								decisionSupportData.add( new DSInfo(this.adapterId, e.getClass().getName(),m.getClass().getName()));
 							}
-							supportedMeasures.add(m.getClass().getName());
-							extractorIsSupported = true;
-							E_M_Pair.put( e.getClass().getName(), m.getClass().getName() ); 
-							//hashmap <extractor, measure> //need to change as a single extractor can map to multiple values, one though is use a HashMap< Pair<extractor, measure> , ArrayList<String -- comparisonId list> >
 						}	
 					}
 				}		
 			}//end adapters
-			if(extractorIsSupported){
-				this.extractorMeasurePair.put(e.getClass().getName(), supportedMeasures);
-			}
 		}//end extractors
-		return;
 	}
 	
-	//implementation of the math
-	public void getBestPair(){
+	private boolean checkIfComplete(){
 		
-		//check both comparison lists to make sure all are done processing
-		boolean state = true;
-		
-		for( int i=0; i<similarComparisonLists.size(); i++){
-			ArrayList<String> scL = similarComparisonLists.get(i);
-			state = state && checkIfComplete(scL);
-		}
-		
-		for( int i=0; i<dissimilarComparisonLists.size(); i++){
-			ArrayList<String> scL = dissimilarComparisonLists.get(i);
-			state = state && checkIfComplete(scL);
-		}
-		
-		//all comparisons should be finished. 
-		if(state){
-			double[] PE_vals  = new double[this.E_M_Pair.size()];
-			double smallestPE = 10000000;
-			int bestIndex     = 0;
-			
-			for( int i=0; i< PE_vals.length; i++){
-				
-				PE_vals[i] = computeComparisonPEValue(similarComparisonLists.get(i), dissimilarComparisonLists.get(i));
-				if( PE_vals[i] < smallestPE){
-					
-					smallestPE = PE_vals[i];
-					bestIndex  = i;
-				}
-			}
-			
-			this.decidedMethod = this.extractorIds.get(bestIndex) + " " + this.E_M_Pair.get(extractorIds.get(bestIndex));
-			this.status        = DS_Status.DONE;
-		}
-	}
-	
-	private boolean checkIfComplete(ArrayList<String> al){
-				
 		Injector injector                       = Guice.createInjector(new RepositoryModule());
 		ComparisonServiceImpl comparisonService = injector.getInstance(ComparisonServiceImpl.class);
-		Iterator<String> l_itr                  = al.iterator();
-		
-		while(l_itr.hasNext()){
-			Comparison c = comparisonService.getComparison((String) l_itr.next());
-			if( c.getStatus() != ComparisonStatus.DONE ){
-				return false;
-			}
-			else if( c.getStatus() == ComparisonStatus.ABORTED || c.getStatus() == ComparisonStatus.FAILED){
+		for( int i=0; i<decisionSupportData.size(); i++){
+			
+			ArrayList<String> sc = decisionSupportData.get(i).getSimilarComparisons();
+			ArrayList<String> dc = decisionSupportData.get(i).getDissimilarComparisons();
+			boolean scErrorFlag    = false;
+			boolean dcErrorFlag    = false;
+
+			//check all similarComparisons
+			for( int j=0; j < sc.size(); j++){
+			
+				Comparison c = comparisonService.getComparison( sc.get(j) );
 				
+				if( c.getStatus() != ComparisonStatus.DONE ){
+					return false;
+				}
+				else if( c.getStatus() == ComparisonStatus.ABORTED || c.getStatus() == ComparisonStatus.FAILED){
+					scErrorFlag = true;
+					break;
+				}
+			}
+			if(!scErrorFlag){
+				//check all dissimilarComparisons
+				for( int j=0; j < dc.size(); j++){
+					
+					Comparison c = comparisonService.getComparison( dc.get(j) );
+					
+					if( c.getStatus() != ComparisonStatus.DONE ){
+						return false;
+					}
+					else if( c.getStatus() == ComparisonStatus.ABORTED || c.getStatus() == ComparisonStatus.FAILED){
+						dcErrorFlag = true;
+						break;
+					}
+				}
+			}
+			else{
+				decisionSupportData.remove(i);
+			}
+			
+			if(dcErrorFlag){
+				decisionSupportData.remove(i);
 			}
 		}
-		//TODO add checking for failed comparisons, if too many have failed then throw some sort of error (or just ignore that particular extractor / measure combo
 		return true;
 	}
 	
+	//implementation of the math, this is slow, need to thread the computation of the individual DSInfos
+	public void getBestPair(){
+		
+		if(!computationFinished){
+			this.status = DS_Status.RUNNING;
+			
+			//check all comparisons to make sure all are done processing
+			//if there are any errors, then the E-M tuple is discarded
+			boolean state        = checkIfComplete();
+			String extractorID_d = "";
+			String measureID_d   = "";
+			
+			//all comparisons should be finished. 
+			if(state){
+					
+				double[] PE_vals     = new double[decisionSupportData.size()];
+				Double smallestPE    = Double.MAX_VALUE;
+				Iterator<DSInfo> eid = decisionSupportData.iterator();
+				
+				while( eid.hasNext() ){
+					
+					DSInfo dsTuple = eid.next();								
+					Double val     = new Double( computeComparisonPEValue( dsTuple.getSimilarComparisons(), dsTuple.getDissimilarComparisons() ) );
+					dsTuple.setPEValue(val);
+					
+					if( val.doubleValue() < smallestPE.doubleValue()){
+						smallestPE    = val;
+						extractorID_d = dsTuple.getExtractorID();
+						measureID_d   = dsTuple.getMeasureID();
+					}
+				}
+				
+				decidedMethod = extractorID_d + " " + measureID_d;
+				
+		       Collections.sort(decisionSupportData,new Comparator<DSInfo>() {
+		            public int compare(DSInfo info1, DSInfo info2) {
+		                return info1.getPEValue().compareTo( info2.getPEValue() );
+		            }
+		        });
+				
+		       //return top 5 or 25% of methods
+		       int numTopMethods = (int)(decisionSupportData.size() * 0.30);
+		       
+		       if( numTopMethods > 5 ){
+		    	   numTopMethods = 5;
+		       }
+		       
+		       for( int i=0; i<=numTopMethods; i++){
+		    	   rankedResults = rankedResults + (i+1) + ".) " + decisionSupportData.get(i).extractorID + " " + decisionSupportData.get(i).measureID + " ";
+		       }
+				status              = DS_Status.DONE;
+				computationFinished = true;
+			}
+		}
+	}
+		
 	private double computeComparisonPEValue(ArrayList<String> similarCL, ArrayList<String> dissimilarCL){
 		
 		Injector injector                       = Guice.createInjector(new RepositoryModule());
@@ -375,6 +397,105 @@ public class DecisionSupport implements Serializable {
 		}
 				
 		return 1-perrorComplement;
+	}
+	
+	public class DSInfo {
+		
+		private String            adapterID;
+		private String            extractorID;
+		private String            measureID;
+		private ArrayList<String> similarComparisons;
+		private ArrayList<String> dissimilarComparisons;
+		private Double            PE_Value;
+		
+		public DSInfo(){
+		}
+		
+		public DSInfo(String a, String e, String m){
+			this.adapterID   = a;
+			this.extractorID = e;
+			this.measureID   = m;
+		}
+		
+		
+		public Double getPEValue(){
+			return PE_Value;
+		}
+		
+		public void setPEValue(double val){
+			PE_Value = new Double(val);
+		}
+		
+		/**
+		 * Setter function for adapterID member.
+		 * @param a ID of the Adapter
+		 */
+		public void setAdapterID(String a){
+			adapterID = a;
+		}
+		/**
+		 * Getter function for adapterID member.
+		 * @return The ID of the Adapter.
+		 */
+		public String getAdapterID(){
+			return adapterID;
+		}	
+		/**
+		 * Setter function for extractorID member.
+		 * @param The ID of the Extractor.
+		 */
+		public void setExtractorID(String e){
+			extractorID = e;
+		}
+		/**
+		 * Getter function for extractorID member.
+		 * @return The ID of the Extractor.
+		 */
+		public String getExtractorID(){
+			return extractorID;
+		}
+		/**
+		 * Setter function for measureID member.
+		 * @param The ID of the Measure.
+		 */
+		public void setMeasureID(String m){
+			measureID = m;
+		}
+		/**
+		 * Getter function for measureID member.
+		 * @return The ID of the Measure.
+		 */
+		public String getMeasureID(){
+			return measureID;
+		}
+		/**
+		 * Setter function for the Similar Comparison list.
+		 * @param The ArrayList of similar comparison IDs generated by the Comparison service resource.
+		 */
+		public void setSimilarComparisons(ArrayList<String> sc){
+			similarComparisons = sc;
+		}
+		/**
+		 * Getter function for the Similar Comparison list.
+		 * @param The ArrayList of similar comparison IDs generated by the Comparison service resource.
+		 */
+		public ArrayList<String> getSimilarComparisons(){
+			return similarComparisons;
+		}		
+		/**
+		 * Setter function for the dissimilar Comparison list.
+		 * @param The ArrayList of dissimilar comparison IDs generated by the Comparison service resource.
+		 */
+		public void setDissimilarComparisons(ArrayList<String> dsc){
+			dissimilarComparisons = dsc;
+		}
+		/**
+		 * Getter function for the dissimilar Comparison list.
+		 * @param The ArrayList of dissimilar comparison IDs generated by the Comparison service resource.
+		 */
+		public ArrayList<String> getDissimilarComparisons(){
+			return dissimilarComparisons;
+		}
 	}
 	
 }

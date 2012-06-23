@@ -14,10 +14,10 @@ import java.lang.String;
 /**
  * Simple testing client.
  * 
- * @author Luigi Marini <lmarini@ncsa.illinois.edu>
+ * @author Devin Bonnie
  * 
  */
-public class decisionSupportTest {
+public class DecisionSupportTest {
 
 	private static Logger logger = Logger
 			.getLogger("edu.illinois.ncsa.versus.restlet.decisionSupportTest");
@@ -39,7 +39,8 @@ public class decisionSupportTest {
 			String[] dList = {"http://isda.ncsa.illinois.edu/drupal/sites/default/files/newsflash_logo.jpg","http://isda.ncsa.illinois.edu/drupal/sites/default/files/images/eScience2010_0.jpg"};
 			
 			DecisionSupport ds = new DecisionSupport(
-					sList,dList,
+					sList,
+					dList,
 					"edu.illinois.ncsa.versus.adapter.impl.BufferedImageAdapter"
 					);
 			dsResource.post(getDecisionSupportRepresentation(ds));
