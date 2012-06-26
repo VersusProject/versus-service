@@ -74,6 +74,14 @@ public class AdapterServerResource extends VersusServerResource {
         StringBuilder sb = new StringBuilder();
         sb.append("Name: ").append(adapter.getName()).append("<br>");
         sb.append("Type: ").append(adapter.getId()).append("<br>");
+        sb.append("Category: ").append(adapter.getCategory()).append("<br>");
+        sb.append("Has help: ");
+        if(adapter.hasHelp()) {
+                sb.append("<a href=\"").append(id).append("/help\">").append(true).append("</a>");
+        } else {
+            sb.append(false);
+        }
+        sb.append("<br>");
         sb.append("Supported Media Types:<br>");
         for (String type : adapter.getSupportedMediaTypes()) {
             sb.append('\t').append(type).append("<br>");

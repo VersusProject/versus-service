@@ -41,7 +41,7 @@ public class MeasureServerResource extends VersusServerResource {
             return null;
         }
     }
-    
+
     @Get("xml")
     public String asXml() {
         XStream xstream = new XStream();
@@ -69,6 +69,14 @@ public class MeasureServerResource extends VersusServerResource {
             StringBuilder sb = new StringBuilder();
             sb.append("Name: ").append(measure.getName()).append("<br>");
             sb.append("Type: ").append(measure.getType()).append("<br>");
+            sb.append("Category: ").append(measure.getCategory()).append("<br>");
+            sb.append("Has help: ");
+            if (measure.hasHelp()) {
+                sb.append("<a href=\"").append(id).append("/help\">").append(true).append("</a>");
+            } else {
+                sb.append(false);
+            }
+            sb.append("<br>");
             sb.append("Supported Features:<br>");
             for (String feature : measure.getSupportedFeatures()) {
                 sb.append('\t').append(feature).append("<br>");

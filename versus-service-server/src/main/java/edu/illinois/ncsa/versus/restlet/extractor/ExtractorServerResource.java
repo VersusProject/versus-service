@@ -69,6 +69,14 @@ public class ExtractorServerResource extends VersusServerResource {
             StringBuilder sb = new StringBuilder(128);
             sb.append("Name: ").append(extractor.getName()).append("<br>");
             sb.append("Type: ").append(extractor.getType()).append("<br>");
+            sb.append("Category: ").append(extractor.getCategory()).append("<br>");
+            sb.append("Has help: ");
+            if (extractor.hasHelp()) {
+                sb.append("<a href=\"").append(id).append("/help\">").append(true).append("</a>");
+            } else {
+                sb.append(false);
+            }
+            sb.append("<br>");
             sb.append("Supported Adapters:<br>");
             for (String adapter : extractor.getSupportedAdapters()) {
                 sb.append('\t').append(adapter).append("<br>");
