@@ -68,7 +68,7 @@ public class DiskFileProcessor implements FileProcessor {
 			inputStream.close();
 			return file.getName();
 		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
+			System.err.println("Upload directory not found: " + directory);
 			e.printStackTrace();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
