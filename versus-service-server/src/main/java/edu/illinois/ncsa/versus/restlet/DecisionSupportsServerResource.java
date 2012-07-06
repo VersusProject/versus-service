@@ -25,6 +25,7 @@ import com.google.inject.Injector;
 import edu.illinois.ncsa.versus.core.comparison.Comparison;
 import edu.illinois.ncsa.versus.extract.Extractor;
 import edu.illinois.ncsa.versus.measure.Measure;
+import edu.illinois.ncsa.versus.restlet.DecisionSupport.DSInfo;
 import edu.illinois.ncsa.versus.restlet.DecisionSupport.DS_Status;
 import edu.illinois.ncsa.versus.restlet.comparison.ComparisonSubmitter;
 import edu.illinois.ncsa.versus.store.ComparisonServiceImpl;
@@ -76,48 +77,38 @@ public class DecisionSupportsServerResource extends VersusServerResource {
 		ds.setAvailableMeasures( getMeasures() );
 		ds.getSupportedMethods();
 		ds.setStatus(DS_Status.STARTED);
-		
-		for( int i=0; i<ds.getNumPairs(); i++){
-			
-			ListPair list = submitSimilarComparisons(i, ds);
-			if( list.size() != 0){
-				ds.append2SimilarComparisonList( i, list.getSimilarList() );
-				ds.append2DissimilarComparisonList( i, list.getDissimilarList() );
-			}	
-		}
-
+		submitSimilarComparisons(ds);
+		//add the service;
 		dsService.addDecisionSupport( ds );	
+		//run the service
 		ds.getBestPair();
 		return null;
 	}
 	
-	//TODO: process similar and dissimilar comparisons in parallel
-	private ListPair submitSimilarComparisons(int i, DecisionSupport ds){
+	private void submitSimilarComparisons(DecisionSupport ds){
 		
 		Injector injector                       = Guice.createInjector(new RepositoryModule());
 		ComparisonServiceImpl comparisonService = injector.getInstance(ComparisonServiceImpl.class);		
-		List<String> ssdd                       = ds.getSimilarData();
-		List<String> dddd                       = ds.getDissimilarData();
+		ArrayList<String> similarFiles          = new ArrayList<String>( ds.getSimilarData() );
+		ArrayList<String> dissimilarFiles       = new ArrayList<String>(ds.getDissimilarData() );		
+		ArrayList<DSInfo> decisionSupportData   = ds.getDecisionSupportData(); 
 		
-		ArrayList<String> similarFiles    = new ArrayList<String>(ssdd);
-		ArrayList<String> dissimilarFiles = new ArrayList<String>(dddd);
-		
-		String adapter                          = ds.getAdapterId();
-		String extractor                        = ds.getExtractor(i);
-		String measure                          = ds.getMeasure(extractor);		
 		ArrayList<String> s_comparisonIds       = new ArrayList<String>();
 		ArrayList<String> d_comparisonIds       = new ArrayList<String>();
 
-		while( !similarFiles.isEmpty() ){
+		for( int x=0; x<decisionSupportData.size(); x++){
 			
-			for( int j=0; j<similarFiles.size(); j++){	
+			//setup similar file comparisons
+			while( !similarFiles.isEmpty() ){
 				
-				String cid = comparisonService.findComparison(similarFiles.get(0), similarFiles.get(j), adapter, extractor, measure); //check if current comparison exists.
-				
+				for( int j=0; j<similarFiles.size(); j++){	
+					
+					String cid = comparisonService.findComparison(similarFiles.get(0), similarFiles.get(j), decisionSupportData.get(x).getAdapterID(), decisionSupportData.get(x).getExtractorID(), decisionSupportData.get(x).getMeasureID()); //check if current comparison exists.
+					
 				if( cid == null ){		
-					Comparison comparison = new Comparison(similarFiles.get(0), similarFiles.get(j), adapter, extractor, measure);
+					Comparison comparison = new Comparison(similarFiles.get(0), similarFiles.get(j), decisionSupportData.get(x).getAdapterID(), decisionSupportData.get(x).getExtractorID(), decisionSupportData.get(x).getMeasureID());
 					String id             = comparison.getId();	
-										
+											
                     try {
                         ComparisonSubmitter submitter = new ComparisonSubmitter((ServerApplication)getApplication(), comparison);
                         submitter.submit();
@@ -126,25 +117,24 @@ public class DecisionSupportsServerResource extends VersusServerResource {
                     } catch (NoSlaveAvailableException ex) {
                         Logger.getLogger(DistributionsServerResource.class.getName()).log(Level.WARNING, null, ex);
                     }
-					s_comparisonIds.add(id);
-				}
-				else{
-					s_comparisonIds.add(cid);
-				}
-			}			
-			similarFiles.remove(0);
-		}		
-
-		
-		while( !dissimilarFiles.isEmpty() ){			
-			for( int j=0; j<dissimilarFiles.size(); j++){	
-				
-				String cid = comparisonService.findComparison(dissimilarFiles.get(0), dissimilarFiles.get(j), adapter, extractor, measure); //check if current comparison exists.
-				
+						s_comparisonIds.add(id);
+					}
+					else{
+						s_comparisonIds.add(cid);
+					}
+				}			
+				similarFiles.remove(0);
+			}
+			//setup dissimilar file comparisons
+			while( !dissimilarFiles.isEmpty() ){			
+				for( int j=0; j<dissimilarFiles.size(); j++){	
+					
+					String cid = comparisonService.findComparison(dissimilarFiles.get(0), dissimilarFiles.get(j), decisionSupportData.get(x).getAdapterID(), decisionSupportData.get(x).getExtractorID(), decisionSupportData.get(x).getMeasureID()); //check if current comparison exists.
+					
 				if( cid == null ){			
-					Comparison comparison = new Comparison(dissimilarFiles.get(0), dissimilarFiles.get(j), adapter, extractor, measure);
+					Comparison comparison = new Comparison(dissimilarFiles.get(0), dissimilarFiles.get(j), decisionSupportData.get(x).getAdapterID(), decisionSupportData.get(x).getExtractorID(), decisionSupportData.get(x).getMeasureID());
 					String id             = comparison.getId();
-										
+											
                     try {
                         ComparisonSubmitter submitter = new ComparisonSubmitter((ServerApplication)getApplication(), comparison);
                         submitter.submit();
@@ -153,21 +143,26 @@ public class DecisionSupportsServerResource extends VersusServerResource {
                     } catch (NoSlaveAvailableException ex) {
                         Logger.getLogger(DistributionsServerResource.class.getName()).log(Level.WARNING, null, ex);
                     }
-					d_comparisonIds.add(id);
-				}
-				else{
-					d_comparisonIds.add(cid);
-				}
-			}			
-			dissimilarFiles.remove(0);
-		}		
-		
-		return new ListPair(s_comparisonIds, d_comparisonIds);
+						d_comparisonIds.add(id);
+					}
+					else{
+						d_comparisonIds.add(cid);
+					}
+				}			
+				dissimilarFiles.remove(0);
+			}
+			similarFiles    = new ArrayList<String>( ds.getSimilarData() );
+			dissimilarFiles = new ArrayList<String>( ds.getDissimilarData() );
+			//add similarFiles and dissimilarFiles to the corresponding DSInfo
+			decisionSupportData.get(x).setSimilarComparisons(s_comparisonIds);
+			decisionSupportData.get(x).setDissimilarComparisons(d_comparisonIds);
+		}
+		ds.setDecisionSupportData(decisionSupportData);
 	}
 	
 	private List<Extractor> getExtractors(){
 		
-		List<Extractor> eNames = new ArrayList<Extractor>();
+		List<Extractor> eNames           = new ArrayList<Extractor>();		
         
 		//TODO: take slaves in account
         //TODO: why are we copying the collection?
@@ -181,8 +176,7 @@ public class DecisionSupportsServerResource extends VersusServerResource {
 	
 	private List<Measure> getMeasures(){
 		
-		List<Measure> mNames = new ArrayList<Measure>();
-
+		List<Measure> mNames         = new ArrayList<Measure>();
         //TODO: take slaves in account
         //TODO: why are we copying the collection?
 		Collection<Measure> measures = ((ServerApplication) getApplication()).getRegistry().getAvailableMeasures();	
@@ -191,33 +185,5 @@ public class DecisionSupportsServerResource extends VersusServerResource {
 			mNames.add(measure);
 		}
 		return mNames;
-
 	}
-	
-	private class ListPair {
-		
-		private ArrayList<String> similarList;
-		private ArrayList<String> dissimilarList;
-		private int size;
-		
-		public ListPair(ArrayList<String> sl, ArrayList<String> dl){
-			this.similarList    = sl;
-			this.dissimilarList = dl;
-			this.size           = sl.size() + dl.size();
-		}
-		
-		public ArrayList<String> getSimilarList(){
-			return this.similarList;
-		}
-		
-		public ArrayList<String> getDissimilarList(){
-			return this.dissimilarList;
-		}
-		
-		public int size(){
-			return this.size;
-		}
-	}
-	
-	
 }

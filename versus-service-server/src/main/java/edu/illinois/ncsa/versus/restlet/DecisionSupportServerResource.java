@@ -41,6 +41,7 @@ public class DecisionSupportServerResource extends VersusServerResource {
 		Injector injector                    = Guice.createInjector(new RepositoryModule());
 		DecisionSupportServiceImpl dsService = injector.getInstance(DecisionSupportServiceImpl.class);		
 		DecisionSupport ds                   = dsService.getDecisionSupport(id);
+		
 		ds.getBestPair();
 		
 		if (ds != null) {
@@ -65,9 +66,7 @@ public class DecisionSupportServerResource extends VersusServerResource {
 				}
 				statusId.appendChild(document.createTextNode(status));
 				elementDistribution.appendChild(statusId);
-				
-				ds.getBestPair();
-					
+								
 				// similar dataset
 				Element s_dataset = document.createElement("similarData");
 				s_dataset.appendChild(document.createTextNode(ds.similarData2String()));
@@ -97,6 +96,11 @@ public class DecisionSupportServerResource extends VersusServerResource {
 				Element computedMethod = document.createElement("computedMethod");
 				computedMethod.appendChild(document.createTextNode(ds.getDecidedMethod()));
 				elementDistribution.appendChild(computedMethod);
+				
+				// best methods
+				Element bestMethods = document.createElement("bestMethods");
+				bestMethods.appendChild(document.createTextNode(ds.getBestResultsList()));
+				elementDistribution.appendChild(bestMethods);
 				
 				// normalize
 				document.normalizeDocument();
