@@ -110,6 +110,9 @@ public class ServerApplication extends Application {
 		router.attach("/decisionSupport",DecisionSupportsServerResource.class);
 		router.attach("/decisionSupport/{id}",DecisionSupportServerResource.class);
 		
+		router.attach("/multiLabelDecisionSupport",MultiLabelDecisionSupportsServerResource.class);
+		router.attach("/multiLabelDecisionSupport/{id}",MultiLabelDecisionSupportServerResource.class);
+		
 		router.attachDefault(VersusServerResource.class);
 		
 		return router;

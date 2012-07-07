@@ -40,6 +40,8 @@ public class RepositoryModule extends AbstractModule {
 			bind(DistributionService.class).to(DistributionServiceImpl.class).in(Singleton.class);
 			//decision support
 			bind(DecisionSupportService.class).to(DecisionSupportServiceImpl.class).in(Singleton.class);
+			//mlds
+			bind(MultiLabelDecisionSupportService.class).to(MultiLabelDecisionSupportServiceImpl.class).in(Singleton.class);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
