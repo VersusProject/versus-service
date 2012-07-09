@@ -37,11 +37,8 @@ public class AdapterResource {
 	@Produces("text/html")
 	public String list(@Context ServletContext context) {
 
-		CompareRegistry registry = (CompareRegistry) context
-				.getAttribute(CompareRegistry.class.getName());
-
-		Collection<Adapter> adapters = registry.getAvailableAdapters();
-
+		log.trace("/adapters requested");
+		Collection<Adapter> adapters = getAdapters(context);
 		if (adapters.size() == 0) {
 			return "No adapters";
 		} else {
@@ -61,18 +58,9 @@ public class AdapterResource {
 	@Produces("text/html")
 	public String getAdapterHTML(@PathParam("id") String id,
 			@Context ServletContext context) {
+
 		log.trace("/adapters/" + id + " requested");
-		CompareRegistry registry = (CompareRegistry) context
-				.getAttribute(CompareRegistry.class.getName());
-
-		Collection<Adapter> adapters = registry.getAvailableAdapters();
-		Adapter adapter = null;
-		for (Adapter a : adapters) {
-			if (a.getClass().getName().equals(id)) {
-				adapter = a;
-			}
-		}
-
+		Adapter adapter = getAdapter(context, id);
 		if (adapter != null) {
 			String content = new String("<h3>Versus > Adapters > "
 					+ adapter.getClass().getName() + "</h3><ul>")
@@ -96,10 +84,8 @@ public class AdapterResource {
 	@Produces("application/json")
 	public List<Map<String, Object>> listJSON(@Context ServletContext context) {
 
-		CompareRegistry registry = (CompareRegistry) context
-				.getAttribute(CompareRegistry.class.getName());
-
-		Collection<Adapter> adapters = registry.getAvailableAdapters();
+		log.trace("/adapters requested");
+		Collection<Adapter> adapters = getAdapters(context);
 		List<Map<String, Object>> jsonReturn = new ArrayList<Map<String, Object>>();
 		if (adapters.size() == 0) {
 			return jsonReturn;
@@ -120,7 +106,28 @@ public class AdapterResource {
 	@Produces("application/json")
 	public Map<String, Object> getAdapterJSON(@PathParam("id") String id,
 			@Context ServletContext context) {
+
 		log.trace("/adapters/" + id + " requested");
+		Adapter adapter = getAdapter(context, id);
+		Map<String, Object> json = new HashMap<String, Object>();
+		if (adapter != null) {
+			json.put("name", adapter.getName());
+			json.put("id", adapter.getClass().toString());
+			json.put("supportedMimeTypes", adapter.getSupportedMediaTypes());
+		} else {
+			json.put("Error", "Adapter not found");
+		}
+		return json;
+	}
+
+	private Collection<Adapter> getAdapters(ServletContext context) {
+		CompareRegistry registry = (CompareRegistry) context
+				.getAttribute(CompareRegistry.class.getName());
+
+		return registry.getAvailableAdapters();
+	}
+
+	private Adapter getAdapter(ServletContext context, String id) {
 		CompareRegistry registry = (CompareRegistry) context
 				.getAttribute(CompareRegistry.class.getName());
 
@@ -131,14 +138,6 @@ public class AdapterResource {
 				adapter = a;
 			}
 		}
-		Map<String, Object> json = new HashMap<String, Object>();
-		if (adapter != null) {
-			json.put("name", adapter.getName());
-			json.put("id", adapter.getClass().toString());
-			json.put("supportedMimeTypes", adapter.getSupportedMediaTypes());
-		} else {
-			json.put("Error", "Adapter not found");
-		}
-		return json;
+		return adapter;
 	}
 }
