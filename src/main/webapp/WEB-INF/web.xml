@@ -14,8 +14,12 @@
   		<listener-class>edu.illinois.ncsa.versus.service.GuiceServletConfig</listener-class>
 	</listener>
 	
-		<listener>
+	<listener>
   		<listener-class>edu.illinois.ncsa.versus.service.RegistryServletConfig</listener-class>
+	</listener>
+
+	<listener>
+  		<listener-class>edu.illinois.ncsa.versus.service.FreeMarkerServletConfig</listener-class>
 	</listener>
 
 	<servlet>
