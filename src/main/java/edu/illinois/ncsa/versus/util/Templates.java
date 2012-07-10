@@ -22,12 +22,12 @@ import freemarker.template.TemplateException;
 public class Templates {
 
 	public static String create(Configuration freeMarkerConfig,
-			String fileTemplate, Object data) throws IOException,
-			TemplateException {
+			String fileTemplate, Object data, String dataId)
+			throws IOException, TemplateException {
 		Template template = freeMarkerConfig.getTemplate(fileTemplate);
 		Writer out = new StringWriter();
 		Map<String, Object> root = new HashMap<String, Object>();
-		root.put("adapter", data);
+		root.put(dataId, data);
 		template.process(root, out);
 		return out.toString();
 	}

@@ -39,7 +39,7 @@ public class AdapterResource {
 
 	@GET
 	@Produces("text/html")
-	public String list(@Context ServletContext context) {
+	public String listHTML(@Context ServletContext context) {
 
 		log.trace("/adapters requested");
 		Collection<Adapter> adapters = getAdapters(context);
@@ -54,24 +54,6 @@ public class AdapterResource {
 			}
 			content += "</ul>";
 			return content;
-		}
-	}
-
-	@GET
-	@Path("/{id}")
-	@Produces("text/html")
-	public String getAdapterHTML(@PathParam("id") String id,
-			@Context ServletContext context) throws IOException,
-			TemplateException {
-
-		log.trace("/adapters/" + id + " requested");
-		Adapter adapter = getAdapter(context, id);
-		if (adapter != null) {
-			Configuration freeMarker = (Configuration) context
-					.getAttribute(Configuration.class.getName());
-			return Templates.create(freeMarker, "adapter.ftl", adapter);
-		} else {
-			return "Adapter not found";
 		}
 	}
 
@@ -98,6 +80,25 @@ public class AdapterResource {
 
 	@GET
 	@Path("/{id}")
+	@Produces("text/html")
+	public String getAdapterHTML(@PathParam("id") String id,
+			@Context ServletContext context) throws IOException,
+			TemplateException {
+
+		log.trace("/adapters/" + id + " requested");
+		Adapter adapter = getAdapter(context, id);
+		if (adapter != null) {
+			Configuration freeMarker = (Configuration) context
+					.getAttribute(Configuration.class.getName());
+			return Templates.create(freeMarker, "adapter.ftl", adapter,
+					"adapter");
+		} else {
+			return "Adapter not found";
+		}
+	}
+
+	@GET
+	@Path("/{id}")
 	@Produces("application/json")
 	public Map<String, Object> getAdapterJSON(@PathParam("id") String id,
 			@Context ServletContext context) {
@@ -107,7 +108,7 @@ public class AdapterResource {
 		Map<String, Object> json = new HashMap<String, Object>();
 		if (adapter != null) {
 			json.put("name", adapter.getName());
-			json.put("id", adapter.getClass().toString());
+			json.put("id", adapter.getClass().getName());
 			json.put("supportedMimeTypes", adapter.getSupportedMediaTypes());
 		} else {
 			json.put("Error", "Adapter not found");
