@@ -16,16 +16,16 @@ import java.util.logging.Logger;
 
 import org.restlet.data.Status;
 import org.restlet.resource.Get;
-import org.restlet.resource.ServerResource;
 
 import edu.illinois.ncsa.versus.restlet.NotFoundException;
 import edu.illinois.ncsa.versus.restlet.ServerApplication;
+import edu.illinois.ncsa.versus.restlet.VersusServerResource;
 
 /**
  *
  * @author antoinev
  */
-public class MeasureHelpSha1ServerResource extends ServerResource {
+public class MeasureHelpSha1ServerResource extends VersusServerResource {
 
     public static final String ID_PARAMETER = "id";
 

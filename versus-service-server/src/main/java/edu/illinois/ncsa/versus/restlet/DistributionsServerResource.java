@@ -18,7 +18,6 @@ import org.restlet.representation.Representation;
 import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.Get;
 import org.restlet.resource.Post;
-import org.restlet.resource.ServerResource;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -31,7 +30,7 @@ import edu.illinois.ncsa.versus.store.DistributionService;
 import edu.illinois.ncsa.versus.store.DistributionServiceImpl;
 import edu.illinois.ncsa.versus.store.RepositoryModule;
 
-public class DistributionsServerResource extends ServerResource {
+public class DistributionsServerResource extends VersusServerResource {
 	
 	
 	@Get("html")

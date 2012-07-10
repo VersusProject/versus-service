@@ -7,18 +7,18 @@ import org.restlet.data.MediaType;
 import org.restlet.representation.Representation;
 import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.Get;
-import org.restlet.resource.ServerResource;
 
 import edu.illinois.ncsa.versus.core.comparison.Comparison;
 import edu.illinois.ncsa.versus.core.comparison.Comparison.ComparisonStatus;
 import edu.illinois.ncsa.versus.restlet.ServerApplication;
+import edu.illinois.ncsa.versus.restlet.VersusServerResource;
 import edu.illinois.ncsa.versus.store.ComparisonServiceImpl;
 
 /**
  * @author lmarini
  * 
  */
-public class ComparisonStatusServerResource extends ServerResource {
+public class ComparisonStatusServerResource extends VersusServerResource {
 
 	@Get
 	public Representation status() {

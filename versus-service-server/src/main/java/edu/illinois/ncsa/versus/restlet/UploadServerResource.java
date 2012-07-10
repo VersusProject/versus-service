@@ -19,7 +19,6 @@ import org.restlet.representation.Representation;
 import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.Get;
 import org.restlet.resource.Post;
-import org.restlet.resource.ServerResource;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -34,7 +33,7 @@ import edu.illinois.ncsa.versus.store.RepositoryModule;
  * @author Luigi Marini <lmarini@ncsa.illinois.edu>
  * 
  */
-public class UploadServerResource extends ServerResource {
+public class UploadServerResource extends VersusServerResource {
 
 	private static Logger logger = Logger
 			.getLogger("edu.illinois.ncsa.versus.restlet.uploadServerResource");

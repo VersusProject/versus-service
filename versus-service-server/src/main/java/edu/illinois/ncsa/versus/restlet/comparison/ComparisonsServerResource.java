@@ -11,6 +11,7 @@ import java.util.logging.Level;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
+import org.restlet.data.Form;
 import org.restlet.data.MediaType;
 import org.restlet.data.Status;
 import org.restlet.ext.fileupload.RestletFileUpload;
@@ -18,7 +19,6 @@ import org.restlet.representation.Representation;
 import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.Get;
 import org.restlet.resource.Post;
-import org.restlet.resource.ServerResource;
 
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.json.JettisonMappedXmlDriver;
@@ -30,6 +30,7 @@ import edu.illinois.ncsa.versus.core.StringCollectionConverter;
 import edu.illinois.ncsa.versus.core.comparison.Comparison;
 import edu.illinois.ncsa.versus.restlet.NoSlaveAvailableException;
 import edu.illinois.ncsa.versus.restlet.ServerApplication;
+import edu.illinois.ncsa.versus.restlet.VersusServerResource;
 import edu.illinois.ncsa.versus.store.ComparisonServiceImpl;
 import edu.illinois.ncsa.versus.store.RepositoryModule;
 
@@ -39,7 +40,7 @@ import edu.illinois.ncsa.versus.store.RepositoryModule;
  * @author Luigi Marini <lmarini@ncsa.illinois.edu>
  *
  */
-public class ComparisonsServerResource extends ServerResource {
+public class ComparisonsServerResource extends VersusServerResource {
 
     public static final String URL = "/comparisons";
 
@@ -133,24 +134,6 @@ public class ComparisonsServerResource extends ServerResource {
             return new StringRepresentation("Specify parameters", MediaType.TEXT_PLAIN);
         }
 
-        if (!MediaType.MULTIPART_FORM_DATA.equals(entity.getMediaType(), true)) {
-            getLogger().log(Level.INFO, "Unexpected media type specified by client.");
-            setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
-            return new StringRepresentation("Submit a multipart form/data.", MediaType.TEXT_PLAIN);
-        }
-
-        DiskFileItemFactory factory = new DiskFileItemFactory();
-        factory.setSizeThreshold(1000240);
-        RestletFileUpload upload = new RestletFileUpload(factory);
-        List<FileItem> items;
-        try {
-            items = upload.parseRequest(getRequest());
-        } catch (FileUploadException ex) {
-            getLogger().log(Level.INFO, "Cannot parse client request", ex);
-            setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
-            return new StringRepresentation("Invalid request: " + ex.getMessage(), MediaType.TEXT_PLAIN);
-        }
-
         String dataset1Name = null;
         String dataset2Name = null;
         InputStream dataset1Stream = null;
@@ -158,30 +141,58 @@ public class ComparisonsServerResource extends ServerResource {
         String adapter = null;
         String extractor = null;
         String measure = null;
-        for (FileItem item : items) {
-            String name = item.getFieldName();
-            if (name.equals("dataset1")) {
-                dataset1Name = item.getName();
-                dataset1Stream = item.getInputStream();
-            } else if (name.equals("dataset2")) {
-                dataset2Name = item.getName();
-                dataset2Stream = item.getInputStream();
-            } else if (name.equals("dataset1Url")) {
-                dataset1Name = item.getString();
-                dataset1Stream = new URL(dataset1Name).openStream();
-            } else if (name.equals("dataset2Url")) {
-                dataset2Name = item.getString();
-                dataset2Stream = new URL(dataset1Name).openStream();
-            } else if (name.equals("adapter")) {
-                adapter = item.getString();
-            } else if (name.equals("extractor")) {
-                extractor = item.getString();
-            } else if (name.equals("measure")) {
-                measure = item.getString();
-            } else {
-                getLogger().log(Level.INFO,
-                        "Ignoring parameter ''{0}'' specified by client.", name);
+
+        if (MediaType.MULTIPART_FORM_DATA.equals(entity.getMediaType(), true)) {
+            DiskFileItemFactory factory = new DiskFileItemFactory();
+            factory.setSizeThreshold(1000240);
+            RestletFileUpload upload = new RestletFileUpload(factory);
+            List<FileItem> items;
+            try {
+                items = upload.parseRequest(getRequest());
+            } catch (FileUploadException ex) {
+                getLogger().log(Level.INFO, "Cannot parse client request", ex);
+                setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+                return new StringRepresentation("Invalid request: " + ex.getMessage(), MediaType.TEXT_PLAIN);
             }
+
+            for (FileItem item : items) {
+                String name = item.getFieldName();
+                if (name.equals("dataset1")) {
+                    dataset1Name = item.getName();
+                    dataset1Stream = item.getInputStream();
+                } else if (name.equals("dataset2")) {
+                    dataset2Name = item.getName();
+                    dataset2Stream = item.getInputStream();
+                } else if (name.equals("dataset1Url")) {
+                    dataset1Name = item.getString();
+                    dataset1Stream = new URL(dataset1Name).openStream();
+                } else if (name.equals("dataset2Url")) {
+                    dataset2Name = item.getString();
+                    dataset2Stream = new URL(dataset1Name).openStream();
+                } else if (name.equals("adapter")) {
+                    adapter = item.getString();
+                } else if (name.equals("extractor")) {
+                    extractor = item.getString();
+                } else if (name.equals("measure")) {
+                    measure = item.getString();
+                } else {
+                    getLogger().log(Level.INFO,
+                            "Ignoring parameter ''{0}'' specified by client.", name);
+                }
+            }
+        } else {
+            Form form = new Form(entity);
+            dataset1Name = form.getFirstValue("dataset1Url", null);
+            dataset2Name = form.getFirstValue("dataset2Url", null);
+            if (dataset1Name != null) {
+                dataset1Stream = new URL(dataset1Name).openStream();
+            }
+            if (dataset2Name != null) {
+                dataset2Stream = new URL(dataset2Name).openStream();
+            }
+            adapter = form.getFirstValue("adapter", null);
+            extractor = form.getFirstValue("extractor", null);
+            measure = form.getFirstValue("measure", null);
         }
 
         if (dataset1Name == null || dataset1Stream == null) {

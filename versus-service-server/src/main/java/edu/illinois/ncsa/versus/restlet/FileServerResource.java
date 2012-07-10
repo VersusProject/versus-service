@@ -11,7 +11,6 @@ import org.restlet.data.MediaType;
 import org.restlet.representation.OutputRepresentation;
 import org.restlet.representation.Representation;
 import org.restlet.resource.Get;
-import org.restlet.resource.ServerResource;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -25,7 +24,7 @@ import edu.illinois.ncsa.versus.store.RepositoryModule;
  * @author Luigi Marini <lmarini@ncsa.illinois.edu>
  * 
  */
-public class FileServerResource extends ServerResource {
+public class FileServerResource extends VersusServerResource {
 
 	@Get
 	public Representation getFile() {

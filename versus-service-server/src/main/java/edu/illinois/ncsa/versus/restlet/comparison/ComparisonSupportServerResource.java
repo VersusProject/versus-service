@@ -14,7 +14,6 @@ package edu.illinois.ncsa.versus.restlet.comparison;
 import java.util.Map;
 
 import org.restlet.resource.Get;
-import org.restlet.resource.ServerResource;
 
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.json.JettisonMappedXmlDriver;
@@ -23,12 +22,13 @@ import edu.illinois.ncsa.versus.registry.CompareRegistry;
 import edu.illinois.ncsa.versus.restlet.ServerApplication;
 import edu.illinois.ncsa.versus.restlet.Slave;
 import edu.illinois.ncsa.versus.restlet.SlavesManager;
+import edu.illinois.ncsa.versus.restlet.VersusServerResource;
 
 /**
  *
  * @author antoinev
  */
-public class ComparisonSupportServerResource extends ServerResource {
+public class ComparisonSupportServerResource extends VersusServerResource {
 
     public static final String URL = "/comparisons/";
 

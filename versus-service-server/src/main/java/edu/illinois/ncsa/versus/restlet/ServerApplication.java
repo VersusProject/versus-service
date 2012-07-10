@@ -196,7 +196,7 @@ public class ServerApplication extends Application {
         router.attach(SamplersServerResource.PATH_TEMPLATE, SamplersServerResource.class);
         router.attach(SamplerServerResource.PATH_TEMPLATE, SamplerServerResource.class);
         
-        router.attachDefault(VersusServerResource.class);
+        router.attachDefault(DefaultServerResource.class);
 
         return router;
     }

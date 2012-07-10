@@ -4,19 +4,13 @@
 package edu.illinois.ncsa.versus.restlet;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.logging.Level;
 
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.restlet.data.MediaType;
-import org.restlet.data.Status;
-import org.restlet.ext.json.JsonRepresentation;
 import org.restlet.ext.xml.DomRepresentation;
 import org.restlet.representation.Representation;
 import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.Get;
-import org.restlet.resource.ServerResource;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -26,7 +20,7 @@ import com.google.inject.Injector;
 import edu.illinois.ncsa.versus.store.DecisionSupportServiceImpl;
 import edu.illinois.ncsa.versus.store.RepositoryModule;
 
-public class DecisionSupportServerResource extends ServerResource {
+public class DecisionSupportServerResource extends VersusServerResource {
 	
 	
 	@Get
@@ -47,6 +41,7 @@ public class DecisionSupportServerResource extends ServerResource {
 		Injector injector                    = Guice.createInjector(new RepositoryModule());
 		DecisionSupportServiceImpl dsService = injector.getInstance(DecisionSupportServiceImpl.class);		
 		DecisionSupport ds                   = dsService.getDecisionSupport(id);
+		
 		ds.getBestPair();
 		
 		if (ds != null) {
@@ -71,9 +66,7 @@ public class DecisionSupportServerResource extends ServerResource {
 				}
 				statusId.appendChild(document.createTextNode(status));
 				elementDistribution.appendChild(statusId);
-				
-				ds.getBestPair();
-					
+								
 				// similar dataset
 				Element s_dataset = document.createElement("similarData");
 				s_dataset.appendChild(document.createTextNode(ds.similarData2String()));
@@ -103,6 +96,11 @@ public class DecisionSupportServerResource extends ServerResource {
 				Element computedMethod = document.createElement("computedMethod");
 				computedMethod.appendChild(document.createTextNode(ds.getDecidedMethod()));
 				elementDistribution.appendChild(computedMethod);
+				
+				// best methods
+				Element bestMethods = document.createElement("bestMethods");
+				bestMethods.appendChild(document.createTextNode(ds.getBestResultsList()));
+				elementDistribution.appendChild(bestMethods);
 				
 				// normalize
 				document.normalizeDocument();

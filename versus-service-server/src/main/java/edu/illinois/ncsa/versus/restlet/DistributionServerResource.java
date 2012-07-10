@@ -4,7 +4,6 @@
 package edu.illinois.ncsa.versus.restlet;
 
 import java.io.IOException;
-import java.util.Collection;
 import java.util.logging.Level;
 
 import org.json.JSONException;
@@ -16,20 +15,18 @@ import org.restlet.ext.xml.DomRepresentation;
 import org.restlet.representation.Representation;
 import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.Get;
-import org.restlet.resource.ServerResource;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 
-import edu.illinois.ncsa.versus.store.DistributionService;
 import edu.illinois.ncsa.versus.store.DistributionServiceImpl;
 import edu.illinois.ncsa.versus.store.RepositoryModule;
 
 
 
-public class DistributionServerResource extends ServerResource {
+public class DistributionServerResource extends VersusServerResource {
 	
 	
 	@Get

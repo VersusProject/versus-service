@@ -8,7 +8,6 @@ import org.restlet.data.Status;
 import org.restlet.representation.Representation;
 import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.Get;
-import org.restlet.resource.ServerResource;
 
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.json.JettisonMappedXmlDriver;
@@ -16,6 +15,7 @@ import com.thoughtworks.xstream.io.json.JettisonMappedXmlDriver;
 import edu.illinois.ncsa.versus.core.measure.MeasureDescriptor;
 import edu.illinois.ncsa.versus.restlet.NotFoundException;
 import edu.illinois.ncsa.versus.restlet.ServerApplication;
+import edu.illinois.ncsa.versus.restlet.VersusServerResource;
 
 /**
  * Single measure.
@@ -23,7 +23,7 @@ import edu.illinois.ncsa.versus.restlet.ServerApplication;
  * @author Luigi Marini <lmarini@ncsa.illinois.edu>
  *
  */
-public class MeasureServerResource extends ServerResource {
+public class MeasureServerResource extends VersusServerResource {
 
     public static final String ID_PARAMETER = "id";
 
@@ -41,7 +41,7 @@ public class MeasureServerResource extends ServerResource {
             return null;
         }
     }
-    
+
     @Get("xml")
     public String asXml() {
         XStream xstream = new XStream();
@@ -69,6 +69,14 @@ public class MeasureServerResource extends ServerResource {
             StringBuilder sb = new StringBuilder();
             sb.append("Name: ").append(measure.getName()).append("<br>");
             sb.append("Type: ").append(measure.getType()).append("<br>");
+            sb.append("Category: ").append(measure.getCategory()).append("<br>");
+            sb.append("Has help: ");
+            if (measure.hasHelp()) {
+                sb.append("<a href=\"").append(id).append("/help\">").append(true).append("</a>");
+            } else {
+                sb.append(false);
+            }
+            sb.append("<br>");
             sb.append("Supported Features:<br>");
             for (String feature : measure.getSupportedFeatures()) {
                 sb.append('\t').append(feature).append("<br>");
