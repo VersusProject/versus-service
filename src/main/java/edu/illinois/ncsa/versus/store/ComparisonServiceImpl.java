@@ -7,6 +7,7 @@ import java.util.Iterator;
 import com.google.inject.Inject;
 
 import edu.illinois.ncsa.versus.engine.impl.Job.ComparisonStatus;
+import edu.illinois.ncsa.versus.engine.impl.PairwiseComparison;
 import edu.illinois.ncsa.versus.restlet.Comparison;
 
 /**
@@ -72,19 +73,37 @@ public class ComparisonServiceImpl implements ComparisonService {
 
 		String cid = null;
 		Collection<Comparison> comparisons = transactionLog.listAll();
-		
-		if(comparisons.size()==0){
+
+		if (comparisons.size() == 0) {
 			return cid;
 		}
-		Iterator<Comparison> itr = comparisons.iterator(); 
-		while(itr.hasNext()){
+		Iterator<Comparison> itr = comparisons.iterator();
+		while (itr.hasNext()) {
 			Comparison c = itr.next();
-			if( adapter == c.getAdapterId() && extractor == c.getExtractorId() && measure == c.getMeasureId()
-					&& file1 == c.getFirstDataset() && file2 == c.getSecondDataset()){
+			if (adapter == c.getAdapterId() && extractor == c.getExtractorId()
+					&& measure == c.getMeasureId()
+					&& file1 == c.getFirstDataset()
+					&& file2 == c.getSecondDataset()) {
 				cid = c.getId();
 			}
-		}	
-		
+		}
+
 		return cid;
+	}
+
+	public void addComparison(PairwiseComparison pairwiseComparison,
+			String datasetUri1, String datasetUri2) {
+		// TODO try to be consistent and pick either Comparison or
+		// PairwiseComparison
+		Comparison comparison = new Comparison();
+		comparison.setId(pairwiseComparison.getId());
+
+		comparison.setFirstDataset(datasetUri1);
+		comparison.setSecondDataset(datasetUri2);
+
+		comparison.setAdapterId(pairwiseComparison.getAdapterId());
+		comparison.setExtractorId(pairwiseComparison.getExtractorId());
+		comparison.setMeasureId(pairwiseComparison.getMeasureId());
+		addComparison(comparison);
 	}
 }

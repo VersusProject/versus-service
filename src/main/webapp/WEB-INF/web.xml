@@ -15,7 +15,7 @@
 	</listener>
 	
 	<listener>
-  		<listener-class>edu.illinois.ncsa.versus.service.RegistryServletConfig</listener-class>
+  		<listener-class>edu.illinois.ncsa.versus.service.VersusServletConfig</listener-class>
 	</listener>
 
 	<listener>
