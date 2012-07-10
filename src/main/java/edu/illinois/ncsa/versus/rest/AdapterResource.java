@@ -3,6 +3,7 @@
  */
 package edu.illinois.ncsa.versus.rest;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -21,6 +22,9 @@ import org.apache.commons.logging.LogFactory;
 
 import edu.illinois.ncsa.versus.adapter.Adapter;
 import edu.illinois.ncsa.versus.registry.CompareRegistry;
+import edu.illinois.ncsa.versus.util.Templates;
+import freemarker.template.Configuration;
+import freemarker.template.TemplateException;
 
 /**
  * Adapters resource.
@@ -57,24 +61,15 @@ public class AdapterResource {
 	@Path("/{id}")
 	@Produces("text/html")
 	public String getAdapterHTML(@PathParam("id") String id,
-			@Context ServletContext context) {
+			@Context ServletContext context) throws IOException,
+			TemplateException {
 
 		log.trace("/adapters/" + id + " requested");
 		Adapter adapter = getAdapter(context, id);
 		if (adapter != null) {
-			String content = new String("<h3>Versus > Adapters > "
-					+ adapter.getClass().getName() + "</h3><ul>")
-					+ "<li>"
-					+ adapter.getName()
-					+ "</li>"
-					+ "<li>"
-					+ adapter.getClass().getName()
-					+ "</li>"
-					+ "<li>"
-					+ adapter.getSupportedMediaTypes().toString()
-					+ "</li>"
-					+ adapter.getClass().getName() + "</li>" + "</ul>";
-			return content;
+			Configuration freeMarker = (Configuration) context
+					.getAttribute(Configuration.class.getName());
+			return Templates.create(freeMarker, "adapter.ftl", adapter);
 		} else {
 			return "Adapter not found";
 		}
