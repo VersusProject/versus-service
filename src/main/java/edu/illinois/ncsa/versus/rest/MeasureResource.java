@@ -46,7 +46,7 @@ public class MeasureResource {
 		} else {
 			String content = new String("<h3>Versus > Measures</h3><ul>");
 			for (Measure measure : measures) {
-				content += "<li><a href='/versus/api/measures/"
+				content += "<li><a href='measures/"
 						+ measure.getClass().getName() + "'>"
 						+ measure.getClass().getName() + "</a></li>";
 			}
