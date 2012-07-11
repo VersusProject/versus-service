@@ -17,15 +17,14 @@ public class ServiceResource {
 
 	@GET
 	public String listServices() {
-		return new String(
-				"<h3>Versus</h3>"
-						+ "<ul><li><a href='/versus/api/adapters'>Adapters</a></li>"
-						+ "<li><a href='/versus/api/extractors'>Extractors</a></li>"
-						+ "<li><a href='/versus/api/measures'>Measures</a></li>"
-						+ "<li><a href='/versus/api/comparisons'>Comparisons</a></li>"
-						+ "<li><a href='/versus/api/slaves'>Slaves</a></li>"
-						+ "<li><a href='/versus/api/distributions'>Distributions</a></li>"
-						+ "<li><a href='/versus/api/decisionSupport'>DecisionSupport</a></li>"
-						+ "</ul>");
+		return new String("<h3>Versus</h3>"
+				+ "<ul><li><a href='adapters'>Adapters</a></li>"
+				+ "<li><a href='extractors'>Extractors</a></li>"
+				+ "<li><a href='measures'>Measures</a></li>"
+				+ "<li><a href='comparisons'>Comparisons</a></li>"
+				+ "<li><a href='slaves'>Slaves</a></li>"
+				+ "<li><a href='distributions'>Distributions</a></li>"
+				+ "<li><a href='decisionSupport'>DecisionSupport</a></li>"
+				+ "</ul>");
 	}
 }
