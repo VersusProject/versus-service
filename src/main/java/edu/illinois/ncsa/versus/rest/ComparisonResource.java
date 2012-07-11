@@ -87,6 +87,50 @@ public class ComparisonResource {
 		}
 	}
 
+	@GET
+	@Path("/{id}/status")
+	@Produces("text/html")
+	public Response getStatus(@PathParam("id") String id,
+			@Context ServletContext context) {
+
+		Injector injector = (Injector) context.getAttribute(Injector.class
+				.getName());
+
+		ComparisonServiceImpl comparisonService = injector
+				.getInstance(ComparisonServiceImpl.class);
+		Comparison c = comparisonService.getComparison(id);
+		if (c == null) {
+			log.debug("Comparison not found " + id);
+			return Response.status(404)
+					.entity("Comparison " + id + " not found.").build();
+		} else {
+			log.debug("Comparison found " + id);
+			return Response.status(200).entity(c.getStatus()).build();
+		}
+	}
+
+	@GET
+	@Path("/{id}/value")
+	@Produces("text/html")
+	public Response getValue(@PathParam("id") String id,
+			@Context ServletContext context) {
+
+		Injector injector = (Injector) context.getAttribute(Injector.class
+				.getName());
+
+		ComparisonServiceImpl comparisonService = injector
+				.getInstance(ComparisonServiceImpl.class);
+		Comparison c = comparisonService.getComparison(id);
+		if (c == null) {
+			log.debug("Comparison not found " + id);
+			return Response.status(404)
+					.entity("Comparison " + id + " not found.").build();
+		} else {
+			log.debug("Comparison found " + id);
+			return Response.status(200).entity(c.getValue()).build();
+		}
+	}
+
 	/**
 	 * Submit new comparison.
 	 * 
