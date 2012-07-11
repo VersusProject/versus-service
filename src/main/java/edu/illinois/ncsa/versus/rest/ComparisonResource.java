@@ -89,7 +89,7 @@ public class ComparisonResource {
 
 	@GET
 	@Path("/{id}/status")
-	@Produces("text/html")
+	@Produces("text/plain")
 	public Response getStatus(@PathParam("id") String id,
 			@Context ServletContext context) {
 
@@ -111,7 +111,7 @@ public class ComparisonResource {
 
 	@GET
 	@Path("/{id}/value")
-	@Produces("text/html")
+	@Produces("text/plain")
 	public Response getValue(@PathParam("id") String id,
 			@Context ServletContext context) {
 
