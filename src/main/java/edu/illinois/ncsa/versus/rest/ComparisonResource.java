@@ -140,7 +140,7 @@ public class ComparisonResource {
 	@POST
 	@Produces(MediaType.TEXT_HTML)
 	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
-	public String submit(@Form ComparisonForm comparison,
+	public String submit(@Form ComparisonForm comparisonForm,
 			@Context ServletContext context) {
 
 		CompareRegistry registry = (CompareRegistry) context
@@ -152,15 +152,26 @@ public class ComparisonResource {
 		ComparisonServiceImpl comparisonService = injector
 				.getInstance(ComparisonServiceImpl.class);
 
-		if (checkRequirements(comparison, registry)) {
+		if (checkRequirements(registry, comparisonForm.adapter,
+				comparisonForm.extractor, comparisonForm.measure)) {
 			try {
-				return createLocalJob(comparison, comparisonService, engine);
+
+				final PairwiseComparison comparison = new PairwiseComparison();
+				comparison.setId(UUID.randomUUID().toString());
+				comparison.setFirstDataset(getFile(comparisonForm.dataset1));
+				comparison.setSecondDataset(getFile(comparisonForm.dataset2));
+				comparison.setAdapterId(comparisonForm.adapter);
+				comparison.setExtractorId(comparisonForm.extractor);
+				comparison.setMeasureId(comparisonForm.measure);
+
+				return createLocalJob(comparison, comparisonForm.dataset1,
+						comparisonForm.dataset2, comparisonService, engine);
 			} catch (IOException e) {
 				log.error("Internal error writing to disk", e);
 				return "Internal error writing to disk";
 			}
 		} else {
-			return querySlaves(comparison, comparison);
+			return querySlaves(comparisonForm, comparisonForm);
 		}
 	}
 
@@ -168,21 +179,24 @@ public class ComparisonResource {
 	 * 
 	 * @param form
 	 * @param registry
+	 * @param adapterId
+	 * @param extractorId
+	 * @param measureId
 	 * @return
 	 */
-	private boolean checkRequirements(ComparisonForm form,
-			CompareRegistry registry) {
-		boolean adapter = registry.getAvailableAdaptersIds().contains(
-				form.adapter);
+	public boolean checkRequirements(CompareRegistry registry,
+			String adapterId, String extractorId, String measureId) {
+		boolean adapter = registry.getAvailableAdaptersIds()
+				.contains(adapterId);
 		boolean extractor = registry.getAvailableExtractorsIds().contains(
-				form.extractor);
-		boolean measure = registry.getAvailableMeasuresIds().contains(
-				form.measure);
+				extractorId);
+		boolean measure = registry.getAvailableMeasuresIds()
+				.contains(measureId);
 		if (adapter && extractor && measure) {
-			log.debug("Local requirements fullfilled:" + form);
+			log.debug("Local requirements fullfilled");
 			return true;
 		} else {
-			log.debug("Local requirements not fullfilled " + form);
+			log.debug("Local requirements not fullfilled");
 			return false;
 		}
 	}
@@ -195,20 +209,13 @@ public class ComparisonResource {
 	 * @return
 	 * @throws IOException
 	 */
-	private String createLocalJob(ComparisonForm comparisoForm,
+	public String createLocalJob(final PairwiseComparison comparison,
+			String dataset1, String dataset2,
 			final ComparisonServiceImpl comparisons, ExecutionEngine engine)
 			throws IOException {
-		final PairwiseComparison comparison = new PairwiseComparison();
-		comparison.setId(UUID.randomUUID().toString());
-		comparison.setFirstDataset(getFile(comparisoForm.dataset1));
-		comparison.setSecondDataset(getFile(comparisoForm.dataset2));
-		comparison.setAdapterId(comparisoForm.adapter);
-		comparison.setExtractorId(comparisoForm.extractor);
-		comparison.setMeasureId(comparisoForm.measure);
 
 		// store
-		comparisons.addComparison(comparison, comparisoForm.dataset1,
-				comparisoForm.dataset2);
+		comparisons.addComparison(comparison, dataset1, dataset2);
 
 		engine.submit(comparison, new ComparisonStatusHandler() {
 
@@ -267,7 +274,7 @@ public class ComparisonResource {
 	 * @return
 	 * @throws IOException
 	 */
-	private File getFile(String remoteURL) throws IOException {
+	public File getFile(String remoteURL) throws IOException {
 		URL url = new URL(remoteURL);
 		byte[] buff = new byte[10240];
 		int len;

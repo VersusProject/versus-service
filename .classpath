@@ -11,5 +11,6 @@
 	<classpathentry combineaccessrules="false" kind="src" path="/versus-3d"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/versus-audio"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/versus-image"/>
+	<classpathentry combineaccessrules="false" kind="src" path="/versus-census"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>
