@@ -48,7 +48,7 @@ public class AdapterResource {
 		} else {
 			String content = new String("<h3>Versus > Adapters</h3><ul>");
 			for (Adapter adapter : adapters) {
-				content += "<li><a href='/versus/api/adapters/"
+				content += "<li><a href='adapters/"
 						+ adapter.getClass().getName() + "'>"
 						+ adapter.getClass().getName() + "</a></li>";
 			}

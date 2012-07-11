@@ -130,15 +130,15 @@ public class ComparisonResource {
 			CompareRegistry registry) {
 		boolean adapter = registry.getAvailableAdaptersIds().contains(
 				form.adapter);
-		boolean extractor = registry.getAvailableExtractors().contains(
+		boolean extractor = registry.getAvailableExtractorsIds().contains(
 				form.extractor);
-		boolean measure = registry.getAvailableMeasures()
-				.contains(form.measure);
+		boolean measure = registry.getAvailableMeasuresIds().contains(
+				form.measure);
 		if (adapter && extractor && measure) {
 			log.debug("Local requirements fullfilled:" + form);
 			return true;
 		} else {
-			log.debug("Local requirements not fullfilled" + form);
+			log.debug("Local requirements not fullfilled " + form);
 			return false;
 		}
 	}
