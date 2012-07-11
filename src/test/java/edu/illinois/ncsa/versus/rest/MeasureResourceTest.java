@@ -41,7 +41,7 @@ public class MeasureResourceTest {
 	public void testSubmit() throws ClientProtocolException, IOException {
 		String requestUrl = "http://localhost:8080/versus/api/v1/measures";
 		HttpGet httpGet = new HttpGet(requestUrl);
-		httpGet.addHeader("Accept:", "application/json");
+		// httpGet.addHeader("Accept:", "application/json");
 		ResponseHandler<String> responseHandler = new BasicResponseHandler();
 		log.debug(httpGet.getRequestLine());
 		HttpClient httpclient = new DefaultHttpClient();
