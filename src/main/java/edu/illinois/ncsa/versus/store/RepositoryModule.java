@@ -34,12 +34,20 @@ public class RepositoryModule extends AbstractModule {
 						JDBCComparisonProcessor.class).in(Singleton.class);
 			}
 			// files
-			bind(FileProcessor.class).to(DiskFileProcessor.class).in(
-					Singleton.class);
+			String files = properties.getProperty("files", "disk");
+			if ("disk".equals(files)) {
+				bind(FileProcessor.class).to(DiskFileProcessor.class).in(
+						Singleton.class);
+			} else if ("mongo".equals(files)) {
+				bind(FileProcessor.class).to(MongoFileProcessor.class).in(
+						Singleton.class);
+			}
 			// distribution
-			bind(DistributionService.class).to(DistributionServiceImpl.class).in(Singleton.class);
-			//decision support
-			bind(DecisionSupportService.class).to(DecisionSupportServiceImpl.class).in(Singleton.class);
+			bind(DistributionService.class).to(DistributionServiceImpl.class)
+					.in(Singleton.class);
+			// decision support
+			bind(DecisionSupportService.class).to(
+					DecisionSupportServiceImpl.class).in(Singleton.class);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

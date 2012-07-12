@@ -49,7 +49,7 @@ public class FileResource {
 	@Produces("multipart/form-data")
 	public String get(@PathParam("id") String id,
 			@Context ServletContext context, @Context HttpServletResponse res)
-			throws IOException {
+			throws Exception {
 
 		Injector injector = (Injector) context.getAttribute(Injector.class
 				.getName());
@@ -83,7 +83,7 @@ public class FileResource {
 	@Path("/upload")
 	@Consumes("multipart/form-data")
 	public Response upload(@Context HttpServletRequest req,
-			@Context ServletContext context) throws IOException {
+			@Context ServletContext context) throws Exception {
 
 		if (ServletFileUpload.isMultipartContent(req)) {
 			DiskFileItemFactory factory = new DiskFileItemFactory();
