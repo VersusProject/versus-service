@@ -49,17 +49,18 @@ public class ComparisonServiceImpl implements ComparisonService {
 	}
 
 	@Override
-	public String addFile(InputStream inputStream) {
+	public String addFile(InputStream inputStream) throws Exception {
 		return fileProcessor.addFile(inputStream, null);
 	}
 
 	@Override
-	public String addFile(InputStream inputStream, String filename) {
+	public String addFile(InputStream inputStream, String filename)
+			throws Exception {
 		return fileProcessor.addFile(inputStream, filename);
 	}
 
 	@Override
-	public InputStream getFile(String id) {
+	public InputStream getFile(String id) throws Exception {
 		return fileProcessor.getFile(id);
 	}
 

@@ -18,9 +18,10 @@ public interface FileProcessor {
 	 * 
 	 * @param inputStream
 	 * @return unique identifier for file
+	 * @throws Exception
 	 */
-	String addFile(InputStream inputStream, String filename);
+	String addFile(InputStream inputStream, String filename) throws Exception;
 
-	InputStream getFile(String id);
+	InputStream getFile(String id) throws Exception;
 
 }
