@@ -29,6 +29,7 @@ import org.jboss.resteasy.annotations.Form;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 
+import edu.illinois.ncsa.versus.rest.ComparisonResource;
 import edu.illinois.ncsa.versus.engine.impl.ExecutionEngine;
 import edu.illinois.ncsa.versus.engine.impl.PairwiseComparison;
 import edu.illinois.ncsa.versus.extract.Extractor;
@@ -104,7 +105,8 @@ public class DecisionSupportResource {
 												// urls
 		ds.setDissimilarData(form.dissimilarFiles); // array of
 													// dissimilar
-													// file
+		
+		// file
 		// urls
 		ds.setAdapterId(form.adapter);
 
@@ -189,7 +191,7 @@ public class DecisionSupportResource {
 			// setup similar file comparisons
 			while (!similarFiles.isEmpty()) {
 
-				for (int j = 0; j < similarFiles.size(); j++) {
+				for (int j = 0; j < similarFiles.size()-1; j++) {
 
 					String cid = comparisonService.findComparison(
 							similarFiles.get(0), similarFiles.get(j),
@@ -246,7 +248,7 @@ public class DecisionSupportResource {
 			}
 			// setup dissimilar file comparisons
 			while (!dissimilarFiles.isEmpty()) {
-				for (int j = 0; j < dissimilarFiles.size(); j++) {
+				for (int j = 0; j < dissimilarFiles.size()-1; j++) {
 
 					String cid = comparisonService.findComparison(
 							dissimilarFiles.get(0), dissimilarFiles.get(j),
