@@ -11,6 +11,7 @@
  */
 package gov.nist.itl.ssd.sampling;
 
+import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -24,7 +25,7 @@ import com.thoughtworks.xstream.annotations.XStreamConverter;
  * @author antoinev
  */
 @XStreamAlias("sampler")
-public class SamplerDescriptor {
+public class SamplerDescriptor implements Serializable {
 
     @XStreamAlias("name")
     private final String name;

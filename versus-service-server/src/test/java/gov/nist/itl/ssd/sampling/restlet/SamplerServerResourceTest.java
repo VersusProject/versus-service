@@ -91,16 +91,16 @@ public class SamplerServerResourceTest {
         
         ClientResource clientResource = new ClientResource(
                 url + SamplerServerResource.URL + RandomSampler.class.getName());
-//        SamplerDescriptor sampler = clientResource.get(SamplerDescriptor.class);
-//        assertNotNull(sampler);
-//        assertEquals(expected, sampler);
-//        assertSamplersDescriptorEquals(expected, sampler);
+        SamplerDescriptor sampler = clientResource.get(SamplerDescriptor.class);
+        assertNotNull(sampler);
+        assertEquals(expected, sampler);
+        assertSamplersDescriptorEquals(expected, sampler);
         
-//        SamplersClient client = new SamplersClient(url);
-//        SamplerDescriptor samplerDesc = client.getSamplerDescriptor(RandomSampler.class.getName());
-//        assertNotNull(samplerDesc);
-//        assertEquals(expected, samplerDesc);
-//        assertSamplersDescriptorEquals(expected, samplerDesc);
+        SamplersClient client = new SamplersClient(url);
+        SamplerDescriptor samplerDesc = client.getSamplerDescriptor(RandomSampler.class.getName());
+        assertNotNull(samplerDesc);
+        assertEquals(expected, samplerDesc);
+        assertSamplersDescriptorEquals(expected, samplerDesc);
         
         Representation xmlRepresentation = clientResource.get(MediaType.TEXT_XML);
         XStream xstream = new XStream();
