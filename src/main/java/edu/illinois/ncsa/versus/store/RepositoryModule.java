@@ -32,6 +32,9 @@ public class RepositoryModule extends AbstractModule {
 			} else if ("mysql".equals(repository)) {
 				bind(ComparisonProcessor.class).to(
 						JDBCComparisonProcessor.class).in(Singleton.class);
+			} else if ("mongo".equals(repository)) {
+				bind(ComparisonProcessor.class).to(
+						MongoComparisonProcessor.class).in(Singleton.class);
 			}
 			// files
 			String files = properties.getProperty("files", "disk");
