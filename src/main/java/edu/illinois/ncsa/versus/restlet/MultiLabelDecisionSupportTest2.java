@@ -45,8 +45,14 @@ public class MultiLabelDecisionSupportTest2 {
 			s1.add("http://isda.ncsa.illinois.edu/drupal/sites/default/files/images/eservices_presentation.preview.jpg");
 			s1.add("http://isda.ncsa.illinois.edu/drupal/sites/default/files/images/CI_fig51_sm.jpg");
 			
+//			s1.add("http://www.glerl.noaa.gov/webcams/images/lmfs1.jpg");
+//			s1.add("http://www.glerl.noaa.gov/webcams/images/lmfs2.jpg");
+			
 			s2.add("http://isda.ncsa.illinois.edu/drupal/sites/default/files/newsflash_logo.jpg");
 			s2.add("http://isda.ncsa.illinois.edu/drupal/sites/default/files/images/eScience2010_0.jpg");
+			
+//			s2.add("http://upload.wikimedia.org/wikipedia/commons/5/54/DLF_IT_Park_-_Rajarhat_2012-04-11_9380.JPG");
+//			s2.add("http://upload.wikimedia.org/wikipedia/commons/3/33/Uniworld_City_entrance.jpg");
 			
 			s3.add("http://isda.ncsa.illinois.edu/drupal/sites/default/files/pictures/picture-5.jpg");
 			s3.add("http://isda.ncsa.illinois.edu/drupal/sites/default/files/pictures/picture-18.jpg");
@@ -59,7 +65,7 @@ public class MultiLabelDecisionSupportTest2 {
 
 			int k = 3;
 			
-			MultiLabelDecisionSupport mlds = new MultiLabelDecisionSupport(d, "edu.illinois.ncsa.versus.adapter.impl.BufferedImageAdapter",k,"method2");
+			MultiLabelDecisionSupport mlds = new MultiLabelDecisionSupport(d, "edu.illinois.ncsa.versus.adapter.impl.BufferedImageAdapter",k,"probabilistic");
 			
 			dsResource.post(getMultiLabelDecisionSupportRepresentation(mlds));
 			
