@@ -32,16 +32,33 @@ public class RepositoryModule extends AbstractModule {
 			} else if ("mysql".equals(repository)) {
 				bind(ComparisonProcessor.class).to(
 						JDBCComparisonProcessor.class).in(Singleton.class);
+			} else if ("mongo".equals(repository)) {
+				bind(ComparisonProcessor.class).to(
+						MongoComparisonProcessor.class).in(Singleton.class);
 			}
 			// files
-			bind(FileProcessor.class).to(DiskFileProcessor.class).in(
-					Singleton.class);
+			String files = properties.getProperty("files", "disk");
+			if ("disk".equals(files)) {
+				bind(FileProcessor.class).to(DiskFileProcessor.class).in(
+						Singleton.class);
+			} else if ("mongo".equals(files)) {
+				bind(FileProcessor.class).to(MongoFileProcessor.class).in(
+						Singleton.class);
+			}
 			// distribution
+<<<<<<< HEAD
 			bind(DistributionService.class).to(DistributionServiceImpl.class).in(Singleton.class);
 			//decision support
 			bind(DecisionSupportService.class).to(DecisionSupportServiceImpl.class).in(Singleton.class);
 			//mlds
 			bind(MultiLabelDecisionSupportService.class).to(MultiLabelDecisionSupportServiceImpl.class).in(Singleton.class);
+=======
+			bind(DistributionService.class).to(DistributionServiceImpl.class)
+					.in(Singleton.class);
+			// decision support
+			bind(DecisionSupportService.class).to(
+					DecisionSupportServiceImpl.class).in(Singleton.class);
+>>>>>>> 03d08896165d1ab528a120a970cd49acd790ff97
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
