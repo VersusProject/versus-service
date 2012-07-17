@@ -42,7 +42,8 @@ public class AdapterResource {
 	public String listHTML(@Context ServletContext context) {
 
 		log.trace("/adapters requested");
-		Collection<Adapter> adapters = getAdapters(context);
+		// Collection<Adapter> adapters = getAdapters(context);
+		List<Adapter> adapters = CompareRegistry.getAdapters();
 		if (adapters.size() == 0) {
 			return "No adapters";
 		} else {

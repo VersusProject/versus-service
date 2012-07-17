@@ -34,21 +34,21 @@ public interface ComparisonService {
 	 * Get a comparison by the relevant parameters.
 	 * 
 	 * @param file1
-	 * 				filename
+	 *            filename
 	 * @param file2
-	 * 				filename
-	 * @param adapter	
-	 * 				name of adapter
-	 * @param extractor	
-	 * 				name of extractor
-	 *@param measure	
-	 *				name of measure
-	 *
+	 *            filename
+	 * @param adapter
+	 *            name of adapter
+	 * @param extractor
+	 *            name of extractor
+	 * @param measure
+	 *            name of measure
+	 * 
 	 * @return comparison that matches the input parameters
 	 */
-	String findComparison(String file1, String file2, String adapter, String extractor, String measure);
-	
-	
+	String findComparison(String file1, String file2, String adapter,
+			String extractor, String measure);
+
 	/**
 	 * Retrieve all known comparisons.
 	 * 
@@ -71,18 +71,21 @@ public interface ComparisonService {
 	 * 
 	 * @param inputStream
 	 * @return unique identifier for file
+	 * @throws Exception
 	 */
-	String addFile(InputStream inputStream);
+	String addFile(InputStream inputStream) throws Exception;
 
 	/**
 	 * Store file stream.
 	 * 
 	 * @param inputStream
-	 * @param filename the original filename
+	 * @param filename
+	 *            the original filename
 	 * @return unique identifier for file
+	 * @throws Exception
 	 */
-	String addFile(InputStream inputStream, String filename);
+	String addFile(InputStream inputStream, String filename) throws Exception;
 
-	InputStream getFile(String id);
+	InputStream getFile(String id) throws Exception;
 
 }
