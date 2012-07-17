@@ -36,7 +36,7 @@ public class DecisionSupportTest {
 		try {
 
 			String[] sList = {"http://isda.ncsa.illinois.edu/drupal/sites/default/files/images/eservices_presentation.preview.jpg","http://isda.ncsa.illinois.edu/drupal/sites/default/files/images/CI_fig51_sm.jpg"};
-			String[] dList = {"http://isda.ncsa.illinois.edu/drupal/sites/default/files/newsflash_logo.jpg","http://isda.ncsa.illinois.edu/drupal/sites/default/files/images/eScience2010_0.jpg"};
+			String[] dList = {"http://isda.ncsa.illinois.edu/drupal/sites/default/files/newsflash_logo.jpg","http://isda.ncsa.illinois.edu/drupal/sites/default/files/images/eScience2010_0.jpg","http://isda.ncsa.illinois.edu/drupal/sites/default/files/pictures/picture-5.jpg"};
 			
 			DecisionSupport ds = new DecisionSupport(
 					sList,

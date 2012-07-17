@@ -59,7 +59,7 @@ public class MultiLabelDecisionSupportTest1 {
 
 			int k = 3;
 			
-			MultiLabelDecisionSupport mlds = new MultiLabelDecisionSupport(d, "edu.illinois.ncsa.versus.adapter.impl.BufferedImageAdapter",k,"method1");
+			MultiLabelDecisionSupport mlds = new MultiLabelDecisionSupport(d, "edu.illinois.ncsa.versus.adapter.impl.BufferedImageAdapter",k,"inverseKmeans");
 			
 			dsResource.post(getMultiLabelDecisionSupportRepresentation(mlds));
 			

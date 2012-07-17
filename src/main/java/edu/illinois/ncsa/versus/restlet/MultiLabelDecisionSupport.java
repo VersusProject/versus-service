@@ -207,14 +207,14 @@ public class MultiLabelDecisionSupport implements Serializable {
 				
 					Comparison c = comparisonService.getComparison( comparisons.get(j).get(k) );
 				
-					if( c.getStatus() != ComparisonStatus.DONE ){
-						return false;
-					}
-					else if( c.getStatus() == ComparisonStatus.ABORTED || c.getStatus() == ComparisonStatus.FAILED){
+					if( (c.getStatus() == ComparisonStatus.ABORTED) || (c.getStatus() == ComparisonStatus.FAILED) ){
 						cErrorFlag = true;
 						break;
 					}
-				
+					else if( c.getStatus() != ComparisonStatus.DONE ){
+						return false;
+					}
+
 				}
 				if(cErrorFlag){
 					break;
@@ -222,6 +222,7 @@ public class MultiLabelDecisionSupport implements Serializable {
 			}
 			if(cErrorFlag){
 				mldsData.remove(i);
+				
 				i--;
 			}
 		}	
@@ -242,7 +243,7 @@ public class MultiLabelDecisionSupport implements Serializable {
 			Injector injector                       = Guice.createInjector(new RepositoryModule());
 			ComparisonServiceImpl comparisonService = injector.getInstance(ComparisonServiceImpl.class);
 			
-			if(method.equals("method1")){			
+			if(method.equals("inverseKmeans")){			
 			
 				double minMeanSum = Double.MAX_VALUE;
 				int minMeanIndex = -1;
@@ -276,12 +277,12 @@ public class MultiLabelDecisionSupport implements Serializable {
 				}// end i
 	
 				if( minMeanIndex != -1 ){
-					decidedMethod = mldsData.get(minMeanIndex).extractorID + " " + mldsData.get(minMeanIndex).adapterID;
+					decidedMethod = mldsData.get(minMeanIndex).extractorID + " " + mldsData.get(minMeanIndex).measureID;
 				}
 				status              = MLDS_Status.DONE;
 				computationFinished = true;
 			}
-			else if( method.equals("method2") ){//chen et al's method
+			else if( method.equals("probabilistic") ){//chen et al's method
 								
 				//for each mldsData compute the PE value and get the best 5
 				double[] PE_vals       = new double[mldsData.size()];

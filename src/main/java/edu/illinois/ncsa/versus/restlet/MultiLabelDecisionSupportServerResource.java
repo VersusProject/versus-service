@@ -40,7 +40,7 @@ public class MultiLabelDecisionSupportServerResource extends ServerResource {
 		MultiLabelDecisionSupportServiceImpl distributionService = injector.getInstance(MultiLabelDecisionSupportServiceImpl.class);
 		MultiLabelDecisionSupport mlds                  		 = distributionService.getMultiLabelDecisionSupport(id);
 		
-		if( (!mlds.checkIfComputationComplete()) || (mlds.getStatus() != MLDS_Status.RUNNING) ){
+		if( ( !mlds.checkIfComputationComplete()) || (mlds.getStatus() != MLDS_Status.RUNNING) ){
 			mlds.getBestPair();
 		}
 		
@@ -66,6 +66,11 @@ public class MultiLabelDecisionSupportServerResource extends ServerResource {
 				}
 				statusId.appendChild(document.createTextNode(status));
 				elementDistribution.appendChild(statusId);
+				
+				// method chosen
+				Element mc = document.createElement("methodChosen");
+				mc.appendChild(document.createTextNode(mlds.getMethod()));
+				elementDistribution.appendChild(mc);
 				
 				// adapter
 				Element adapter = document.createElement("adapter");
