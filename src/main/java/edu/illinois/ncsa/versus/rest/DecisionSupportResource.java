@@ -123,17 +123,17 @@ public class DecisionSupportResource {
 		return ds.getId();
 	}
 
-	@GET
-	@Path("/{id}")
-	@Produces("text/html")
-	public DecisionSupport getBean(@PathParam("id") String id,
-			@Context ServletContext context) {
-		Injector injector = (Injector) context.getAttribute(Injector.class
-				.getName());
-		DecisionSupportServiceImpl dsService = injector
-				.getInstance(DecisionSupportServiceImpl.class);
-		return dsService.getDecisionSupport(id);
-	}
+//	@GET
+//	@Path("/{id}")
+//	@Produces("text/html")
+//	public DecisionSupport getBean(@PathParam("id") String id,
+//			@Context ServletContext context) {
+//		Injector injector = (Injector) context.getAttribute(Injector.class
+//				.getName());
+//		DecisionSupportServiceImpl dsService = injector
+//				.getInstance(DecisionSupportServiceImpl.class);
+//		return dsService.getDecisionSupport(id);
+//	}
 
 	@GET
 	@Path("/{id}")
@@ -147,19 +147,25 @@ public class DecisionSupportResource {
 				.getInstance(DecisionSupportServiceImpl.class);
 		DecisionSupport ds = dsService.getDecisionSupport(id);
 
-		ds.getBestPair();
-
+		if(ds.getStatus() != DS_Status.RUNNING || ds.getStatus() != DS_Status.DONE){
+			ds.getBestPair();
+		}
+		
+		log.debug("get json");
 		Map<String, Object> json = new HashMap<String, Object>();
 		if (ds != null) {
 			json.put("id", ds.getId());
 			json.put("status", ds.getStatus());
 			json.put("decidedMethod", ds.getDecidedMethod());
+			json.put("rankedResults", ds.getBestResultsList());
 
 		} else {
 			json.put("Error", "Adapter not found");
 		}
 		return json;
 	}
+	
+	
 
 	/**
 	 * 
@@ -289,8 +295,8 @@ public class DecisionSupportResource {
 
 							try {
 								a.createLocalJob(pairwiseComparison,
-										similarFiles.get(0),
-										similarFiles.get(j), comparisonService,
+										dissimilarFiles.get(0),
+										dissimilarFiles.get(j), comparisonService,
 										engine);
 							} catch (IOException e) {
 								log.error("Internal error writing to disk", e);
