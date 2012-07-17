@@ -147,13 +147,6 @@
 			<version>3.0</version>
 		</dependency>
 		<dependency>
-			<groupId>junit</groupId>
-			<artifactId>junit</artifactId>
-			<version>4.8.1</version>
-			<type>jar</type>
-			<scope>test</scope>
-		</dependency>
-		<dependency>
 			<groupId>javax.media</groupId>
 			<artifactId>jai_core</artifactId>
 			<version>1.1.3</version>
@@ -238,7 +231,11 @@
 			<artifactId>resteasy-jaxb-provider</artifactId>
 			<version>2.3.4.Final</version>
 		</dependency>
-
+		<dependency>
+			<groupId>org.jboss.resteasy</groupId>
+			<artifactId>resteasy-multipart-provider</artifactId>
+			<version>2.3.4.Final</version>
+		</dependency>
 		<dependency>
 			<groupId>org.eclipse.jetty</groupId>
 			<artifactId>jetty-server</artifactId>
@@ -254,20 +251,22 @@
 			<artifactId>jetty-webapp</artifactId>
 			<version>${jetty.version}</version>
 		</dependency>
+		<dependency>
+			<groupId>org.freemarker</groupId>
+			<artifactId>freemarker</artifactId>
+			<version>2.3.19</version>
+		</dependency>
+		<dependency>
+			<groupId>org.mongodb</groupId>
+			<artifactId>mongo-java-driver</artifactId>
+			<version>2.8.0</version>
+		</dependency>
 
 		<dependency>
-			<groupId>edu-illinois.ncsa.isda</groupId>
-			<artifactId>versus-3d</artifactId>
-			<version>0.6.0-SNAPSHOT</version>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<version>4.10</version>
 		</dependency>
-		<dependency>
-			<groupId>edu-illinois.ncsa.isda</groupId>
-			<artifactId>versus-image</artifactId>
-			<version>0.6.0-SNAPSHOT</version>
-		</dependency>
-		<!-- <dependency> <groupId>edu-illinois.ncsa.isda</groupId> <artifactId>versus-image-fiji</artifactId> 
-			<version>0.0.1-SNAPSHOT</version> </dependency> <dependency> <groupId>edu-illinois.ncsa.isda</groupId> 
-			<artifactId>versus-image-opencv</artifactId> <version>0.0.1-SNAPSHOT</version> 
-			</dependency> -->
+
 	</dependencies>
 </project>
