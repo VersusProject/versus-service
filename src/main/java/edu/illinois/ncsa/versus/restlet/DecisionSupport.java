@@ -49,7 +49,7 @@ public class DecisionSupport implements Serializable {
 	
 	public DecisionSupport() {
 	}
-
+	
 	public DecisionSupport(String[] sd, String[] dd, String adapterId) {
 		super();
 		this.adapterId = adapterId;		
