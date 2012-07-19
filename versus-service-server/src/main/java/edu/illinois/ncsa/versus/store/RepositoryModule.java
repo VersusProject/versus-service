@@ -7,6 +7,8 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Singleton;
 
 import edu.illinois.ncsa.versus.restlet.PropertiesUtil;
+import gov.nist.itl.ssd.versus.store.SamplingService;
+import gov.nist.itl.ssd.versus.store.SamplingServiceImpl;
 
 /**
  * Guice wiring for repository.
@@ -40,6 +42,9 @@ public class RepositoryModule extends AbstractModule {
 			bind(DistributionService.class).to(DistributionServiceImpl.class).in(Singleton.class);
 			//decision support
 			bind(DecisionSupportService.class).to(DecisionSupportServiceImpl.class).in(Singleton.class);
+            
+            // Sampling
+            bind(SamplingService.class).to(SamplingServiceImpl.class).in(Singleton.class);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();

@@ -54,7 +54,7 @@ public class ComparisonsServerResource extends VersusServerResource {
                 injector.getInstance(ComparisonServiceImpl.class);
         Collection<Comparison> comparisons = comparisonService.listAll();
         HashSet<String> result = new HashSet<String>(comparisons.size());
-        for (Comparison comparison : comparisonService.listAll()) {
+        for (Comparison comparison : comparisons) {
             result.add(comparison.getId());
         }
         return result;
