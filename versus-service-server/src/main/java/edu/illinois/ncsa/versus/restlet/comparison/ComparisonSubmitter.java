@@ -46,7 +46,11 @@ public class ComparisonSubmitter {
 
     private final InputStream dataset2Stream;
 
-    private final ServerApplication server;
+    private final CompareRegistry registry;
+
+    private final ExecutionEngine engine;
+
+    private final SlavesManager slavesManager;
 
     private static final Logger logger = Logger.getLogger(ComparisonSubmitter.class.getName());
 
@@ -54,7 +58,9 @@ public class ComparisonSubmitter {
             throws MalformedURLException, IOException {
         URL url1 = new URL(comparison.getFirstDataset());
         URL url2 = new URL(comparison.getSecondDataset());
-        this.server = server;
+        this.registry = server.getRegistry();
+        this.engine = server.getEngine();
+        this.slavesManager = server.getSlavesManager();
         this.comparison = comparison;
         this.dataset1Stream = url1.openStream();
         this.dataset2Stream = url2.openStream();
@@ -62,7 +68,20 @@ public class ComparisonSubmitter {
 
     public ComparisonSubmitter(ServerApplication server, Comparison comparison,
             InputStream dataset1Stream, InputStream dataset2Stream) {
-        this.server = server;
+        this.registry = server.getRegistry();
+        this.engine = server.getEngine();
+        this.slavesManager = server.getSlavesManager();
+        this.comparison = comparison;
+        this.dataset1Stream = dataset1Stream;
+        this.dataset2Stream = dataset2Stream;
+    }
+
+    public ComparisonSubmitter(CompareRegistry registry, ExecutionEngine engine,
+            SlavesManager slavesManager, Comparison comparison,
+            InputStream dataset1Stream, InputStream dataset2Stream) {
+        this.registry = registry;
+        this.engine = engine;
+        this.slavesManager = slavesManager;
         this.comparison = comparison;
         this.dataset1Stream = dataset1Stream;
         this.dataset2Stream = dataset2Stream;
@@ -75,7 +94,6 @@ public class ComparisonSubmitter {
                 ServerApplication.getInjector().getInstance(ComparisonServiceImpl.class);
         Comparison result = comparison;
 
-        CompareRegistry registry = server.getRegistry();
         if (registry.supportComparison(comparison.getAdapterId(),
                 comparison.getExtractorId(), comparison.getMeasureId())) {
             comparisonService.addComparison(result);
@@ -106,14 +124,14 @@ public class ComparisonSubmitter {
     private Comparison querySlaves() throws IOException, NoSlaveAvailableException {
         // TODO: each slave should give a score telling how it is willing to
         // run the comparison
-        Set<Slave> supportingSlavesSet = server.getSlavesManager().
-                getSlaves(new SlavesManager.SlaveQuery<Boolean>() {
+        Set<Slave> supportingSlavesSet = slavesManager.getSlaves(
+                new SlavesManager.SlaveQuery<Boolean>() {
 
-            @Override
-            public Boolean executeQuery(Slave slave) {
-                return slave.supportComparison(comparison);
-            }
-        });
+                    @Override
+                    public Boolean executeQuery(Slave slave) {
+                        return slave.supportComparison(comparison);
+                    }
+                });
 
         List<Slave> supportingSlaves = new ArrayList<Slave>(supportingSlavesSet);
         // rank slaves
@@ -135,7 +153,6 @@ public class ComparisonSubmitter {
      */
     private void submit(final PairwiseComparison comparison) {
 
-        ExecutionEngine engine = server.getEngine();
         final ComparisonServiceImpl comparisonService =
                 ServerApplication.getInjector().getInstance(ComparisonServiceImpl.class);
 

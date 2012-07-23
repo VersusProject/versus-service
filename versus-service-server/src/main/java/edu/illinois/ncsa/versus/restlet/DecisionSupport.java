@@ -28,8 +28,8 @@ public class DecisionSupport implements Serializable {
 	
 	private String id;
 	private String adapterId;
-	private List<String> similarData                                    = new ArrayList<String>(); //comparison ids
-	private List<String> dissimilarData                                 = new ArrayList<String>(); //comparison ids	
+	private List<String> similarData                                    = new ArrayList<String>(); 
+	private List<String> dissimilarData                                 = new ArrayList<String>(); 
 	private DS_Status status                                            = DS_Status.UNINITIALZED;
 		
 	private List<ArrayList<String>> similarComparisonLists              = new ArrayList< ArrayList<String> >();
@@ -50,7 +50,7 @@ public class DecisionSupport implements Serializable {
 	
 	public DecisionSupport() {
 	}
-
+	
 	public DecisionSupport(String[] sd, String[] dd, String adapterId) {
 		super();
 		this.adapterId = adapterId;		
@@ -66,6 +66,10 @@ public class DecisionSupport implements Serializable {
 		decisionSupportData = dsd;
 	}
 
+	public boolean checkIfComputationComplete(){
+		return computationFinished;
+	}
+	
 	public String getBestResultsList(){
 		return rankedResults;
 	}

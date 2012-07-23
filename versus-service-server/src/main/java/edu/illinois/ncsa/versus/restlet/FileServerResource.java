@@ -38,13 +38,19 @@ public class FileServerResource extends VersusServerResource {
 						.createInjector(new RepositoryModule());
 				ComparisonServiceImpl comparisonService = injector
 						.getInstance(ComparisonServiceImpl.class);
-				InputStream source = comparisonService.getFile(id);
-				byte[] buf = new byte[1024];
-				int len;
-				while ((len = source.read(buf)) > 0) {
-					outputStream.write(buf, 0, len);
+				InputStream source;
+				try {
+					source = comparisonService.getFile(id);
+					byte[] buf = new byte[1024];
+					int len;
+					while ((len = source.read(buf)) > 0) {
+						outputStream.write(buf, 0, len);
+					}
+					source.close();
+				} catch (Exception e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
 				}
-				source.close();
 			}
 		};
 		return ouRepresentation;

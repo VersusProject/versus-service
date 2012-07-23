@@ -13,7 +13,7 @@
     <name>Versus Service</name>
     <properties>
         <restletVersion>2.1-RC5</restletVersion>
-        <jetty.version>7.6.4.v20120524</jetty.version>
+        <jetty.version>7.4.2.v20110526</jetty.version>
     </properties>
     <modules>
         <module>versus-service-client</module>
