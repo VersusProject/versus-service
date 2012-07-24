@@ -16,14 +16,20 @@ import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+import org.apache.commons.collections.CollectionUtils;
+import org.apache.commons.fileupload.FileItem;
+import org.apache.commons.fileupload.FileUploadException;
+import org.apache.commons.fileupload.disk.DiskFileItemFactory;
 import org.restlet.data.Form;
 import org.restlet.data.MediaType;
 import org.restlet.data.Status;
+import org.restlet.ext.fileupload.RestletFileUpload;
 import org.restlet.representation.Representation;
 import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.Get;
@@ -39,7 +45,6 @@ import edu.illinois.ncsa.versus.core.StringCollectionConverter;
 import edu.illinois.ncsa.versus.restlet.NoSlaveAvailableException;
 import edu.illinois.ncsa.versus.restlet.ServerApplication;
 import edu.illinois.ncsa.versus.restlet.VersusServerResource;
-import edu.illinois.ncsa.versus.restlet.comparison.ComparisonServerResource;
 import edu.illinois.ncsa.versus.store.RepositoryModule;
 import gov.nist.itl.ssd.sampling.Sampling;
 import gov.nist.itl.ssd.versus.store.SamplingService;
@@ -140,32 +145,76 @@ public class SamplingsServerResource extends VersusServerResource {
             return new StringRepresentation("Specify parameters", MediaType.TEXT_PLAIN);
         }
 
-        List<String> datasetsNames = new ArrayList<String>();
-        List<InputStream> datasetsStreams = new ArrayList<InputStream>();
+        HashMap<String, String> datasetsNames = new HashMap<String, String>();
+        HashMap<String, InputStream> datasetsStreams =
+                new HashMap<String, InputStream>();
         String individual = null;
         String sampler = null;
-        String stringSampleSize;
+        String stringSampleSize = null;
         Integer sampleSize;
 
         if (MediaType.MULTIPART_FORM_DATA.equals(entity.getMediaType(), true)) {
-            throw new UnsupportedOperationException("Not yet implemented");
+            DiskFileItemFactory factory = new DiskFileItemFactory();
+            factory.setSizeThreshold(1000240);
+            RestletFileUpload upload = new RestletFileUpload(factory);
+            List<FileItem> items;
+            try {
+                items = upload.parseRequest(getRequest());
+            } catch (FileUploadException ex) {
+                getLogger().log(Level.INFO, "Cannot parse client request", ex);
+                setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+                return new StringRepresentation("Invalid request: " + ex.getMessage(), MediaType.TEXT_PLAIN);
+            }
+
+            for (FileItem item : items) {
+                String name = item.getFieldName();
+                if (name.equals("individual")) {
+                    individual = item.getString();
+                } else if (name.equals("sampler")) {
+                    sampler = item.getString();
+                } else if (name.equals("sampleSize")) {
+                    stringSampleSize = item.getString();
+                } else if (name.equals("datasetsUrls")) {
+                    String ds = item.getString();
+                    int i = 0;
+                    for (String dataset : ds.split(";")) {
+                        datasetsStreams.put(Integer.toString(i),
+                                new URL(dataset).openStream());
+                        datasetsNames.put(Integer.toString(i), dataset);
+                        i++;
+                    }
+                } else if (name.startsWith("datasetUrl")) {
+                    datasetsNames.put(name.substring(10), item.getString());
+                } else if (name.startsWith("datasetStream")) {
+                    datasetsStreams.put(name.substring(13), item.getInputStream());
+                } else {
+                    getLogger().log(Level.INFO,
+                            "Ignoring parameter ''{0}'' specified by client.", name);
+                }
+            }
         } else {
             Form form = new Form(entity);
             String ds = form.getFirstValue("datasetsUrls", null);
+            int i = 0;
             for (String dataset : ds.split(";")) {
-                datasetsStreams.add(new URL(dataset).openStream());
-                datasetsNames.add(dataset);
+                datasetsStreams.put(Integer.toString(i),
+                        new URL(dataset).openStream());
+                datasetsNames.put(Integer.toString(i), dataset);
+                i++;
             }
             individual = form.getFirstValue("individual");
             sampler = form.getFirstValue("sampler");
             stringSampleSize = form.getFirstValue("sampleSize");
-
-
         }
 
         if (datasetsNames.isEmpty() || datasetsStreams.isEmpty()) {
             setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
             return new StringRepresentation("Specify the input datasets.", MediaType.TEXT_PLAIN);
+        }
+        if (!CollectionUtils.isEqualCollection(datasetsNames.keySet(),
+                datasetsStreams.keySet())) {
+            setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+            return new StringRepresentation("Unconsistent input datasets.", MediaType.TEXT_PLAIN);
         }
         if (individual == null) {
             setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
@@ -182,9 +231,17 @@ public class SamplingsServerResource extends VersusServerResource {
             return new StringRepresentation("Specify the sample size in an integer format.", MediaType.TEXT_PLAIN);
         }
 
+        ArrayList<String> names = new ArrayList<String>(datasetsNames.size());
+        ArrayList<InputStream> streams = new ArrayList<InputStream>(
+                datasetsNames.size());
+        for (String key : datasetsNames.keySet()) {
+            names.add(datasetsNames.get(key));
+            streams.add(datasetsStreams.get(key));
+        }
+
         ServerApplication server = (ServerApplication) getApplication();
-        Sampling sampling = new Sampling(individual, sampler, sampleSize, datasetsNames);
-        SamplingSubmitter submitter = new SamplingSubmitter(server, sampling, datasetsStreams);
+        Sampling sampling = new Sampling(individual, sampler, sampleSize, names);
+        SamplingSubmitter submitter = new SamplingSubmitter(server, sampling, streams);
         try {
             sampling = submitter.submit();
         } catch (NoSlaveAvailableException ex) {
