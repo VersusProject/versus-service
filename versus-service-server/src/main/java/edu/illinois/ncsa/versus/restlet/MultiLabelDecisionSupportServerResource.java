@@ -4,19 +4,13 @@
 package edu.illinois.ncsa.versus.restlet;
 
 import java.io.IOException;
-import java.util.Collection;
 import java.util.logging.Level;
 
-import org.json.JSONException;
-import org.json.JSONObject;
 import org.restlet.data.MediaType;
-import org.restlet.data.Status;
-import org.restlet.ext.json.JsonRepresentation;
 import org.restlet.ext.xml.DomRepresentation;
 import org.restlet.representation.Representation;
 import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.Get;
-import org.restlet.resource.ServerResource;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
@@ -24,13 +18,12 @@ import com.google.inject.Guice;
 import com.google.inject.Injector;
 
 import edu.illinois.ncsa.versus.restlet.MultiLabelDecisionSupport.MLDS_Status;
-import edu.illinois.ncsa.versus.store.MultiLabelDecisionSupportService;
 import edu.illinois.ncsa.versus.store.MultiLabelDecisionSupportServiceImpl;
 import edu.illinois.ncsa.versus.store.RepositoryModule;
 
 
 
-public class MultiLabelDecisionSupportServerResource extends ServerResource {
+public class MultiLabelDecisionSupportServerResource extends VersusServerResource {
 	
 	@Get("xml")
 	public Representation asXML() {		

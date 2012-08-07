@@ -19,7 +19,6 @@ import org.restlet.representation.Representation;
 import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.Get;
 import org.restlet.resource.Post;
-import org.restlet.resource.ServerResource;
 
 import com.google.inject.Guice;
 import com.google.inject.Injector;
@@ -35,7 +34,7 @@ import edu.illinois.ncsa.versus.store.ComparisonServiceImpl;
 import edu.illinois.ncsa.versus.store.MultiLabelDecisionSupportServiceImpl;
 import edu.illinois.ncsa.versus.store.RepositoryModule;
 
-public class MultiLabelDecisionSupportsServerResource extends ServerResource {
+public class MultiLabelDecisionSupportsServerResource extends VersusServerResource {
 	
 	@Get("html")
 	public Representation list() {

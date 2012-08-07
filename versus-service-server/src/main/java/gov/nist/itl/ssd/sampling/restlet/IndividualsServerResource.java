@@ -18,20 +18,20 @@ import org.restlet.data.MediaType;
 import org.restlet.representation.Representation;
 import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.Get;
-import org.restlet.resource.ServerResource;
 
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.json.JettisonMappedXmlDriver;
 
 import edu.illinois.ncsa.versus.core.StringCollectionConverter;
 import edu.illinois.ncsa.versus.restlet.ServerApplication;
+import edu.illinois.ncsa.versus.restlet.VersusServerResource;
 import gov.nist.itl.ssd.sampling.SamplingRegistry;
 
 /**
  *
  * @author antoinev
  */
-public class IndividualsServerResource extends ServerResource {
+public class IndividualsServerResource extends VersusServerResource {
 
     public static final String URL = "/individuals";
 
