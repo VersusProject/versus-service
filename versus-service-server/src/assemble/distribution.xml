@@ -36,6 +36,14 @@
             <fileMode>644</fileMode>
 		</fileSet>
 		<fileSet>
+			<directory>${project.basedir}</directory>
+			<outputDirectory>/</outputDirectory>
+			<includes>
+				<include>versus-service</include>
+			</includes>
+            <fileMode>555</fileMode>
+		</fileSet>
+		<fileSet>
 			<directory>${project.build.directory}/site</directory>
 			<outputDirectory>docs</outputDirectory>
             <fileMode>644</fileMode>
