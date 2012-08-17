@@ -57,6 +57,14 @@ import edu.illinois.ncsa.versus.restlet.measure.MeasuresServerResource;
 import edu.illinois.ncsa.versus.store.RepositoryModule;
 import edu.illinois.ncsa.versus.utility.HasCategory;
 import edu.illinois.ncsa.versus.utility.HasHelp;
+import gov.nist.itl.ssd.sampling.SamplingExecutionEngine;
+import gov.nist.itl.ssd.sampling.SamplingRegistry;
+import gov.nist.itl.ssd.sampling.restlet.IndividualServerResource;
+import gov.nist.itl.ssd.sampling.restlet.IndividualsServerResource;
+import gov.nist.itl.ssd.sampling.restlet.SamplerServerResource;
+import gov.nist.itl.ssd.sampling.restlet.SamplersServerResource;
+import gov.nist.itl.ssd.sampling.restlet.SamplingServerResource;
+import gov.nist.itl.ssd.sampling.restlet.SamplingsServerResource;
 
 /**
  * Main restlet application.
@@ -68,12 +76,16 @@ public class ServerApplication extends Application {
 
     private final CompareRegistry registry = new CompareRegistry();
 
+    private final SamplingRegistry samplingRegistry = new SamplingRegistry();
+    
     private final SlavesManager slavesManager = new SlavesManager();
 
     private final String masterURL;
 
     private final ExecutionEngine engine = new ExecutionEngine();
 
+    private final SamplingExecutionEngine samplingEngine = new SamplingExecutionEngine();
+    
     private final int port;
 
     private final String baseUrl;
@@ -183,6 +195,14 @@ public class ServerApplication extends Application {
         router.attach("/decisionSupport", DecisionSupportsServerResource.class);
         router.attach("/decisionSupport/{id}", DecisionSupportServerResource.class);
 
+        
+        router.attach(IndividualsServerResource.PATH_TEMPLATE, IndividualsServerResource.class);
+        router.attach(IndividualServerResource.PATH_TEMPLATE, IndividualServerResource.class);
+        router.attach(SamplersServerResource.PATH_TEMPLATE, SamplersServerResource.class);
+        router.attach(SamplerServerResource.PATH_TEMPLATE, SamplerServerResource.class);
+        router.attach(SamplingsServerResource.PATH_TEMPLATE, SamplingsServerResource.class);
+        router.attach(SamplingServerResource.PATH_TEMPLATE, SamplingServerResource.class);
+        
         router.attachDefault(DefaultServerResource.class);
 
         return router;
@@ -504,8 +524,16 @@ public class ServerApplication extends Application {
     public CompareRegistry getRegistry() {
         return registry;
     }
+    
+    public SamplingRegistry getSamplingRegistry() {
+        return samplingRegistry;
+    }
 
     public static Injector getInjector() {
         return injector;
+    }
+
+    public SamplingExecutionEngine getSamplingEngine() {
+        return samplingEngine;
     }
 }

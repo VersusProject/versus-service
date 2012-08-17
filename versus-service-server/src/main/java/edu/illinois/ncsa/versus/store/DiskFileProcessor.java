@@ -11,7 +11,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Properties;
-import java.util.UUID;
 
 import edu.illinois.ncsa.versus.restlet.PropertiesUtil;
 
@@ -35,7 +34,7 @@ public class DiskFileProcessor implements FileProcessor {
 			} else {
 				directory = System.getProperty("java.io.tmpdir");
 			}
-			//System.out.println("Storing file in " + directory);
+			// System.out.println("Storing file in " + directory);
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -47,13 +46,14 @@ public class DiskFileProcessor implements FileProcessor {
 		try {
 			File file;
 			File ff = new File(directory);
-			
+
 			if (filename == null) {
 				file = File.createTempFile("versus", ".tmp", ff);
 			} else {
 				int idx = filename.lastIndexOf(".");
 				if (idx != -1) {
-					file = File.createTempFile(filename.substring(0, idx), filename.substring(idx), ff);
+					file = File.createTempFile(filename.substring(0, idx),
+							filename.substring(idx), ff);
 				} else {
 					file = File.createTempFile(filename, ".tmp", ff);
 				}
@@ -71,7 +71,7 @@ public class DiskFileProcessor implements FileProcessor {
 			System.err.println("Upload directory not found: " + directory);
 			e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
+			System.err.println("Upload directory not found: " + directory);
 			e.printStackTrace();
 		}
 		return "";

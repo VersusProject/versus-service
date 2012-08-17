@@ -42,7 +42,9 @@ public class DecisionSupportServerResource extends VersusServerResource {
 		DecisionSupportServiceImpl dsService = injector.getInstance(DecisionSupportServiceImpl.class);		
 		DecisionSupport ds                   = dsService.getDecisionSupport(id);
 		
-		ds.getBestPair();
+		if(!ds.checkIfComputationComplete()){
+			ds.getBestPair();
+		}
 		
 		if (ds != null) {
 			try {

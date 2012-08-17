@@ -39,7 +39,8 @@ public interface ComparisonService {
      *
      * @return comparison that matches the input parameters
      */
-    String findComparison(String file1, String file2, String adapter, String extractor, String measure);
+    String findComparison(String file1, String file2, String adapter,
+            String extractor, String measure);
 
     /**
      * Retrieve all known comparisons.
@@ -57,28 +58,13 @@ public interface ComparisonService {
     void updateValue(String id, String value);
 
     /**
-     * Update the status of a specific comparison.
-     *
-     * @param id the id of the comparison to update
-     * @param status the new status
-     */
-    void setStatus(String id, Comparison.ComparisonStatus status);
-
-    /**
-     * Update the error message of a specific comparison
-     *
-     * @param id the id of the comparison to update
-     * @param error the new error message
-     */
-    void setError(String id, String error);
-
-    /**
      * Store file stream.
      *
      * @param inputStream
      * @return unique identifier for file
+     * @throws Exception
      */
-    String addFile(InputStream inputStream);
+    String addFile(InputStream inputStream) throws Exception;
 
     /**
      * Store file stream.
@@ -86,8 +72,11 @@ public interface ComparisonService {
      * @param inputStream
      * @param filename the original filename
      * @return unique identifier for file
+     * @throws Exception
      */
-    String addFile(InputStream inputStream, String filename);
+    String addFile(InputStream inputStream, String filename) throws Exception;
 
-    InputStream getFile(String id);
+    InputStream getFile(String id) throws Exception;
+
+    void setError(String id, String error);
 }

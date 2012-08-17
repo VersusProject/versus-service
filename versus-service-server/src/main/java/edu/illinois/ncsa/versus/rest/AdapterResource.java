@@ -3,6 +3,7 @@
  */
 package edu.illinois.ncsa.versus.rest;
 
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -21,6 +22,9 @@ import org.apache.commons.logging.LogFactory;
 
 import edu.illinois.ncsa.versus.adapter.Adapter;
 import edu.illinois.ncsa.versus.registry.CompareRegistry;
+import edu.illinois.ncsa.versus.util.Templates;
+import freemarker.template.Configuration;
+import freemarker.template.TemplateException;
 
 /**
  * Adapters resource.
@@ -35,19 +39,17 @@ public class AdapterResource {
 
 	@GET
 	@Produces("text/html")
-	public String list(@Context ServletContext context) {
+	public String listHTML(@Context ServletContext context) {
 
-		CompareRegistry registry = (CompareRegistry) context
-				.getAttribute(CompareRegistry.class.getName());
-
-		Collection<Adapter> adapters = registry.getAvailableAdapters();
-
+		log.trace("/adapters requested");
+		// Collection<Adapter> adapters = getAdapters(context);
+		List<Adapter> adapters = CompareRegistry.getAdapters();
 		if (adapters.size() == 0) {
 			return "No adapters";
 		} else {
 			String content = new String("<h3>Versus > Adapters</h3><ul>");
 			for (Adapter adapter : adapters) {
-				content += "<li><a href='/versus/api/adapters/"
+				content += "<li><a href='adapters/"
 						+ adapter.getClass().getName() + "'>"
 						+ adapter.getClass().getName() + "</a></li>";
 			}
@@ -57,49 +59,11 @@ public class AdapterResource {
 	}
 
 	@GET
-	@Path("/{id}")
-	@Produces("text/html")
-	public String getAdapterHTML(@PathParam("id") String id,
-			@Context ServletContext context) {
-		log.trace("/adapters/" + id + " requested");
-		CompareRegistry registry = (CompareRegistry) context
-				.getAttribute(CompareRegistry.class.getName());
-
-		Collection<Adapter> adapters = registry.getAvailableAdapters();
-		Adapter adapter = null;
-		for (Adapter a : adapters) {
-			if (a.getClass().getName().equals(id)) {
-				adapter = a;
-			}
-		}
-
-		if (adapter != null) {
-			String content = new String("<h3>Versus > Adapters > "
-					+ adapter.getClass().getName() + "</h3><ul>")
-					+ "<li>"
-					+ adapter.getName()
-					+ "</li>"
-					+ "<li>"
-					+ adapter.getClass().getName()
-					+ "</li>"
-					+ "<li>"
-					+ adapter.getSupportedMediaTypes().toString()
-					+ "</li>"
-					+ adapter.getClass().getName() + "</li>" + "</ul>";
-			return content;
-		} else {
-			return "Adapter not found";
-		}
-	}
-
-	@GET
 	@Produces("application/json")
 	public List<Map<String, Object>> listJSON(@Context ServletContext context) {
 
-		CompareRegistry registry = (CompareRegistry) context
-				.getAttribute(CompareRegistry.class.getName());
-
-		Collection<Adapter> adapters = registry.getAvailableAdapters();
+		log.trace("/adapters requested");
+		Collection<Adapter> adapters = getAdapters(context);
 		List<Map<String, Object>> jsonReturn = new ArrayList<Map<String, Object>>();
 		if (adapters.size() == 0) {
 			return jsonReturn;
@@ -117,10 +81,50 @@ public class AdapterResource {
 
 	@GET
 	@Path("/{id}")
+	@Produces("text/html")
+	public String getAdapterHTML(@PathParam("id") String id,
+			@Context ServletContext context) throws IOException,
+			TemplateException {
+
+		log.trace("/adapters/" + id + " requested");
+		Adapter adapter = getAdapter(context, id);
+		if (adapter != null) {
+			Configuration freeMarker = (Configuration) context
+					.getAttribute(Configuration.class.getName());
+			return Templates.create(freeMarker, "adapter.ftl", adapter,
+					"adapter");
+		} else {
+			return "Adapter not found";
+		}
+	}
+
+	@GET
+	@Path("/{id}")
 	@Produces("application/json")
 	public Map<String, Object> getAdapterJSON(@PathParam("id") String id,
 			@Context ServletContext context) {
+
 		log.trace("/adapters/" + id + " requested");
+		Adapter adapter = getAdapter(context, id);
+		Map<String, Object> json = new HashMap<String, Object>();
+		if (adapter != null) {
+			json.put("name", adapter.getName());
+			json.put("id", adapter.getClass().getName());
+			json.put("supportedMimeTypes", adapter.getSupportedMediaTypes());
+		} else {
+			json.put("Error", "Adapter not found");
+		}
+		return json;
+	}
+
+	private Collection<Adapter> getAdapters(ServletContext context) {
+		CompareRegistry registry = (CompareRegistry) context
+				.getAttribute(CompareRegistry.class.getName());
+
+		return registry.getAvailableAdapters();
+	}
+
+	private Adapter getAdapter(ServletContext context, String id) {
 		CompareRegistry registry = (CompareRegistry) context
 				.getAttribute(CompareRegistry.class.getName());
 
@@ -131,14 +135,6 @@ public class AdapterResource {
 				adapter = a;
 			}
 		}
-		Map<String, Object> json = new HashMap<String, Object>();
-		if (adapter != null) {
-			json.put("name", adapter.getName());
-			json.put("id", adapter.getClass().toString());
-			json.put("supportedMimeTypes", adapter.getSupportedMediaTypes());
-		} else {
-			json.put("Error", "Adapter not found");
-		}
-		return json;
+		return adapter;
 	}
 }
