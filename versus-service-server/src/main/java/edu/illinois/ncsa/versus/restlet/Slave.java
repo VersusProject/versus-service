@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Set;
 
+import org.restlet.resource.ClientResource;
 import edu.illinois.ncsa.versus.core.adapter.AdapterDescriptor;
 import edu.illinois.ncsa.versus.core.adapter.AdaptersClient;
 import edu.illinois.ncsa.versus.core.comparison.Comparison;
@@ -15,6 +16,7 @@ import edu.illinois.ncsa.versus.core.extractor.ExtractorDescriptor;
 import edu.illinois.ncsa.versus.core.extractor.ExtractorsClient;
 import edu.illinois.ncsa.versus.core.measure.MeasureDescriptor;
 import edu.illinois.ncsa.versus.core.measure.MeasuresClient;
+import edu.illinois.ncsa.versus.restlet.node.NodeStatusServerResource;
 
 /**
  * @author lmarini
@@ -102,6 +104,12 @@ public class Slave {
         return new ComparisonClient(url).supportComparison(adapterId, extractorId, measureId);
     }
 
+    public long getNodeStatus() {
+        ClientResource client = new ClientResource(url + NodeStatusServerResource.URL);
+        String string = client.get(String.class);
+        return Long.parseLong(string);
+    }
+    
     @Override
     public String toString() {
         return url;

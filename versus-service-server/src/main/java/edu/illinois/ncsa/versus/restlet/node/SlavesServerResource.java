@@ -1,7 +1,7 @@
 /**
  *
  */
-package edu.illinois.ncsa.versus.restlet;
+package edu.illinois.ncsa.versus.restlet.node;
 
 import java.util.Collection;
 import java.util.HashSet;
@@ -20,6 +20,8 @@ import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.json.JettisonMappedXmlDriver;
 
 import edu.illinois.ncsa.versus.core.StringCollectionConverter;
+import edu.illinois.ncsa.versus.restlet.ServerApplication;
+import edu.illinois.ncsa.versus.restlet.VersusServerResource;
 
 /**
  * @author Luigi Marini <lmarini@ncsa.illinois.edu>

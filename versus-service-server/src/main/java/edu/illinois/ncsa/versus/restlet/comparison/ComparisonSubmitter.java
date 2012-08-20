@@ -16,6 +16,7 @@ import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Set;
 import java.util.logging.Level;
@@ -32,6 +33,7 @@ import edu.illinois.ncsa.versus.restlet.RankSlaves;
 import edu.illinois.ncsa.versus.restlet.ServerApplication;
 import edu.illinois.ncsa.versus.restlet.Slave;
 import edu.illinois.ncsa.versus.restlet.SlavesManager;
+import edu.illinois.ncsa.versus.restlet.SlavesManager.SlaveValue;
 import edu.illinois.ncsa.versus.store.ComparisonServiceImpl;
 
 /**
@@ -94,23 +96,48 @@ public class ComparisonSubmitter {
                 ServerApplication.getInjector().getInstance(ComparisonServiceImpl.class);
         Comparison result = comparison;
 
-        if (registry.supportComparison(comparison.getAdapterId(),
-                comparison.getExtractorId(), comparison.getMeasureId())) {
-            comparisonService.addComparison(result);
-            PairwiseComparison pairwiseComparison = new PairwiseComparison();
-            pairwiseComparison.setId(comparison.getId());
-            pairwiseComparison.setAdapterId(comparison.getAdapterId());
-            pairwiseComparison.setExtractorId(comparison.getExtractorId());
-            pairwiseComparison.setMeasureId(comparison.getMeasureId());
-            pairwiseComparison.setFirstDataset(dataset1Stream);
-            pairwiseComparison.setSecondDataset(dataset2Stream);
-            submit(pairwiseComparison);
-        } else {
-            result = querySlaves();
-            comparisonService.addComparison(result);
+        boolean supportLocal = registry.supportComparison(comparison.getAdapterId(),
+                comparison.getExtractorId(), comparison.getMeasureId());
+        long waitingJobsNumber = engine.getWaitingJobsNumber();
+
+        if (supportLocal && waitingJobsNumber == 0) {
+            submitLocal(comparisonService, result);
+            return result;
         }
 
+        SlaveValue bestSlave = querySlaves();
+
+        if (bestSlave == null) {
+            if (!supportLocal) {
+                throw new NoSlaveAvailableException();
+            }
+            submitLocal(comparisonService, result);
+            return result;
+        }
+
+        if (supportLocal && waitingJobsNumber <= bestSlave.value) {
+            submitLocal(comparisonService, result);
+            return result;
+        }
+
+        Slave slave = bestSlave.slave;
+        logger.log(Level.INFO, "Forwarding comparison request to {0}",
+                slave);
+        result = slave.submit(comparison, dataset1Stream, dataset2Stream);
+        comparisonService.addComparison(result);
         return result;
+    }
+
+    private void submitLocal(ComparisonServiceImpl comparisonService, Comparison result) {
+        comparisonService.addComparison(result);
+        PairwiseComparison pairwiseComparison = new PairwiseComparison();
+        pairwiseComparison.setId(comparison.getId());
+        pairwiseComparison.setAdapterId(comparison.getAdapterId());
+        pairwiseComparison.setExtractorId(comparison.getExtractorId());
+        pairwiseComparison.setMeasureId(comparison.getMeasureId());
+        pairwiseComparison.setFirstDataset(dataset1Stream);
+        pairwiseComparison.setSecondDataset(dataset2Stream);
+        submit(pairwiseComparison);
     }
 
     /**
@@ -121,29 +148,23 @@ public class ComparisonSubmitter {
      * @param comparison
      * @return
      */
-    private Comparison querySlaves() throws IOException, NoSlaveAvailableException {
-        // TODO: each slave should give a score telling how it is willing to
-        // run the comparison
+    private SlaveValue querySlaves() throws IOException, NoSlaveAvailableException {
         Set<Slave> supportingSlavesSet = slavesManager.getSlaves(
                 new SlavesManager.SlaveQuery<Boolean>() {
-
                     @Override
                     public Boolean executeQuery(Slave slave) {
                         return slave.supportComparison(comparison);
                     }
                 });
+        SlaveValue minSlave = slavesManager.getMinSlave(supportingSlavesSet,
+                new SlavesManager.SlaveQuery<Long>() {
+                    @Override
+                    public Long executeQuery(Slave slave) {
+                        return slave.getNodeStatus();
+                    }
+                });
 
-        List<Slave> supportingSlaves = new ArrayList<Slave>(supportingSlavesSet);
-        // rank slaves
-        supportingSlaves = RankSlaves.rank(supportingSlaves);
-        // forward to first slave
-        if (supportingSlaves.isEmpty()) {
-            throw new NoSlaveAvailableException();
-        }
-        Slave slave = supportingSlaves.get(0);
-        logger.log(Level.INFO, "Forwarding comparison request to {0}",
-                slave);
-        return slave.submit(comparison, dataset1Stream, dataset2Stream);
+        return minSlave;
     }
 
     /**
@@ -157,7 +178,6 @@ public class ComparisonSubmitter {
                 ServerApplication.getInjector().getInstance(ComparisonServiceImpl.class);
 
         engine.submit(comparison, new ComparisonStatusHandler() {
-
             @Override
             public void onDone(double value) {
                 logger.log(

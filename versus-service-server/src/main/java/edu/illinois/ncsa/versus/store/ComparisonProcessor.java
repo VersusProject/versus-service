@@ -47,10 +47,24 @@ public interface ComparisonProcessor {
 	 */
 	void updateValue(String id, String value);
 
+    /**
+     * Update the status of a specific comparison.
+     * @param id the id of the comparison to update
+     * @param status the new status
+     */
 	void setStatus(String id, ComparisonStatus status);
     
+    /**
+     * Set the error message of a specific comparison.
+     * @param id the id of the comparison to update
+     * @param error the error message
+     */
     void setError(String id, String error);
 
+    /**
+     * Get the status of a specific comparison.
+     * @param id the id of the comparison to retrieve
+     * @return the status of the comparison
+     */
 	ComparisonStatus getStatus(String id);
-
 }

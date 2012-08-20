@@ -3,6 +3,7 @@
  */
 package edu.illinois.ncsa.versus.restlet;
 
+import edu.illinois.ncsa.versus.restlet.node.SlavesServerResource;
 import org.restlet.data.MediaType;
 import org.restlet.representation.Representation;
 import org.restlet.representation.StringRepresentation;

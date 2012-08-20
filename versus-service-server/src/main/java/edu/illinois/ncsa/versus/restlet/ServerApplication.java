@@ -1,5 +1,6 @@
 package edu.illinois.ncsa.versus.restlet;
 
+import edu.illinois.ncsa.versus.restlet.node.SlavesServerResource;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.Inet4Address;
@@ -54,6 +55,7 @@ import edu.illinois.ncsa.versus.restlet.measure.MeasureHelpServerResource;
 import edu.illinois.ncsa.versus.restlet.measure.MeasureHelpSha1ServerResource;
 import edu.illinois.ncsa.versus.restlet.measure.MeasureServerResource;
 import edu.illinois.ncsa.versus.restlet.measure.MeasuresServerResource;
+import edu.illinois.ncsa.versus.restlet.node.NodeStatusServerResource;
 import edu.illinois.ncsa.versus.store.RepositoryModule;
 import edu.illinois.ncsa.versus.utility.HasCategory;
 import edu.illinois.ncsa.versus.utility.HasHelp;
@@ -183,7 +185,7 @@ public class ServerApplication extends Application {
         router.attach(ComparisonSupportServerResource.PATH_TEMPLATE, ComparisonSupportServerResource.class);
 
 
-
+        router.attach(NodeStatusServerResource.PATH_TEMPLATE, NodeStatusServerResource.class);
 
 
         router.attach("/files/upload", UploadServerResource.class);
@@ -210,7 +212,7 @@ public class ServerApplication extends Application {
 
     public AdapterDescriptor getAdapter(final String id)
             throws NotFoundException {
-        Adapter adapter = registry.getAdapter(id);
+        Adapter adapter = CompareRegistry.getAdapter(id);
         if (adapter != null) {
             String category = adapter instanceof HasCategory
                     ? ((HasCategory) adapter).getCategory() : "";
@@ -256,7 +258,7 @@ public class ServerApplication extends Application {
     }
 
     public String getAdapterHelpSha1(final String adapterId) throws NotFoundException {
-        Adapter adapter = registry.getAdapter(adapterId);
+        Adapter adapter = CompareRegistry.getAdapter(adapterId);
         if (adapter != null) {
             if (!(adapter instanceof HasHelp)) {
                 throw new NotFoundException("The specified adapter has no help.");
@@ -279,7 +281,7 @@ public class ServerApplication extends Application {
     }
 
     public InputStream getAdapterZippedHelp(final String adapterId) throws NotFoundException {
-        Adapter adapter = registry.getAdapter(adapterId);
+        Adapter adapter = CompareRegistry.getAdapter(adapterId);
         if (adapter != null) {
             if (!(adapter instanceof HasHelp)) {
                 throw new NotFoundException("The specified adapter has no help.");
@@ -309,7 +311,7 @@ public class ServerApplication extends Application {
 
     public ExtractorDescriptor getExtractor(final String id)
             throws NotFoundException {
-        Extractor extractor = registry.getExtractor(id);
+        Extractor extractor = CompareRegistry.getExtractor(id);
         if (extractor != null) {
             String category = extractor instanceof HasCategory
                     ? ((HasCategory) extractor).getCategory() : "";
@@ -357,7 +359,7 @@ public class ServerApplication extends Application {
     }
 
     public String getExtractorHelpSha1(final String extractorId) throws NotFoundException {
-        Extractor extractor = registry.getExtractor(extractorId);
+        Extractor extractor = CompareRegistry.getExtractor(extractorId);
         if (extractor != null) {
             if (!(extractor instanceof HasHelp)) {
                 throw new NotFoundException("The specified extractor has no help.");

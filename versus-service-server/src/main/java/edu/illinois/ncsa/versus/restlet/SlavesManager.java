@@ -15,6 +15,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.Set;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
@@ -37,15 +38,26 @@ public class SlavesManager {
 
         T executeQuery(Slave slave);
     }
-    private final ConcurrentHashMap<String, Slave> slaves = new ConcurrentHashMap<String, Slave>();
+    private final ConcurrentHashMap<String, Slave> slaves =
+            new ConcurrentHashMap<String, Slave>();
 
     private static final int NUM_CORES =
             Runtime.getRuntime().availableProcessors();
-    
+
     private static final int NUM_THREADS = NUM_CORES * 10;
 
     private static final Logger logger =
             Logger.getLogger(SlavesManager.class.getName());
+
+    private final ExecutorService executor;
+
+    public SlavesManager() {
+        executor = Executors.newFixedThreadPool(NUM_THREADS);
+    }
+
+    public void shutDownNow() {
+        executor.shutdownNow();
+    }
 
     public Slave getSlave(String url) {
         return slaves.get(url);
@@ -62,18 +74,23 @@ public class SlavesManager {
     public HashSet<Slave> getSlaves() {
         return new HashSet(slaves.values());
     }
-    
+
     public HashSet<String> getSlavesUrl() {
         return new HashSet(slaves.keySet());
     }
 
     private <T> HashMap<Future<T>, Slave> submitQueryToSlaves(
-            ExecutorService executor, final SlaveQuery<T> query) {
-        HashMap<Future<T>, Slave> futures =
-                new HashMap<Future<T>, Slave>(getSlavesNumber());
-        for (final Slave slave : slaves.values()) {
-            Future<T> future = executor.submit(new Callable<T>() {
+            final SlaveQuery<T> query) {
+        return submitQueryToSlaves(slaves.values(), query);
+    }
 
+    private <T> HashMap<Future<T>, Slave> submitQueryToSlaves(
+            Collection<Slave> slaves,
+            final SlaveQuery<T> query) {
+        HashMap<Future<T>, Slave> futures =
+                new HashMap<Future<T>, Slave>(slaves.size());
+        for (final Slave slave : slaves) {
+            Future<T> future = executor.submit(new Callable<T>() {
                 @Override
                 public T call() throws Exception {
                     return query.executeQuery(slave);
@@ -110,9 +127,7 @@ public class SlavesManager {
      * @return the list of slaves matching the condition
      */
     public Set<Slave> getSlaves(final SlaveQuery<Boolean> condition) {
-        ExecutorService executor = Executors.newFixedThreadPool(NUM_THREADS);
-        HashMap<Future<Boolean>, Slave> futures =
-                submitQueryToSlaves(executor, condition);
+        HashMap<Future<Boolean>, Slave> futures = submitQueryToSlaves(condition);
 
         HashSet<Slave> result = new HashSet<Slave>(getSlavesNumber());
         for (Future<Boolean> f : futures.keySet()) {
@@ -125,7 +140,6 @@ public class SlavesManager {
                 manageSlaveException(ex, f, futures);
             }
         }
-        executor.shutdown();
         return result;
     }
 
@@ -137,9 +151,7 @@ public class SlavesManager {
      * @return true if any of the slave reply true to the query, false otherwise
      */
     public Boolean querySlavesAnyTrue(final SlaveQuery<Boolean> query) {
-        ExecutorService executor = Executors.newFixedThreadPool(NUM_THREADS);
-        HashMap<Future<Boolean>, Slave> futures =
-                submitQueryToSlaves(executor, query);
+        HashMap<Future<Boolean>, Slave> futures = submitQueryToSlaves(query);
 
         Boolean result = false;
         for (Future<Boolean> f : futures.keySet()) {
@@ -153,7 +165,6 @@ public class SlavesManager {
                 manageSlaveException(ex, f, futures);
             }
         }
-        executor.shutdown();
         return result;
     }
 
@@ -166,9 +177,7 @@ public class SlavesManager {
      * @return The first not null result or null if all the results are null
      */
     public <T> T querySlavesFirstNotNull(final SlaveQuery<T> query) {
-        ExecutorService executor = Executors.newFixedThreadPool(NUM_THREADS);
-        HashMap<Future<T>, Slave> futures =
-                submitQueryToSlaves(executor, query);
+        HashMap<Future<T>, Slave> futures = submitQueryToSlaves(query);
 
         T result = null;
         for (Future<T> f : futures.keySet()) {
@@ -182,7 +191,6 @@ public class SlavesManager {
                 manageSlaveException(ex, f, futures);
             }
         }
-        executor.shutdown();
         return result;
     }
 
@@ -195,9 +203,7 @@ public class SlavesManager {
      * @return A collection containing the result on each slave
      */
     public <T> Collection<T> querySlaves(final SlaveQuery<T> query) {
-        ExecutorService executor = Executors.newFixedThreadPool(NUM_THREADS);
-        HashMap<Future<T>, Slave> futures =
-                submitQueryToSlaves(executor, query);
+        HashMap<Future<T>, Slave> futures = submitQueryToSlaves(query);
 
         final ArrayList<T> result = new ArrayList<T>(getSlavesNumber());
         for (Future<T> f : futures.keySet()) {
@@ -207,7 +213,61 @@ public class SlavesManager {
                 manageSlaveException(ex, f, futures);
             }
         }
-        executor.shutdown();
         return result;
+    }
+
+    /**
+     * Return the slave with the lowest value along with this value
+     * @param slaves
+     * @param query
+     * @return 
+     */
+    public SlaveValue getMinSlave(Set<Slave> slaves, final SlaveQuery<Long> query) {
+        if (slaves.isEmpty()) {
+            return null;
+        }
+
+        HashMap<Future<Long>, Slave> futures = submitQueryToSlaves(query);
+
+        Long min = null;
+        Slave slave = null;
+        Iterator<Future<Long>> iterator = futures.keySet().iterator();
+        while (min == null && iterator.hasNext()) {
+            Future<Long> next = iterator.next();
+            try {
+                min = next.get();
+                slave = futures.get(next);
+            } catch (Exception e) {
+                manageSlaveException(e, next, futures);
+            }
+        }
+        if (min == null) {
+            return null;
+        }
+        while(iterator.hasNext()) {
+            Future<Long> next = iterator.next();
+            try {
+                Long current = next.get();
+                if(current < min) {
+                    min = current;
+                    slave = futures.get(next);
+                }
+            } catch (Exception e) {
+                manageSlaveException(e, next, futures);
+            }
+        }
+        return new SlaveValue(slave, min);
+    }
+
+    public class SlaveValue {
+
+        public final Slave slave;
+
+        public final long value;
+
+        public SlaveValue(Slave slave, long value) {
+            this.slave = slave;
+            this.value = value;
+        }
     }
 }
