@@ -67,6 +67,7 @@ import gov.nist.itl.ssd.sampling.restlet.SamplerServerResource;
 import gov.nist.itl.ssd.sampling.restlet.SamplersServerResource;
 import gov.nist.itl.ssd.sampling.restlet.SamplingServerResource;
 import gov.nist.itl.ssd.sampling.restlet.SamplingsServerResource;
+import gov.nist.itl.ssd.similarity.test.execution.TestServerResource;
 
 /**
  * Main restlet application.
@@ -204,6 +205,10 @@ public class ServerApplication extends Application {
         router.attach(SamplerServerResource.PATH_TEMPLATE, SamplerServerResource.class);
         router.attach(SamplingsServerResource.PATH_TEMPLATE, SamplingsServerResource.class);
         router.attach(SamplingServerResource.PATH_TEMPLATE, SamplingServerResource.class);
+        
+        
+        
+        router.attach("/test", TestServerResource.class);
         
         router.attachDefault(DefaultServerResource.class);
 

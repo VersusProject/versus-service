@@ -1,0 +1,2 @@
+test/data/01_GSC_100x100.tif
+test/data/02_GSC_100x100.tif
