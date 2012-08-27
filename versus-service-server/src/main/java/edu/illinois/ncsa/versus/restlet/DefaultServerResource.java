@@ -65,7 +65,11 @@ public class DefaultServerResource extends VersusServerResource {
 
         content.append("<li><a href='").
                 append(baseUrl).append("/decisionSupport").
-                append("'>DecisionSupport</a></li></ul>");
+                append("'>DecisionSupport</a></li>");
+        
+        content.append("<li><a href='").
+                append(baseUrl).append("/tests").
+                append("'>Tests</a></li></ul>");
 
         Representation representation = new StringRepresentation(content,
                 MediaType.TEXT_HTML);

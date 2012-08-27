@@ -1,5 +1,6 @@
 package edu.illinois.ncsa.versus.restlet;
 
+import gov.nist.itl.ssd.similarity.test.execution.TestResultServerResource;
 import edu.illinois.ncsa.versus.restlet.node.SlavesServerResource;
 import java.io.IOException;
 import java.io.InputStream;
@@ -208,7 +209,10 @@ public class ServerApplication extends Application {
         
         
         
-        router.attach("/test", TestServerResource.class);
+        router.attach("/tests", TestServerResource.class);
+        TemplateRoute testResultRoute = router.attach(
+                "/testsresult" + '/' + "{file}", TestResultServerResource.class);
+        testResultRoute.getTemplate().getVariables().put("file", new Variable(Variable.TYPE_ALL));
         
         router.attachDefault(DefaultServerResource.class);
 
