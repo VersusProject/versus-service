@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<actions>
+        <action>
+            <actionName>CUSTOM-Build no test</actionName>
+            <displayName>Build no test</displayName>
+            <preAction>build-with-dependencies</preAction>
+            <goals>
+                <goal>install</goal>
+                
+            </goals>
+            <properties>
+                <maven.test.skip>true</maven.test.skip>
+                
+            </properties>
+        </action>
+    </actions>

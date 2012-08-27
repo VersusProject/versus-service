@@ -17,6 +17,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
@@ -218,16 +219,17 @@ public class SlavesManager {
 
     /**
      * Return the slave with the lowest value along with this value
+     *
      * @param slaves
      * @param query
-     * @return 
+     * @return
      */
     public SlaveValue getMinSlave(Set<Slave> slaves, final SlaveQuery<Long> query) {
         if (slaves.isEmpty()) {
             return null;
         }
 
-        HashMap<Future<Long>, Slave> futures = submitQueryToSlaves(query);
+        HashMap<Future<Long>, Slave> futures = submitQueryToSlaves(slaves, query);
 
         Long min = null;
         Slave slave = null;
@@ -244,11 +246,11 @@ public class SlavesManager {
         if (min == null) {
             return null;
         }
-        while(iterator.hasNext()) {
+        while (iterator.hasNext()) {
             Future<Long> next = iterator.next();
             try {
                 Long current = next.get();
-                if(current < min) {
+                if (current < min) {
                     min = current;
                     slave = futures.get(next);
                 }
@@ -259,7 +261,27 @@ public class SlavesManager {
         return new SlaveValue(slave, min);
     }
 
-    public class SlaveValue {
+    public TreeSet<SlaveValue> getSortedSlaves(Set<Slave> slaves, 
+            final SlaveQuery<Long> query) {
+        TreeSet<SlaveValue> result = new TreeSet<SlaveValue>();
+        if(slaves.isEmpty()) {
+            return result;
+        }
+        
+        HashMap<Future<Long>, Slave> futures = submitQueryToSlaves(slaves, query);
+        
+        for(Future<Long> future : futures.keySet()) {
+            try {
+                Long value = future.get();
+                result.add(new SlaveValue(futures.get(future), value));
+            } catch (Exception e) {
+                manageSlaveException(e, future, futures);
+            }
+        }
+        return result;
+    }
+    
+    public static class SlaveValue implements Comparable<SlaveValue> {
 
         public final Slave slave;
 
@@ -268,6 +290,26 @@ public class SlavesManager {
         public SlaveValue(Slave slave, long value) {
             this.slave = slave;
             this.value = value;
+        }
+
+        @Override
+        public int compareTo(SlaveValue o) {
+            if(this == o) {
+                return 0;
+            }
+            
+            int compare = Long.compare(value, o.value);
+            if(compare != 0) {
+                return compare;
+            }
+            
+            if(slave == null) {
+                return -1;
+            }
+            if(o.slave == null) {
+                return 1;
+            }
+            return slave.getUrl().compareTo(o.slave.getUrl());
         }
     }
 }

@@ -17,8 +17,10 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -42,30 +44,44 @@ import edu.illinois.ncsa.versus.store.ComparisonServiceImpl;
  */
 public class ComparisonSubmitter {
 
-    private final Comparison comparison;
-
-    private final InputStream dataset1Stream;
-
-    private final InputStream dataset2Stream;
-
     private final CompareRegistry registry;
 
     private final ExecutionEngine engine;
 
     private final SlavesManager slavesManager;
 
+    private final String adapter;
+
+    private final String extractor;
+
+    private final String measure;
+
+    private final List<String> datasetsNames;
+
+    private final List<InputStream> datasetsStreams;
+
+    private final List<Integer> referenceDatasets;
+
     private static final Logger logger = Logger.getLogger(ComparisonSubmitter.class.getName());
 
-    public ComparisonSubmitter(ServerApplication server, Comparison comparison)
+    private static final ComparisonServiceImpl comparisonService =
+            ServerApplication.getInjector().getInstance(ComparisonServiceImpl.class);
+
+    public ComparisonSubmitter(ServerApplication server,
+            String adapter, String extractor, String measure,
+            List<String> datasetsNames, List<InputStream> datasetsStreams,
+            List<Integer> referenceDatasets)
             throws MalformedURLException, IOException {
-        URL url1 = new URL(comparison.getFirstDataset());
-        URL url2 = new URL(comparison.getSecondDataset());
         this.registry = server.getRegistry();
         this.engine = server.getEngine();
         this.slavesManager = server.getSlavesManager();
-        this.comparison = comparison;
-        this.dataset1Stream = url1.openStream();
-        this.dataset2Stream = url2.openStream();
+
+        this.adapter = adapter;
+        this.extractor = extractor;
+        this.measure = measure;
+        this.datasetsNames = datasetsNames;
+        this.datasetsStreams = datasetsStreams;
+        this.referenceDatasets = referenceDatasets;
     }
 
     public ComparisonSubmitter(ServerApplication server, Comparison comparison,
@@ -73,9 +89,17 @@ public class ComparisonSubmitter {
         this.registry = server.getRegistry();
         this.engine = server.getEngine();
         this.slavesManager = server.getSlavesManager();
-        this.comparison = comparison;
-        this.dataset1Stream = dataset1Stream;
-        this.dataset2Stream = dataset2Stream;
+
+        this.adapter = comparison.getAdapterId();
+        this.extractor = comparison.getExtractorId();
+        this.measure = comparison.getMeasureId();
+        this.datasetsNames = new ArrayList<String>(2);
+        datasetsNames.add(comparison.getFirstDataset());
+        datasetsNames.add(comparison.getSecondDataset());
+        this.datasetsStreams = new ArrayList<InputStream>(2);
+        datasetsStreams.add(dataset1Stream);
+        datasetsStreams.add(dataset2Stream);
+        this.referenceDatasets = null;
     }
 
     public ComparisonSubmitter(CompareRegistry registry, ExecutionEngine engine,
@@ -84,79 +108,81 @@ public class ComparisonSubmitter {
         this.registry = registry;
         this.engine = engine;
         this.slavesManager = slavesManager;
-        this.comparison = comparison;
-        this.dataset1Stream = dataset1Stream;
-        this.dataset2Stream = dataset2Stream;
+
+        this.adapter = comparison.getAdapterId();
+        this.extractor = comparison.getExtractorId();
+        this.measure = comparison.getMeasureId();
+        this.datasetsNames = new ArrayList<String>(2);
+        datasetsNames.add(comparison.getFirstDataset());
+        datasetsNames.add(comparison.getSecondDataset());
+        this.datasetsStreams = new ArrayList<InputStream>(2);
+        datasetsStreams.add(dataset1Stream);
+        datasetsStreams.add(dataset2Stream);
+        this.referenceDatasets = null;
     }
 
-    public Comparison submit()
+    public ComparisonSubmitter(ServerApplication server, Comparison comparison)
+            throws MalformedURLException, IOException {
+        URL url1 = new URL(comparison.getFirstDataset());
+        URL url2 = new URL(comparison.getSecondDataset());
+        InputStream dataset1Stream = url1.openStream();
+        InputStream dataset2Stream = url2.openStream();
+
+        this.registry = server.getRegistry();
+        this.engine = server.getEngine();
+        this.slavesManager = server.getSlavesManager();
+
+        this.adapter = comparison.getAdapterId();
+        this.extractor = comparison.getExtractorId();
+        this.measure = comparison.getMeasureId();
+        this.datasetsNames = new ArrayList<String>(2);
+        datasetsNames.add(comparison.getFirstDataset());
+        datasetsNames.add(comparison.getSecondDataset());
+        this.datasetsStreams = new ArrayList<InputStream>(2);
+        datasetsStreams.add(dataset1Stream);
+        datasetsStreams.add(dataset2Stream);
+        this.referenceDatasets = null;
+    }
+
+    public List<String> submit()
             throws IOException, NoSlaveAvailableException {
 
-        final ComparisonServiceImpl comparisonService =
-                ServerApplication.getInjector().getInstance(ComparisonServiceImpl.class);
-        Comparison result = comparison;
-
-        boolean supportLocal = registry.supportComparison(comparison.getAdapterId(),
-                comparison.getExtractorId(), comparison.getMeasureId());
+        boolean supportLocal = registry.supportComparison(adapter,
+                extractor, measure);
         long waitingJobsNumber = engine.getWaitingJobsNumber();
 
-        if (supportLocal && waitingJobsNumber == 0) {
-            submitLocal(comparisonService, result);
-            return result;
-        }
+        HashMap<Slave, List<Integer>> slavesAssociation =
+                associateComparisonsWithSlave(supportLocal, waitingJobsNumber);
 
-        SlaveValue bestSlave = querySlaves();
+        ArrayList<String> comparisons = new ArrayList<String>(datasetsNames.size());
 
-        if (bestSlave == null) {
-            if (!supportLocal) {
-                throw new NoSlaveAvailableException();
+        for (Slave slave : slavesAssociation.keySet()) {
+            if (slave == null) {
+                comparisons.addAll(submitLocal(slavesAssociation.get(null)));
+            } else {
+                comparisons.addAll(submitToSlave(slave, slavesAssociation.get(slave)));
             }
-            submitLocal(comparisonService, result);
-            return result;
         }
 
-        if (supportLocal && waitingJobsNumber <= bestSlave.value) {
-            submitLocal(comparisonService, result);
-            return result;
-        }
-
-        Slave slave = bestSlave.slave;
-        logger.log(Level.INFO, "Forwarding comparison request to {0}",
-                slave);
-        result = slave.submit(comparison, dataset1Stream, dataset2Stream);
-        comparisonService.addComparison(result);
-        return result;
+        return comparisons;
     }
 
-    private void submitLocal(ComparisonServiceImpl comparisonService, Comparison result) {
-        comparisonService.addComparison(result);
-        PairwiseComparison pairwiseComparison = new PairwiseComparison();
-        pairwiseComparison.setId(comparison.getId());
-        pairwiseComparison.setAdapterId(comparison.getAdapterId());
-        pairwiseComparison.setExtractorId(comparison.getExtractorId());
-        pairwiseComparison.setMeasureId(comparison.getMeasureId());
-        pairwiseComparison.setFirstDataset(dataset1Stream);
-        pairwiseComparison.setSecondDataset(dataset2Stream);
-        submit(pairwiseComparison);
-    }
-
-    /**
-     * Find which slaves support requested methods. Forward to the first slave
-     * in the list.
-     *
-     * @param entity
-     * @param comparison
-     * @return
-     */
-    private SlaveValue querySlaves() throws IOException, NoSlaveAvailableException {
+    private HashMap<Slave, List<Integer>> associateComparisonsWithSlave(
+            boolean supportLocal, long localWaiting)
+            throws NoSlaveAvailableException {
         Set<Slave> supportingSlavesSet = slavesManager.getSlaves(
                 new SlavesManager.SlaveQuery<Boolean>() {
                     @Override
                     public Boolean executeQuery(Slave slave) {
-                        return slave.supportComparison(comparison);
+                        return slave.supportComparison(adapter, extractor, measure);
                     }
                 });
-        SlaveValue minSlave = slavesManager.getMinSlave(supportingSlavesSet,
+
+        if (supportingSlavesSet.isEmpty() && !supportLocal) {
+            throw new NoSlaveAvailableException();
+        }
+
+        TreeSet<SlaveValue> sortedSlaves = slavesManager.getSortedSlaves(supportingSlavesSet,
                 new SlavesManager.SlaveQuery<Long>() {
                     @Override
                     public Long executeQuery(Slave slave) {
@@ -164,7 +190,85 @@ public class ComparisonSubmitter {
                     }
                 });
 
-        return minSlave;
+        if (supportLocal) {
+            sortedSlaves.add(new SlaveValue(null, localWaiting));
+        }
+        HashMap<Slave, List<Integer>> result = new HashMap<Slave, List<Integer>>();
+
+        if (referenceDatasets == null || referenceDatasets.isEmpty()) {
+            for (int i = 0; i < datasetsNames.size() - 1; i++) {
+                associate(i, sortedSlaves, result);
+            }
+        } else {
+            for (int i : referenceDatasets) {
+                associate(i, sortedSlaves, result);
+            }
+        }
+
+        return result;
+    }
+
+    private void associate(int i, TreeSet<SlaveValue> sortedSlaves,
+            HashMap<Slave, List<Integer>> result) {
+        SlaveValue first = sortedSlaves.first();
+        List<Integer> list = result.get(first.slave);
+        if (list == null) {
+            list = new ArrayList<Integer>();
+            result.put(first.slave, list);
+        }
+        list.add(i);
+        SlaveValue sv = new SlaveValue(first.slave,
+                first.value + datasetsNames.size() - 1 - i);
+        sortedSlaves.remove(first);
+        sortedSlaves.add(sv);
+        result.put(first.slave, list);
+
+    }
+
+    private List<String> submitToSlave(Slave slave, List<Integer> referenceImagesIdx)
+            throws IOException {
+        
+        int firstImage = referenceImagesIdx.get(0);
+        List<String> slaveDatasetsNames = 
+                datasetsNames.subList(firstImage, datasetsNames.size());
+        List<InputStream> slaveInputStreams = 
+                datasetsStreams.subList(firstImage, datasetsStreams.size());
+        
+        List<Integer> referencesDatasets = new ArrayList<Integer>(referenceImagesIdx.size());
+        for(int i : referenceImagesIdx) {
+            referencesDatasets.add(i - firstImage);
+        }
+        
+        return slave.submit(adapter, extractor, measure,
+                slaveDatasetsNames, slaveInputStreams, referencesDatasets);
+    }
+
+    private List<String> submitLocal(List<Integer> referenceImagesIdx) {
+        ArrayList<String> result = new ArrayList<String>();
+        for (Integer i : referenceImagesIdx) {
+            for (int j = i + 1; j < datasetsNames.size(); j++) {
+                Comparison comparison = new Comparison(
+                        datasetsNames.get(i), datasetsNames.get(j),
+                        adapter, extractor, measure);
+                submitLocal(comparison,
+                        datasetsStreams.get(i), datasetsStreams.get(j));
+                result.add(comparison.getId());
+            }
+        }
+        return result;
+    }
+
+    private void submitLocal(Comparison comparison,
+            InputStream stream1, InputStream stream2) {
+        comparisonService.addComparison(comparison);
+        PairwiseComparison pairwiseComparison = new PairwiseComparison();
+        pairwiseComparison.setId(comparison.getId());
+        pairwiseComparison.setAdapterId(comparison.getAdapterId());
+        pairwiseComparison.setExtractorId(comparison.getExtractorId());
+        pairwiseComparison.setMeasureId(comparison.getMeasureId());
+        pairwiseComparison.setFirstDataset(stream1);
+        pairwiseComparison.setSecondDataset(stream2);
+        submit(pairwiseComparison);
     }
 
     /**
@@ -173,10 +277,6 @@ public class ComparisonSubmitter {
      * @param comparison
      */
     private void submit(final PairwiseComparison comparison) {
-
-        final ComparisonServiceImpl comparisonService =
-                ServerApplication.getInjector().getInstance(ComparisonServiceImpl.class);
-
         engine.submit(comparison, new ComparisonStatusHandler() {
             @Override
             public void onDone(double value) {

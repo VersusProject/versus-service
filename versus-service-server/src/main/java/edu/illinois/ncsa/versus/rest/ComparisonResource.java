@@ -171,7 +171,8 @@ public class ComparisonResource {
             throws IOException, NoSlaveAvailableException {
         ComparisonSubmitter submitter = new ComparisonSubmitter(registry, engine,
                 slavesManager, comparison, dataset1Stream, dataset2Stream);
-        return submitter.submit();
+        submitter.submit();
+        return comparison;
     }
 
     public static class ComparisonForm {

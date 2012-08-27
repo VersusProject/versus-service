@@ -3,14 +3,19 @@ package edu.illinois.ncsa.versus.restlet.comparison;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 
+import org.apache.commons.collections.CollectionUtils;
 import org.apache.commons.fileupload.FileItem;
 import org.apache.commons.fileupload.FileUploadException;
 import org.apache.commons.fileupload.disk.DiskFileItemFactory;
+import org.apache.commons.lang.StringUtils;
 import org.restlet.data.Form;
 import org.restlet.data.MediaType;
 import org.restlet.data.Status;
@@ -77,7 +82,6 @@ public class ComparisonsServerResource extends VersusServerResource {
         xstream.alias("comparisons", HashSet.class);
         xstream.registerConverter(
                 new StringCollectionConverter<HashSet<String>>() {
-
                     @Override
                     protected String getNodeName() {
                         return "comparison";
@@ -134,10 +138,11 @@ public class ComparisonsServerResource extends VersusServerResource {
             return new StringRepresentation("Specify parameters", MediaType.TEXT_PLAIN);
         }
 
-        String dataset1Name = null;
-        String dataset2Name = null;
-        InputStream dataset1Stream = null;
-        InputStream dataset2Stream = null;
+        HashMap<String, String> datasetsNames = new HashMap<String, String>();
+        HashMap<String, InputStream> datasetsStreams =
+                new HashMap<String, InputStream>();
+        ArrayList<Integer> referenceDatasets = new ArrayList<Integer>();
+        
         String adapter = null;
         String extractor = null;
         String measure = null;
@@ -157,24 +162,32 @@ public class ComparisonsServerResource extends VersusServerResource {
 
             for (FileItem item : items) {
                 String name = item.getFieldName();
-                if (name.equals("dataset1")) {
-                    dataset1Name = item.getName();
-                    dataset1Stream = item.getInputStream();
-                } else if (name.equals("dataset2")) {
-                    dataset2Name = item.getName();
-                    dataset2Stream = item.getInputStream();
-                } else if (name.equals("dataset1Url")) {
-                    dataset1Name = item.getString();
-                    dataset1Stream = new URL(dataset1Name).openStream();
-                } else if (name.equals("dataset2Url")) {
-                    dataset2Name = item.getString();
-                    dataset2Stream = new URL(dataset1Name).openStream();
-                } else if (name.equals("adapter")) {
+                if (name.equals("adapter")) {
                     adapter = item.getString();
                 } else if (name.equals("extractor")) {
                     extractor = item.getString();
                 } else if (name.equals("measure")) {
                     measure = item.getString();
+
+                } else if (name.equals("referenceDatasets")) {
+                    String ds = item.getString();
+                    for (String dataset : ds.split(";")) {
+                        Integer ref = new Integer(dataset);
+                        referenceDatasets.add(ref);
+                    }
+                } else if (name.equals("datasetsUrls")) {
+                    String ds = item.getString();
+                    int i = 0;
+                    for (String dataset : ds.split(";")) {
+                        datasetsStreams.put(Integer.toString(i),
+                                new URL(dataset).openStream());
+                        datasetsNames.put(Integer.toString(i), dataset);
+                        i++;
+                    }
+                } else if (name.startsWith("datasetUrl")) {
+                    datasetsNames.put(name.substring(10), item.getString());
+                } else if (name.startsWith("datasetStream")) {
+                    datasetsStreams.put(name.substring(13), item.getInputStream());
                 } else {
                     getLogger().log(Level.INFO,
                             "Ignoring parameter ''{0}'' specified by client.", name);
@@ -182,26 +195,27 @@ public class ComparisonsServerResource extends VersusServerResource {
             }
         } else {
             Form form = new Form(entity);
-            dataset1Name = form.getFirstValue("dataset1Url", null);
-            dataset2Name = form.getFirstValue("dataset2Url", null);
-            if (dataset1Name != null) {
-                dataset1Stream = new URL(dataset1Name).openStream();
-            }
-            if (dataset2Name != null) {
-                dataset2Stream = new URL(dataset2Name).openStream();
+            String ds = form.getFirstValue("datasetsUrls", null);
+            int i = 0;
+            for (String dataset : ds.split(";")) {
+                datasetsStreams.put(Integer.toString(i),
+                        new URL(dataset).openStream());
+                datasetsNames.put(Integer.toString(i), dataset);
+                i++;
             }
             adapter = form.getFirstValue("adapter", null);
             extractor = form.getFirstValue("extractor", null);
             measure = form.getFirstValue("measure", null);
         }
 
-        if (dataset1Name == null || dataset1Stream == null) {
+        if (datasetsNames.isEmpty() || datasetsStreams.isEmpty()) {
             setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
-            return new StringRepresentation("Specify the first dataset.", MediaType.TEXT_PLAIN);
+            return new StringRepresentation("Specify the input datasets.", MediaType.TEXT_PLAIN);
         }
-        if (dataset2Name == null || dataset2Stream == null) {
+        if (!CollectionUtils.isEqualCollection(datasetsNames.keySet(),
+                datasetsStreams.keySet())) {
             setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
-            return new StringRepresentation("Specify the second dataset.", MediaType.TEXT_PLAIN);
+            return new StringRepresentation("Unconsistent input datasets.", MediaType.TEXT_PLAIN);
         }
         if (adapter == null) {
             setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
@@ -215,12 +229,27 @@ public class ComparisonsServerResource extends VersusServerResource {
             setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
             return new StringRepresentation("Specify the measure.", MediaType.TEXT_PLAIN);
         }
+        for(Integer ref : referenceDatasets) {
+            if(ref < 0 || ref >= datasetsNames.size()) {
+                setStatus(Status.CLIENT_ERROR_BAD_REQUEST);
+                return new StringRepresentation("The reference dataset " + ref +
+                        " cannot be found in the submitted datasets.", 
+                        MediaType.TEXT_ALL);
+            }
+        }
 
-        Comparison comparison = new Comparison(dataset1Name, dataset2Name,
-                adapter, extractor, measure);
+        ArrayList<String> names = new ArrayList<String>(datasetsNames.size());
+        ArrayList<InputStream> streams = new ArrayList<InputStream>(
+                datasetsNames.size());
+        for (String key : datasetsNames.keySet()) {
+            names.add(datasetsNames.get(key));
+            streams.add(datasetsStreams.get(key));
+        }
 
+        List<String> comparisons;
         try {
-            comparison = submitComparison(comparison, dataset1Stream, dataset2Stream);
+            comparisons = submitComparisons(adapter, extractor, measure,
+                    names, streams, referenceDatasets);
         } catch (IOException ex) {
             getLogger().log(Level.SEVERE, null, ex);
             setStatus(Status.SERVER_ERROR_INTERNAL);
@@ -234,18 +263,21 @@ public class ComparisonsServerResource extends VersusServerResource {
                     MediaType.TEXT_PLAIN);
         }
         setStatus(Status.SUCCESS_CREATED);
-        String comparisonURL = getRequest().getResourceRef().getIdentifier()
-                + "/" + comparison.getId();
+        String response = StringUtils.join(comparisons, ';');
         Representation representation = new StringRepresentation(
-                comparison.getId(), MediaType.TEXT_PLAIN);
-        representation.setLocationRef(comparisonURL);
+                response, MediaType.TEXT_PLAIN);
         return representation;
     }
 
-    private Comparison submitComparison(Comparison comparison, InputStream dataset1Stream, InputStream dataset2Stream)
+    private List<String> submitComparisons(
+            String adapter, String extractor, String measure,
+            List<String> datasetsNames, List<InputStream> datasetsStreams,
+            List<Integer> referenceDatasets)
             throws IOException, NoSlaveAvailableException {
         ServerApplication server = (ServerApplication) getApplication();
-        ComparisonSubmitter submitter = new ComparisonSubmitter(server, comparison, dataset1Stream, dataset2Stream);
+        ComparisonSubmitter submitter = new ComparisonSubmitter(server,
+                adapter, extractor, measure, datasetsNames, datasetsStreams,
+                referenceDatasets);
         return submitter.submit();
     }
 }

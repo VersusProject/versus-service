@@ -105,7 +105,7 @@ public class SlavesServerResource extends VersusServerResource {
      *
      * @param entity
      */
-    @Post
+    @Post()
     public void submit(Representation entity) {
         Form form = new Form(entity);
         String url = form.getFirstValue("url");

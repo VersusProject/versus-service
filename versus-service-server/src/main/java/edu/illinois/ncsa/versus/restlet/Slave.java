@@ -5,6 +5,7 @@ package edu.illinois.ncsa.versus.restlet;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.List;
 import java.util.Set;
 
 import org.restlet.resource.ClientResource;
@@ -95,6 +96,15 @@ public class Slave {
         return comparison;
     }
 
+    public List<String> submit(String adapter, String extractor, String measure,
+            List<String> datasetsNames, List<InputStream> datasetsStreams,
+            List<Integer> referenceDatasets) throws IOException {
+        List<String> ids = new ComparisonClient(url).submit(
+                adapter, extractor, measure,
+                datasetsNames, datasetsStreams, referenceDatasets);
+        return ids;
+    }
+
     public boolean supportComparison(Comparison comparison) {
         return supportComparison(comparison.getAdapterId(),
                 comparison.getExtractorId(), comparison.getMeasureId());
@@ -109,7 +119,7 @@ public class Slave {
         String string = client.get(String.class);
         return Long.parseLong(string);
     }
-    
+
     @Override
     public String toString() {
         return url;
