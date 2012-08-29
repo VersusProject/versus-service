@@ -333,13 +333,11 @@ public class Graph
 	/*
 	 * Save the graph's image out to file.
 	 */
-	public static void saveGraphImage(JComponent c, String fileName )
-	{		
-		BufferedImage image = new BufferedImage(c.getWidth(), c.getHeight(), BufferedImage.TYPE_INT_ARGB);
-		c.paint(image.getGraphics());       
+	public static void saveGraphImage(JFreeChart c, String fileName )
+	{		    
 		try {
 			File f = new File( fileName );
-			ImageIO.write(image, "png", f);
+            ChartUtilities.saveChartAsPNG(f, c, 500, 270);
 		}catch( Exception e ){
 			System.out.println("ERROR: " + e.getMessage());
 		}
@@ -357,17 +355,6 @@ public class Graph
 		}
 	}	
 	
-	
-	public static void main( String[] args ) 
-	{
-		Graph g = new Graph();
-		List<Double> inputs = List.list(1d,2d,3d);
-		List<Double> outputs = List.list(1d,4d,5d);
-		List<List<Double>> data = List.list(inputs,outputs);
-		//g.showGraph(data);	
-		g.saveGraphImage( g.createGraph(data, "Chart", "x-axis", "y-axis"), "./testGraph.png") ;
-		
-	}
 }
 
 class PersistentGraph extends JComponent

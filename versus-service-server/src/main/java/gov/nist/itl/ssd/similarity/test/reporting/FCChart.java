@@ -25,15 +25,13 @@ import fj.data.Array;
 
 import gov.nist.itl.ssd.similarity.test.execution.function.Arity5Input;
 
-public class FCChart extends ApplicationFrame 
+public class FCChart
 {
 	
 	 protected Arity5Input<Double,Double,Double,Double,Double> data;
 	
 	 public FCChart(String title, Array<Double> values ) 
-	 {
-	        super("FaultTracker Plot : " + title);
-	        
+	 {	        
 	        data = new Arity5Input<Double,Double,Double,Double,Double>();
 	        data.i1( values.get(0) );
 	        data.i2( values.get(1) );
@@ -66,7 +64,7 @@ public class FCChart extends ApplicationFrame
 	    }
 
 
-	   private JFreeChart createChart() 
+	   public JFreeChart createChart() 
 	   {
 	        final CategoryDataset dataset = createDataset();
 	        final NumberAxis rangeAxis = new NumberAxis("Frequency");
@@ -91,26 +89,4 @@ public class FCChart extends ApplicationFrame
 	        return result;
 	    }
 	   
-	   public JComponent getChart() 
-	   {
-	        final ChartPanel chartPanel = new ChartPanel(createChart());
-	        chartPanel.setPreferredSize(new java.awt.Dimension(500, 270));
-	        setContentPane(chartPanel);
-	        pack();
-	        RefineryUtilities.centerFrameOnScreen(this);
-	        // setVisible(true);
-	        return (JComponent)getContentPane();
-	   }
-
-
-	   public static void main(final String[] args) 
-	   {	        
-	        FCChart chart = new FCChart("Unit Tests", Array.array(1.0d, 2.0d, 0.0d, 4.0d, 5.0d));
-	        chart.pack();
-	        RefineryUtilities.centerFrameOnScreen(chart);
-	        chart.setVisible(true);
-
-	    }
-
-
 }

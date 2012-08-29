@@ -1,5 +1,6 @@
 package gov.nist.itl.ssd.similarity.test.execution;
 
+import org.jfree.chart.JFreeChart;
 import javax.swing.JComponent;
 
 import gov.nist.itl.ssd.similarity.test.reporting.FCChart;
@@ -210,18 +211,17 @@ public class FaultTracker
 		
 		public void saveGraph( String fileName )
 		{
-			Graph g = new Graph();
-			g.saveGraphImage( graph(), fileName );
+			Graph.saveGraphImage( graph(), fileName );
 		}
 		
-		public JComponent graph()
+		public JFreeChart graph()
 		{
 			//Graph graph = new Graph();
 			//return graph.createHistogram(getHistogramGraphData(), "Counts per Fault Category (0=hw,1=sw,2=img,3=math,4=sing)", "Fault Categories", "Counts Per Category");
 			//return graph.showGraph(getGraphData(), "Counts per Fault Category (0=hw,1=sw,2=img,3=math,4=sing,5=uncat)", "Fault Categories", "Counts Per Category");
 			
 			FCChart chart = new FCChart("", Array.array( (double)hw(), (double)sw(), (double)img(), (double)math(), (double)sing())  );
-			return chart.getChart();
+			return chart.createChart();
 		}
 		
 		public Array<Array<Double>> getGraphData()
