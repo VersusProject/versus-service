@@ -184,8 +184,8 @@ public class ComparisonsServerResource extends VersusServerResource {
                         datasetsNames.put(i, dataset);
                         i++;
                     }
-                } else if (name.startsWith("datasetUrl")) {
-                    Integer id = new Integer(name.substring(10));
+                } else if (name.startsWith("datasetName")) {
+                    Integer id = new Integer(name.substring(11));
                     datasetsNames.put(id, item.getString());
                 } else if (name.startsWith("datasetStream")) {
                     Integer id = new Integer(name.substring(13));

@@ -63,7 +63,10 @@ public class ComparisonClient {
     }
 
     public String submit(Comparison comparison, InputStream dataset1Stream, InputStream dataset2Stream) throws IOException {
-        return submit(comparison.getAdapterId(), comparison.getExtractorId(), comparison.getMeasureId(), dataset1Stream, dataset2Stream);
+        return submit(comparison.getAdapterId(), comparison.getExtractorId(), 
+                comparison.getMeasureId(), 
+                comparison.getFirstDataset(), comparison.getSecondDataset(),
+                dataset1Stream, dataset2Stream);
     }
 
     public String submit(String adapterId, String extractorId, String measureId, File file1, File file2) throws IOException {
@@ -73,7 +76,9 @@ public class ComparisonClient {
         if (!file2.exists()) {
             throw new FileNotFoundException("File " + file2 + " not found.");
         }
-        return submit(adapterId, extractorId, measureId, new FileInputStream(file1), new FileInputStream(file2));
+        return submit(adapterId, extractorId, measureId,
+                file1.getName(), file2.getName(),
+                new FileInputStream(file1), new FileInputStream(file2));
     }
 
     public List<String> submit(String adapterId, String extractorId, String measureId,
@@ -89,7 +94,7 @@ public class ComparisonClient {
         Iterator<String> namesIt = datasetsNames.iterator();
         Iterator<InputStream> streamsIt = datasetsStreams.iterator();
         while (namesIt.hasNext() && streamsIt.hasNext()) {
-            entries.add(new FormData("datasetUrl" + i, namesIt.next()));
+            entries.add(new FormData("datasetName" + i, namesIt.next()));
             entries.add(new FormData("datasetStream" + i,
                     new InputRepresentation(streamsIt.next(), MediaType.ALL)));
             i++;
@@ -103,24 +108,23 @@ public class ComparisonClient {
         ClientResource clientResource = new ClientResource(host + URL);
         Representation post = clientResource.post(form);
         String response = post.getText();
-        
+
         String[] split = StringUtils.split(response, ';');
         return Arrays.asList(split);
     }
 
-    public String submit(String adapterId, String extractorId, String measureId, InputStream dataset1, InputStream dataset2) throws IOException {
-        FormDataSet form = new FormDataSet();
-        form.setMultipart(true);
-        Series<FormData> entries = form.getEntries();
-        entries.add(new FormData("adapter", adapterId));
-        entries.add(new FormData("extractor", extractorId));
-        entries.add(new FormData("measure", measureId));
-        entries.add(new FormData("dataset1", new InputRepresentation(dataset1, MediaType.ALL)));
-        entries.add(new FormData("dataset2", new InputRepresentation(dataset2, MediaType.ALL)));
-
-        ClientResource clientResource = new ClientResource(host + URL);
-        Representation post = clientResource.post(form);
-        return post.getText();
+    public String submit(String adapterId, String extractorId, String measureId,
+            String dataset1Name, String dataset2Name,
+            InputStream dataset1Stream, InputStream dataset2Stream)
+            throws IOException {
+        ArrayList<String> names = new ArrayList<String>(2);
+        names.add(dataset1Name);
+        names.add(dataset2Name);
+        ArrayList<InputStream> streams = new ArrayList<InputStream>(2);
+        streams.add(dataset1Stream);
+        streams.add(dataset2Stream);
+        return submit(adapterId, extractorId, measureId, names, streams, null)
+                .get(0);
     }
 
     public boolean supportComparison(String adapterId, String extractorId, String measureId) {
