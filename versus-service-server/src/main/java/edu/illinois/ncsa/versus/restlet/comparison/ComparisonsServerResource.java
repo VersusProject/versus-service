@@ -9,6 +9,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.logging.Level;
 
 import org.apache.commons.collections.CollectionUtils;
@@ -138,9 +139,9 @@ public class ComparisonsServerResource extends VersusServerResource {
             return new StringRepresentation("Specify parameters", MediaType.TEXT_PLAIN);
         }
 
-        HashMap<String, String> datasetsNames = new HashMap<String, String>();
-        HashMap<String, InputStream> datasetsStreams =
-                new HashMap<String, InputStream>();
+        HashMap<Integer, String> datasetsNames = new HashMap<Integer, String>();
+        HashMap<Integer, InputStream> datasetsStreams =
+                new HashMap<Integer, InputStream>();
         ArrayList<Integer> referenceDatasets = new ArrayList<Integer>();
         
         String adapter = null;
@@ -179,15 +180,16 @@ public class ComparisonsServerResource extends VersusServerResource {
                     String ds = item.getString();
                     int i = 0;
                     for (String dataset : ds.split(";")) {
-                        datasetsStreams.put(Integer.toString(i),
-                                new URL(dataset).openStream());
-                        datasetsNames.put(Integer.toString(i), dataset);
+                        datasetsStreams.put(i, new URL(dataset).openStream());
+                        datasetsNames.put(i, dataset);
                         i++;
                     }
                 } else if (name.startsWith("datasetUrl")) {
-                    datasetsNames.put(name.substring(10), item.getString());
+                    Integer id = new Integer(name.substring(10));
+                    datasetsNames.put(id, item.getString());
                 } else if (name.startsWith("datasetStream")) {
-                    datasetsStreams.put(name.substring(13), item.getInputStream());
+                    Integer id = new Integer(name.substring(13));
+                    datasetsStreams.put(id, item.getInputStream());
                 } else {
                     getLogger().log(Level.INFO,
                             "Ignoring parameter ''{0}'' specified by client.", name);
@@ -198,9 +200,8 @@ public class ComparisonsServerResource extends VersusServerResource {
             String ds = form.getFirstValue("datasetsUrls", null);
             int i = 0;
             for (String dataset : ds.split(";")) {
-                datasetsStreams.put(Integer.toString(i),
-                        new URL(dataset).openStream());
-                datasetsNames.put(Integer.toString(i), dataset);
+                datasetsStreams.put(i, new URL(dataset).openStream());
+                datasetsNames.put(i, dataset);
                 i++;
             }
             adapter = form.getFirstValue("adapter", null);
@@ -241,7 +242,8 @@ public class ComparisonsServerResource extends VersusServerResource {
         ArrayList<String> names = new ArrayList<String>(datasetsNames.size());
         ArrayList<InputStream> streams = new ArrayList<InputStream>(
                 datasetsNames.size());
-        for (String key : datasetsNames.keySet()) {
+        TreeSet<Integer> keySet = new TreeSet<Integer>(datasetsNames.keySet());
+        for (Integer key : keySet) {
             names.add(datasetsNames.get(key));
             streams.add(datasetsStreams.get(key));
         }
