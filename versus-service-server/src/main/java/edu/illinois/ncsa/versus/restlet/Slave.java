@@ -3,6 +3,7 @@
  */
 package edu.illinois.ncsa.versus.restlet;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
@@ -97,11 +98,11 @@ public class Slave {
     }
 
     public List<String> submit(String adapter, String extractor, String measure,
-            List<String> datasetsNames, List<InputStream> datasetsStreams,
+            List<String> datasetsNames, List<File> datasetsFiles,
             List<Integer> referenceDatasets) throws IOException {
-        List<String> ids = new ComparisonClient(url).submit(
+        List<String> ids = new ComparisonClient(url).submitFiles(
                 adapter, extractor, measure,
-                datasetsNames, datasetsStreams, referenceDatasets);
+                datasetsNames, datasetsFiles, referenceDatasets);
         return ids;
     }
 

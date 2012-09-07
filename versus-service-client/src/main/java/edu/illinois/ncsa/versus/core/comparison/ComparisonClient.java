@@ -11,6 +11,8 @@
  */
 package edu.illinois.ncsa.versus.core.comparison;
 
+import java.io.BufferedInputStream;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -23,6 +25,7 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
 import org.restlet.data.MediaType;
 import org.restlet.ext.html.FormData;
@@ -63,8 +66,8 @@ public class ComparisonClient {
     }
 
     public String submit(Comparison comparison, InputStream dataset1Stream, InputStream dataset2Stream) throws IOException {
-        return submit(comparison.getAdapterId(), comparison.getExtractorId(), 
-                comparison.getMeasureId(), 
+        return submit(comparison.getAdapterId(), comparison.getExtractorId(),
+                comparison.getMeasureId(),
                 comparison.getFirstDataset(), comparison.getSecondDataset(),
                 dataset1Stream, dataset2Stream);
     }
@@ -97,6 +100,47 @@ public class ComparisonClient {
             entries.add(new FormData("datasetName" + i, namesIt.next()));
             entries.add(new FormData("datasetStream" + i,
                     new InputRepresentation(streamsIt.next(), MediaType.ALL)));
+            i++;
+        }
+        if (referenceDatasets != null && !referenceDatasets.isEmpty()) {
+            String join = StringUtils.join(referenceDatasets, ';');
+            entries.add(new FormData("referenceDatasets", join));
+        }
+
+
+        ClientResource clientResource = new ClientResource(host + URL);
+        Representation post = clientResource.post(form);
+        String response = post.getText();
+
+        String[] split = StringUtils.split(response, ';');
+        return Arrays.asList(split);
+    }
+
+    public List<String> submitFiles(
+            String adapterId, String extractorId, String measureId,
+            List<String> datasetsNames, List<File> datasetsFiles,
+            List<Integer> referenceDatasets) throws IOException {
+        FormDataSet form = new FormDataSet();
+        form.setMultipart(true);
+        Series<FormData> entries = form.getEntries();
+        entries.add(new FormData("adapter", adapterId));
+        entries.add(new FormData("extractor", extractorId));
+        entries.add(new FormData("measure", measureId));
+        int i = 0;
+        Iterator<String> namesIt = datasetsNames.iterator();
+        Iterator<File> filesIt = datasetsFiles.iterator();
+        while (namesIt.hasNext() && filesIt.hasNext()) {
+            byte[] file = null;
+            FileInputStream fis = new FileInputStream(filesIt.next());
+            try {
+                file = IOUtils.toByteArray(fis);
+            } finally {
+                fis.close();
+            }
+            ByteArrayInputStream bais = new ByteArrayInputStream(file);
+            entries.add(new FormData("datasetName" + i, namesIt.next()));
+            entries.add(new FormData("datasetStream" + i,
+                    new InputRepresentation(bais, MediaType.ALL)));
             i++;
         }
         if (referenceDatasets != null && !referenceDatasets.isEmpty()) {

@@ -26,8 +26,10 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.TreeSet;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -69,7 +71,7 @@ public class ComparisonSubmitter {
 
     private final List<InputStream> datasetsStreams;
 
-    private List<File> datasetsTempFiles;
+    private LinkedHashMap<File, Integer> datasetsTempFiles;
 
     private final List<Integer> referenceDatasets;
 
@@ -155,67 +157,94 @@ public class ComparisonSubmitter {
         this.referenceDatasets = null;
     }
 
-    private void initStreamCache() throws IOException {
-        datasetsTempFiles = new ArrayList<File>(datasetsStreams.size());
+    private synchronized void initStreamCache() throws IOException {
+        datasetsTempFiles = new LinkedHashMap<File, Integer>(
+                (int) (datasetsNames.size() / 0.75) + 1);
+
         for (InputStream stream : datasetsStreams) {
-            File tempfile = File.createTempFile("versus", "ds");
+            File tempfile = File.createTempFile("versus_", ".ds");
             FileOutputStream fileOutputStream = new FileOutputStream(tempfile);
             IOUtils.copy(stream, fileOutputStream);
             fileOutputStream.close();
-            datasetsTempFiles.add(tempfile);
+            datasetsTempFiles.put(tempfile, 0);
         }
     }
 
-    private void clearStreamCache() {
-        for (File f : datasetsTempFiles) {
-            f.delete();
-        }
-    }
-
-    private InputStream getDatasetStream(int i) {
-        File tempFile = datasetsTempFiles.get(i);
+    // Warning: to be called from a synchronized method
+    private void releaseFile(File file) {
         try {
-            return new FileInputStream(tempFile);
-        } catch (FileNotFoundException ex) {
-            Logger.getLogger(ComparisonSubmitter.class.getName()).log(Level.SEVERE, null, ex);
+            Integer i = datasetsTempFiles.get(file);
+            i--;
+            datasetsTempFiles.put(file, i);
+            if (i == 0) {
+                file.delete();
+            }
+        } catch (Exception e) {
+            logger.log(Level.WARNING, "Cannot release temp file " + file, e);
         }
-        return null;
+    }
+    
+    private synchronized void releaseFiles(PairwiseComparison comparison) {
+        releaseFile(comparison.getFirstDataset());
+        releaseFile(comparison.getSecondDataset());
     }
 
-    private List<InputStream> getSubStreams(int fromIndex) {
-        List<File> subList = datasetsTempFiles.subList(fromIndex, datasetsTempFiles.size());
-        ArrayList<InputStream> result = new ArrayList<InputStream>();
-        for (File f : subList) {
-            try {
-                result.add(new FileInputStream(f));
-            } catch (FileNotFoundException ex) {
-                Logger.getLogger(ComparisonSubmitter.class.getName()).log(Level.SEVERE, null, ex);
+    private synchronized void releaseFiles(List<File> files) {
+        for (File f : files) {
+            releaseFile(f);
+        }
+    }
+
+    private synchronized File getDatasetFile(int i) {
+        int j = 0;
+        for (File f : datasetsTempFiles.keySet()) {
+            if (i == j) {
+                Integer k = datasetsTempFiles.get(f);
+                datasetsTempFiles.put(f, k + 1);
+                return f;
             }
+            j++;
+        }
+        throw new IndexOutOfBoundsException();
+    }
+
+    private List<File> getFilesSubList(int fromIndex) {
+        ArrayList<File> result = new ArrayList<File>(datasetsTempFiles.size() - fromIndex);
+        Iterator<File> iterator = datasetsTempFiles.keySet().iterator();
+        int i = 0;
+        while (iterator.hasNext() && i < fromIndex) {
+            iterator.next();
+            i++;
+        }
+        while (iterator.hasNext()) {
+            File f = iterator.next();
+            result.add(f);
+        }
+        for (File f : result) {
+            Integer k = datasetsTempFiles.get(f);
+            datasetsTempFiles.put(f, k + 1);
         }
         return result;
     }
 
     public List<String> submit() throws IOException, NoSlaveAvailableException {
         ArrayList<String> comparisons = new ArrayList<String>(datasetsNames.size());
-        
+
         initStreamCache();
-        try {
-            boolean supportLocal = registry.supportComparison(adapter,
-                    extractor, measure);
-            long waitingJobsNumber = engine.getWaitingJobsNumber();
 
-            HashMap<Slave, List<Integer>> slavesAssociation =
-                    associateComparisonsWithSlave(supportLocal, waitingJobsNumber);
+        boolean supportLocal = registry.supportComparison(adapter,
+                extractor, measure);
+        long waitingJobsNumber = engine.getWaitingJobsNumber();
 
-            for (Slave slave : slavesAssociation.keySet()) {
-                if (slave == null) {
-                    comparisons.addAll(submitLocal(slavesAssociation.get(null)));
-                } else {
-                    comparisons.addAll(submitToSlave(slave, slavesAssociation.get(slave)));
-                }
+        HashMap<Slave, List<Integer>> slavesAssociation =
+                associateComparisonsWithSlave(supportLocal, waitingJobsNumber);
+
+        for (Slave slave : slavesAssociation.keySet()) {
+            if (slave == null) {
+                comparisons.addAll(submitLocal(slavesAssociation.get(null)));
+            } else {
+                comparisons.addAll(submitToSlave(slave, slavesAssociation.get(slave)));
             }
-        } finally {
-            clearStreamCache();
         }
         return comparisons;
     }
@@ -284,39 +313,46 @@ public class ComparisonSubmitter {
         int firstImage = referenceImagesIdx.get(0);
         List<String> slaveDatasetsNames =
                 datasetsNames.subList(firstImage, datasetsNames.size());
-        List<InputStream> slaveInputStreams = getSubStreams(firstImage);
+        List<File> slaveTempFiles = getFilesSubList(firstImage);
+        try {
 
-        List<Integer> referencesDatasets = new ArrayList<Integer>(referenceImagesIdx.size());
-        for (int i : referenceImagesIdx) {
-            referencesDatasets.add(i - firstImage);
-        }
 
-        List<String> ids = slave.submit(adapter, extractor, measure,
-                slaveDatasetsNames, slaveInputStreams, referencesDatasets);
-
-        Iterator<String> idsIterator = ids.iterator();
-        for (Integer i : referenceImagesIdx) {
-            for (int j = i + 1; j < datasetsNames.size(); j++) {
-                Comparison comparison = new Comparison(
-                        datasetsNames.get(i), datasetsNames.get(j),
-                        adapter, extractor, measure);
-                comparison.setId(idsIterator.next());
-                comparison.setSlave(slave.getUrl());
-                comparisonService.addComparison(comparison);
+            List<Integer> referencesDatasets = new ArrayList<Integer>(referenceImagesIdx.size());
+            for (int i : referenceImagesIdx) {
+                referencesDatasets.add(i - firstImage);
             }
-        }
 
-        return ids;
+            List<String> ids = slave.submit(adapter, extractor, measure,
+                    slaveDatasetsNames, slaveTempFiles, referencesDatasets);
+
+            Iterator<String> idsIterator = ids.iterator();
+            for (Integer i : referenceImagesIdx) {
+                for (int j = i + 1; j < datasetsNames.size(); j++) {
+                    Comparison comparison = new Comparison(
+                            datasetsNames.get(i), datasetsNames.get(j),
+                            adapter, extractor, measure);
+                    comparison.setId(idsIterator.next());
+                    comparison.setSlave(slave.getUrl());
+                    comparisonService.addComparison(comparison);
+                }
+            }
+            return ids;
+        } finally {
+            releaseFiles(slaveTempFiles);
+        }
     }
 
-    private List<String> submitLocal(List<Integer> referenceImagesIdx) {
+    private List<String> submitLocal(List<Integer> referenceImagesIdx)
+            throws IOException {
         ArrayList<String> result = new ArrayList<String>();
         for (Integer i : referenceImagesIdx) {
             for (int j = i + 1; j < datasetsNames.size(); j++) {
                 Comparison comparison = new Comparison(
                         datasetsNames.get(i), datasetsNames.get(j),
                         adapter, extractor, measure);
-                submitLocal(comparison, getDatasetStream(i), getDatasetStream(j));
+                File file1 = getDatasetFile(i);
+                File file2 = getDatasetFile(j);
+                submitLocal(comparison, file1, file2);
                 result.add(comparison.getId());
             }
         }
@@ -324,15 +360,15 @@ public class ComparisonSubmitter {
     }
 
     private void submitLocal(Comparison comparison,
-            InputStream stream1, InputStream stream2) {
+            File file1, File file2) {
         comparisonService.addComparison(comparison);
         PairwiseComparison pairwiseComparison = new PairwiseComparison();
         pairwiseComparison.setId(comparison.getId());
         pairwiseComparison.setAdapterId(comparison.getAdapterId());
         pairwiseComparison.setExtractorId(comparison.getExtractorId());
         pairwiseComparison.setMeasureId(comparison.getMeasureId());
-        pairwiseComparison.setFirstDataset(stream1);
-        pairwiseComparison.setSecondDataset(stream2);
+        pairwiseComparison.setFirstDataset(file1);
+        pairwiseComparison.setSecondDataset(file2);
         submit(pairwiseComparison);
     }
 
@@ -345,6 +381,7 @@ public class ComparisonSubmitter {
         engine.submit(comparison, new ComparisonStatusHandler() {
             @Override
             public void onDone(double value) {
+                releaseFiles(comparison);
                 logger.log(
                         Level.INFO, "Comparison {0} done. Result is: {1}",
                         new Object[]{comparison.getId(), value});
@@ -363,6 +400,7 @@ public class ComparisonSubmitter {
 
             @Override
             public void onFailed(String msg, Throwable e) {
+                releaseFiles(comparison);
                 logger.log(Level.INFO,
                         "Comparison " + comparison.getId() + " failed. " + msg, e);
                 comparisonService.setStatus(comparison.getId(),
@@ -372,6 +410,7 @@ public class ComparisonSubmitter {
 
             @Override
             public void onAborted(String msg) {
+                releaseFiles(comparison);
                 logger.log(Level.INFO, "Comparison {0} aborted. {1}",
                         new Object[]{comparison.getId(), msg});
                 comparisonService.setStatus(comparison.getId(),
