@@ -298,11 +298,15 @@ public class SlavesManager {
                 return 0;
             }
             
-            int compare = Long.compare(value, o.value);
-            if(compare != 0) {
-                return compare;
+            if(value < o.value) {
+                return -1;
             }
             
+            if(value > o.value) {
+                return 1;
+            }
+            
+            // value == o.value
             if(slave == null) {
                 return -1;
             }
