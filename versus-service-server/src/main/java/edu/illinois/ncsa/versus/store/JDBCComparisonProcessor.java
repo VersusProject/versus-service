@@ -70,16 +70,7 @@ public class JDBCComparisonProcessor implements ComparisonProcessor {
             ResultSet rs = stmt.executeQuery("SELECT * FROM comparisons WHERE id = '" + id
                     + "'");
             while (rs.next()) {
-                Comparison comparison = new Comparison();
-                comparison.setId(rs.getString("id"));
-                comparison.setFirstDataset(rs.getString("firstDataset"));
-                comparison.setSecondDataset(rs.getString("secondDataset"));
-                comparison.setAdapterId(rs.getString("adapterId"));
-                comparison.setExtractorId(rs.getString("extractorId"));
-                comparison.setMeasureId(rs.getString("measureId"));
-                comparison.setStatus(ComparisonStatus.valueOf(rs.getString("status")));
-                comparison.setValue(rs.getString("value"));
-                return comparison;
+                return getComparisonFromResultSet(rs);
             }
         } catch (SQLException e) {
             Logger.getLogger(JDBCComparisonProcessor.class.getName()).log(Level.SEVERE, null, e);
@@ -100,21 +91,29 @@ public class JDBCComparisonProcessor implements ComparisonProcessor {
             Statement stmt = con.createStatement();
             ResultSet rs = stmt.executeQuery("SELECT * FROM comparisons");
             while (rs.next()) {
-                Comparison comparison = new Comparison();
-                comparison.setId(rs.getString("id"));
-                comparison.setFirstDataset(rs.getString("firstDataset"));
-                comparison.setSecondDataset(rs.getString("secondDataset"));
-                comparison.setAdapterId(rs.getString("adapterId"));
-                comparison.setExtractorId(rs.getString("extractorId"));
-                comparison.setMeasureId(rs.getString("measureId"));
-                comparison.setStatus(ComparisonStatus.valueOf(rs.getString("status")));
-                comparison.setValue(rs.getString("value"));
-                comparisons.add(comparison);
+                comparisons.add(getComparisonFromResultSet(rs));
             }
         } catch (SQLException e) {
             Logger.getLogger(JDBCComparisonProcessor.class.getName()).log(Level.SEVERE, null, e);
         }
         return comparisons;
+    }
+
+    private Comparison getComparisonFromResultSet(ResultSet rs) throws SQLException {
+        Comparison comparison = new Comparison();
+        comparison.setId(rs.getString("id"));
+        comparison.setFirstDataset(rs.getString("firstDataset"));
+        comparison.setSecondDataset(rs.getString("secondDataset"));
+        comparison.setAdapterId(rs.getString("adapterId"));
+        comparison.setExtractorId(rs.getString("extractorId"));
+        comparison.setMeasureId(rs.getString("measureId"));
+        String status = rs.getString("status");
+        if (status != null) {
+            comparison.setStatus(ComparisonStatus.valueOf(status));
+        }
+        comparison.setValue(rs.getString("value"));
+        comparison.setError("error");
+        return comparison;
     }
 
     @Override
@@ -161,6 +160,12 @@ public class JDBCComparisonProcessor implements ComparisonProcessor {
 
     @Override
     public void setError(String id, String error) {
-        //TODO implements it by adding a column in the table.
+        try {
+            Statement stmt = con.createStatement();
+            stmt.executeUpdate("UPDATE comparisons SET error='"
+                    + error + "' WHERE id ='" + id + "'");
+        } catch (SQLException e) {
+            Logger.getLogger(JDBCComparisonProcessor.class.getName()).log(Level.SEVERE, null, e);
+        }
     }
 }

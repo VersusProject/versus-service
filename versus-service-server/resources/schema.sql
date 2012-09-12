@@ -11,6 +11,7 @@ CREATE TABLE `comparisons` (
   `measureId` varchar(200) DEFAULT NULL,
   `status` varchar(200) DEFAULT NULL,
   `value` varchar(200) DEFAULT NULL,
+  `error` varchar(200) DEFAULT NULL,
   PRIMARY KEY (`id`),
   UNIQUE KEY `id_UNIQUE` (`id`)
 ) ENGINE=MyISAM AUTO_INCREMENT=5 DEFAULT CHARSET=utf8;
