@@ -112,7 +112,7 @@ public class JDBCComparisonProcessor implements ComparisonProcessor {
             comparison.setStatus(ComparisonStatus.valueOf(status));
         }
         comparison.setValue(rs.getString("value"));
-        comparison.setError("error");
+        comparison.setError(rs.getString("error"));
         return comparison;
     }
 
