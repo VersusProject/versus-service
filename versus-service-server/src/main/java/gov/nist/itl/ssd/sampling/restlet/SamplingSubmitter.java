@@ -15,6 +15,8 @@ import gov.nist.itl.ssd.sampling.Sampling;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import edu.illinois.ncsa.versus.registry.CompareRegistry;
 import edu.illinois.ncsa.versus.restlet.NoSlaveAvailableException;
@@ -72,7 +74,6 @@ public class SamplingSubmitter {
                 getInstance(SamplingService.class);
 
         engine.submit(sampling, new SamplingStatusHandler() {
-
             @Override
             public void onStarted() {
                 samplingService.setStatus(sampling.getId(), SamplingStatus.STARTED);
@@ -90,13 +91,21 @@ public class SamplingSubmitter {
             }
 
             @Override
-            public void onFailed() {
+            public void onFailed(String msg, Throwable e) {
+                Logger.getLogger(SamplingSubmitter.class.getName()).log(
+                        Level.INFO, "Sampling " + sampling.getId() + " failed. "
+                        + msg, e);
                 samplingService.setStatus(sampling.getId(), SamplingStatus.FAILED);
+                samplingService.setError(sampling.getId(), msg);
             }
 
             @Override
-            public void onAborted() {
+            public void onAborted(String msg) {
+                Logger.getLogger(SamplingSubmitter.class.getName()).log(
+                        Level.INFO, "Sampling {0} aborted. {1}",
+                        new Object[]{sampling.getId(), msg});
                 samplingService.setStatus(sampling.getId(), SamplingStatus.ABORTED);
+                samplingService.setError(sampling.getId(), msg);
             }
         });
 

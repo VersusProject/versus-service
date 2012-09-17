@@ -22,7 +22,7 @@ import gov.nist.itl.ssd.sampling.Sampling.SamplingStatus;
  *
  * @author antoinev
  */
-public class SamplingServiceImpl implements SamplingService {
+public class InMemorySamplingService implements SamplingService {
 
     private static final ConcurrentHashMap<String, Sampling> samplings =
             new ConcurrentHashMap<String, Sampling>();
@@ -57,6 +57,16 @@ public class SamplingServiceImpl implements SamplingService {
         Sampling sampling = samplings.get(id);
         if(sampling != null) {
             sampling.setStatus(status);
+        } else {
+            throw new RuntimeException("Sampling " + id + " not found.");
+        }
+    }
+
+    @Override
+    public void setError(String id, String error) {
+        Sampling sampling = samplings.get(id);
+        if(sampling != null) {
+            sampling.setError(error);
         } else {
             throw new RuntimeException("Sampling " + id + " not found.");
         }

@@ -7,8 +7,9 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Singleton;
 
 import edu.illinois.ncsa.versus.restlet.PropertiesUtil;
+import gov.nist.itl.ssd.versus.store.InMemorySamplingService;
+import gov.nist.itl.ssd.versus.store.JDBCSamplingService;
 import gov.nist.itl.ssd.versus.store.SamplingService;
-import gov.nist.itl.ssd.versus.store.SamplingServiceImpl;
 
 /**
  * Guice wiring for repository.
@@ -31,12 +32,24 @@ public class RepositoryModule extends AbstractModule {
             if ("mem".equals(repository)) {
                 bind(ComparisonProcessor.class).to(
                         InMemoryComparisonProcessor.class).in(Singleton.class);
+
+                // Sampling
+                bind(SamplingService.class).to(InMemorySamplingService.class).
+                        in(Singleton.class);
             } else if ("mysql".equals(repository)) {
                 bind(ComparisonProcessor.class).to(
                         JDBCComparisonProcessor.class).in(Singleton.class);
+
+                // Sampling
+                bind(SamplingService.class).to(JDBCSamplingService.class).
+                        in(Singleton.class);
             } else if ("mongo".equals(repository)) {
                 bind(ComparisonProcessor.class).to(
                         MongoComparisonProcessor.class).in(Singleton.class);
+
+                // Sampling
+                bind(SamplingService.class).to(InMemorySamplingService.class).
+                        in(Singleton.class);
             }
             // files
             String files = properties.getProperty("files", "disk");
@@ -57,10 +70,6 @@ public class RepositoryModule extends AbstractModule {
             //mlds
             bind(MultiLabelDecisionSupportService.class).
                     to(MultiLabelDecisionSupportServiceImpl.class).
-                    in(Singleton.class);
-
-            // Sampling
-            bind(SamplingService.class).to(SamplingServiceImpl.class).
                     in(Singleton.class);
         } catch (IOException e) {
             // TODO Auto-generated catch block

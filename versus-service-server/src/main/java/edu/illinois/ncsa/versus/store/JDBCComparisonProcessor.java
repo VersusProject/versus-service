@@ -76,7 +76,9 @@ public class JDBCComparisonProcessor implements ComparisonProcessor {
             Logger.getLogger(JDBCComparisonProcessor.class.getName()).log(Level.SEVERE, null, e);
         } finally {
             try {
-                stmt.close();
+                if (stmt != null) {
+                    stmt.close();
+                }
             } catch (SQLException e) {
                 Logger.getLogger(JDBCComparisonProcessor.class.getName()).log(Level.SEVERE, null, e);
             }
@@ -87,14 +89,23 @@ public class JDBCComparisonProcessor implements ComparisonProcessor {
     @Override
     public Collection<Comparison> listAll() {
         Collection<Comparison> comparisons = new ArrayList<Comparison>();
+        Statement stmt = null;
         try {
-            Statement stmt = con.createStatement();
+            stmt = con.createStatement();
             ResultSet rs = stmt.executeQuery("SELECT * FROM comparisons");
             while (rs.next()) {
                 comparisons.add(getComparisonFromResultSet(rs));
             }
         } catch (SQLException e) {
             Logger.getLogger(JDBCComparisonProcessor.class.getName()).log(Level.SEVERE, null, e);
+        } finally {
+            try {
+                if (stmt != null) {
+                    stmt.close();
+                }
+            } catch (SQLException e) {
+                Logger.getLogger(JDBCComparisonProcessor.class.getName()).log(Level.SEVERE, null, e);
+            }
         }
         return comparisons;
     }
@@ -125,6 +136,14 @@ public class JDBCComparisonProcessor implements ComparisonProcessor {
                     + "' WHERE id ='" + id + "'");
         } catch (SQLException e) {
             Logger.getLogger(JDBCComparisonProcessor.class.getName()).log(Level.SEVERE, null, e);
+        } finally {
+            try {
+                if (stmt != null) {
+                    stmt.close();
+                }
+            } catch (SQLException e) {
+                Logger.getLogger(JDBCComparisonProcessor.class.getName()).log(Level.SEVERE, null, e);
+            }
         }
     }
 
@@ -137,6 +156,14 @@ public class JDBCComparisonProcessor implements ComparisonProcessor {
                     + status.name() + "' WHERE id ='" + id + "'");
         } catch (SQLException e) {
             Logger.getLogger(JDBCComparisonProcessor.class.getName()).log(Level.SEVERE, null, e);
+        } finally {
+            try {
+                if (stmt != null) {
+                    stmt.close();
+                }
+            } catch (SQLException e) {
+                Logger.getLogger(JDBCComparisonProcessor.class.getName()).log(Level.SEVERE, null, e);
+            }
         }
     }
 
@@ -155,17 +182,34 @@ public class JDBCComparisonProcessor implements ComparisonProcessor {
         } catch (SQLException e) {
             Logger.getLogger(JDBCComparisonProcessor.class.getName()).log(Level.SEVERE, null, e);
             return null;
+        } finally {
+            try {
+                if (stmt != null) {
+                    stmt.close();
+                }
+            } catch (SQLException e) {
+                Logger.getLogger(JDBCComparisonProcessor.class.getName()).log(Level.SEVERE, null, e);
+            }
         }
     }
 
     @Override
     public void setError(String id, String error) {
+        Statement stmt = null;
         try {
-            Statement stmt = con.createStatement();
+            stmt = con.createStatement();
             stmt.executeUpdate("UPDATE comparisons SET error='"
                     + error + "' WHERE id ='" + id + "'");
         } catch (SQLException e) {
             Logger.getLogger(JDBCComparisonProcessor.class.getName()).log(Level.SEVERE, null, e);
+        } finally {
+            try {
+                if (stmt != null) {
+                    stmt.close();
+                }
+            } catch (SQLException e) {
+                Logger.getLogger(JDBCComparisonProcessor.class.getName()).log(Level.SEVERE, null, e);
+            }
         }
     }
 }

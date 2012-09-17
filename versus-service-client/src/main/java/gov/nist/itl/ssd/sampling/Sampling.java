@@ -55,14 +55,23 @@ public class Sampling implements Serializable {
     @XStreamAlias("status")
     private SamplingStatus status;
     
-    public Sampling(String individual, String sampler, int sampleSize,
+    @XStreamAlias("error")
+    private String error;
+    
+    public Sampling(String id, String individual, String sampler, int sampleSize,
             List<String> datasets) {
-        this.id = UUID.randomUUID().toString();
+        this.id = id;
         this.individual = individual;
         this.sampler = sampler;
         this.sampleSize = sampleSize;
         this.datasets = new ArrayList<String>(datasets);
         this.sample = new ArrayList<String>(sampleSize);
+    }
+    
+    public Sampling(String individual, String sampler, int sampleSize,
+            List<String> datasets) {
+        this(UUID.randomUUID().toString(), individual, sampler, sampleSize,
+                datasets);
     }
     
     public String getId() {
@@ -100,5 +109,13 @@ public class Sampling implements Serializable {
     
     public void setStatus(SamplingStatus status) {
         this.status = status;
+    }
+    
+    public String getError() {
+        return error;
+    }
+    
+    public void setError(String error) {
+        this.error = error;
     }
 }

@@ -32,4 +32,6 @@ public interface SamplingService {
     void updateSample(String id, List<String> sample);
 
     void setStatus(String id, SamplingStatus status);
+
+    void setError(String id, String error);
 }

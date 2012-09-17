@@ -400,6 +400,7 @@ public class ComparisonSubmitter {
                         new Object[]{comparison.getId(), msg});
                 comparisonService.setStatus(comparison.getId(),
                         ComparisonStatus.ABORTED);
+                comparisonService.setError(comparison.getId(), msg);
             }
         });
     }
