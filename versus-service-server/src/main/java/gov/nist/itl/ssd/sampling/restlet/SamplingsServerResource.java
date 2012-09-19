@@ -14,7 +14,7 @@ package gov.nist.itl.ssd.sampling.restlet;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
-import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -231,17 +231,17 @@ public class SamplingsServerResource extends VersusServerResource {
             return new StringRepresentation("Specify the sample size in an integer format.", MediaType.TEXT_PLAIN);
         }
 
-        ArrayList<String> names = new ArrayList<String>(datasetsNames.size());
-        ArrayList<InputStream> streams = new ArrayList<InputStream>(
-                datasetsNames.size());
+        String[] names = new String[datasetsNames.size()];
+        InputStream[] streams = new InputStream[datasetsNames.size()];
         for (String key : datasetsNames.keySet()) {
-            names.add(datasetsNames.get(key));
-            streams.add(datasetsStreams.get(key));
+            int i = Integer.parseInt(key);
+            names[i] = datasetsNames.get(key);
+            streams[i] = datasetsStreams.get(key);
         }
 
         ServerApplication server = (ServerApplication) getApplication();
-        Sampling sampling = new Sampling(individual, sampler, sampleSize, names);
-        SamplingSubmitter submitter = new SamplingSubmitter(server, sampling, streams);
+        Sampling sampling = new Sampling(individual, sampler, sampleSize, Arrays.asList(names));
+        SamplingSubmitter submitter = new SamplingSubmitter(server, sampling, Arrays.asList(streams));
         try {
             sampling = submitter.submit();
         } catch (NoSlaveAvailableException ex) {
