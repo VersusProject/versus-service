@@ -46,6 +46,10 @@ public class InMemoryComparisonProcessor implements ComparisonProcessor {
 		Comparison comparison = comparisons.get(id);
 		if (comparison != null) {
 			comparison.setStatus(status);
+			/*if(comparison.getStatus()==ComparisonStatus.DONE){ //added by smruti to solve sync problem
+				
+				notifyAll();
+			}*/
 		}
 		comparisons.put(comparison.getId(), comparison);
 	}

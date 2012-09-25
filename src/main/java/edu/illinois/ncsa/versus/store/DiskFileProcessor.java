@@ -12,6 +12,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.util.Properties;
 
+import org.eclipse.jetty.util.log.Log;
+
 import edu.illinois.ncsa.versus.restlet.PropertiesUtil;
 
 /**
@@ -20,6 +22,7 @@ import edu.illinois.ncsa.versus.restlet.PropertiesUtil;
  * @author Luigi Marini <lmarini@ncsa.illinois.edu>
  * 
  */
+import javax.activation.MimetypesFileTypeMap;
 public class DiskFileProcessor implements FileProcessor {
 
 	private String directory;
@@ -46,15 +49,17 @@ public class DiskFileProcessor implements FileProcessor {
 		try {
 			File file;
 			File ff = new File(directory);
-
+        //    int i=0;
 			if (filename == null) {
 				file = File.createTempFile("versus", ".tmp", ff);
 			} else {
 				int idx = filename.lastIndexOf(".");
-				if (idx != -1) {
+				System.out.println("filename.lastIndexof idx="+idx+"filename"+filename);
+			if (idx != -1) {
 					file = File.createTempFile(filename.substring(0, idx),
 							filename.substring(idx), ff);
 				} else {
+					
 					file = File.createTempFile(filename, ".tmp", ff);
 				}
 			}
@@ -66,6 +71,9 @@ public class DiskFileProcessor implements FileProcessor {
 			}
 			out.close();
 			inputStream.close();
+			System.out.println("file size"+file.length());
+			System.out.println("Mime Type of " + file.getName() + " is " +
+                    new MimetypesFileTypeMap().getContentType(file));
 			return file.getName();
 		} catch (FileNotFoundException e) {
 			System.err.println("Upload directory not found: " + directory);

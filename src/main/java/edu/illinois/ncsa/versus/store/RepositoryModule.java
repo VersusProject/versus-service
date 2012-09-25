@@ -46,19 +46,11 @@ public class RepositoryModule extends AbstractModule {
 						Singleton.class);
 			}
 			// distribution
-<<<<<<< HEAD
 			bind(DistributionService.class).to(DistributionServiceImpl.class).in(Singleton.class);
 			//decision support
 			bind(DecisionSupportService.class).to(DecisionSupportServiceImpl.class).in(Singleton.class);
 			//mlds
 			bind(MultiLabelDecisionSupportService.class).to(MultiLabelDecisionSupportServiceImpl.class).in(Singleton.class);
-=======
-			bind(DistributionService.class).to(DistributionServiceImpl.class)
-					.in(Singleton.class);
-			// decision support
-			bind(DecisionSupportService.class).to(
-					DecisionSupportServiceImpl.class).in(Singleton.class);
->>>>>>> 03d08896165d1ab528a120a970cd49acd790ff97
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
