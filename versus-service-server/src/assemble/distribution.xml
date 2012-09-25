@@ -48,6 +48,14 @@
 			<outputDirectory>docs</outputDirectory>
             <fileMode>644</fileMode>
 		</fileSet>
+        <fileSet>
+            <directory>resources</directory>
+            <outputDirectory>resources</outputDirectory>
+            <includes>
+                <include>schema.sql</include>
+            </includes>
+            <fileMode>644</fileMode>
+        </fileSet>
 	</fileSets>
 	<dependencySets>
 		<dependencySet>
