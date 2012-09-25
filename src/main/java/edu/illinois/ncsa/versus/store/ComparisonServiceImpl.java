@@ -66,6 +66,9 @@ public class ComparisonServiceImpl implements ComparisonService {
 
 	public void setStatus(String id, ComparisonStatus status) {
 		transactionLog.setStatus(id, status);
+		synchronized(transactionLog.getComparison(id)){// added to solve synchronization problem
+			transactionLog.getComparison(id).notify();
+		}
 	}
 
 	@Override
