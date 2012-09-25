@@ -144,8 +144,22 @@ public class ComparisonResource {
 		}*/
 		//log.debug("getjson");
 		Map<String, Object> json = new HashMap<String, Object>();
-		while(c.getStatus()!=ComparisonStatus.DONE){
-		}	
+		log.debug("Comparison status: "+c.getStatus());
+		
+		if( c.getStatus() != ComparisonStatus.DONE ){
+			 // while(c.getStatus()!=ComparisonStatus.DONE){	
+			    try {
+					//Thread.sleep(5);
+			    	synchronized(c){
+			    	c.wait();
+			    	}
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+		}
+		//while(c.getStatus()!=ComparisonStatus.DONE){
+		//}	
 		
 			log.debug("getjson");
 			log.debug("c.getValue"+c.getValue());
