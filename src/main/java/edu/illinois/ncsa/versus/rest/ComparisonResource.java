@@ -8,8 +8,11 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.URL;
+import java.net.URLDecoder;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 
 import javax.servlet.ServletContext;
@@ -58,6 +61,8 @@ public class ComparisonResource {
 				.getName());
 		ComparisonServiceImpl comparisonService = injector
 				.getInstance(ComparisonServiceImpl.class);
+		log.debug("I am inside GET list ");
+		System.out.println("I am inside GET list ");
 		List<String> json = new ArrayList<String>();
 		for (Comparison comparison : comparisonService.listAll()) {
 			json.add(comparison.getId());
@@ -76,6 +81,8 @@ public class ComparisonResource {
 
 		ComparisonServiceImpl comparisonService = injector
 				.getInstance(ComparisonServiceImpl.class);
+		log.debug("I am inside GET getComparison ");
+		System.out.println("I am inside GET getComparison ");
 		Comparison c = comparisonService.getComparison(id);
 		if (c == null) {
 			log.debug("Comparison not found " + id);
@@ -98,6 +105,8 @@ public class ComparisonResource {
 
 		ComparisonServiceImpl comparisonService = injector
 				.getInstance(ComparisonServiceImpl.class);
+		log.debug("I am inside GET getStatus ");
+		System.out.println("I am inside GET getStatus ");
 		Comparison c = comparisonService.getComparison(id);
 		if (c == null) {
 			log.debug("Comparison not found " + id);
@@ -111,24 +120,41 @@ public class ComparisonResource {
 
 	@GET
 	@Path("/{id}/value")
-	@Produces("text/plain")
-	public Response getValue(@PathParam("id") String id,
+	@Produces("application/json")
+	//@Produces("text/plain")
+	//public Response getValue(@PathParam("id") String id,
+		//	@Context ServletContext context) {
+	public Map<String, Object> getJson(@PathParam("id") String id,
 			@Context ServletContext context) {
-
 		Injector injector = (Injector) context.getAttribute(Injector.class
 				.getName());
 
 		ComparisonServiceImpl comparisonService = injector
 				.getInstance(ComparisonServiceImpl.class);
+		log.debug("I am inside GET getValue ");
+		System.out.println("I am inside GET getValue ");
 		Comparison c = comparisonService.getComparison(id);
-		if (c == null) {
+		/*if (c == null) {
 			log.debug("Comparison not found " + id);
 			return Response.status(404)
 					.entity("Comparison " + id + " not found.").build();
 		} else {
 			log.debug("Comparison found " + id);
 			return Response.status(200).entity(c.getValue()).build();
-		}
+		}*/
+		//log.debug("getjson");
+		Map<String, Object> json = new HashMap<String, Object>();
+		while(c.getStatus()!=ComparisonStatus.DONE){
+		}	
+		
+			log.debug("getjson");
+			log.debug("c.getValue"+c.getValue());
+			log.debug("status"+c.getStatus());
+		json.put("value",c.getValue());
+		json.put("status", c.getStatus());
+		json.put("other", c.getExtractorId());
+		//}
+		return json;
 	}
 
 	/**
@@ -224,6 +250,9 @@ public class ComparisonResource {
 				log.debug("Comparison " + comparison.getId()
 						+ " done. Result is: " + value);
 				comparisons.setStatus(comparison.getId(), ComparisonStatus.DONE);
+				//if(comparison.)
+				//notify();
+				//comparison.notify();
 				comparisons.updateValue(comparison.getId(), value);
 			}
 
@@ -275,13 +304,17 @@ public class ComparisonResource {
 	 * @throws IOException
 	 */
 	public File getFile(String remoteURL) throws IOException {
-		URL url = new URL(remoteURL);
+		log.debug("I am inside getFile in Comparison resource");
+		
+	    URL url = new URL(remoteURL); //commented by smruti
 		byte[] buff = new byte[10240];
 		int len;
 		File file;
+		//log.debug("I am inside getFile in Comparison resource");
+		//------------------------------------------------------------ The original code-----------------------
 		if (url.getPath().isEmpty()
-				|| url.getPath().matches(".*/versus[\\d]+.tmp")) {
-			file = File.createTempFile("versus", ".tmp");
+			|| url.getPath().matches(".*/versus[\\d]+.tmp")) {
+				file = File.createTempFile("versus", ".tmp");
 		} else {
 			String filename = new File(url.getPath()).getName().replaceAll(
 					"[\\d]+\\.", ".");
@@ -295,14 +328,17 @@ public class ComparisonResource {
 				file = File.createTempFile(filename, ".tmp");
 			}
 		}
+		//-------------------------------------------------------------------------
+		
 		file.deleteOnExit(); // TODO only gets called when jvm exits
 		FileOutputStream fos = new FileOutputStream(file);
-		InputStream is = url.openStream();
+		 InputStream is = url.openStream();
 		while ((len = is.read(buff)) != -1) {
 			fos.write(buff, 0, len);
 		}
 		is.close();
 		fos.close();
+		log.debug("");
 		return file;
 	}
 
