@@ -94,6 +94,8 @@ public class DecisionSupportResource {
 				.getAttribute(ExecutionEngine.class.getName());
 		DecisionSupportServiceImpl dsService = injector
 				.getInstance(DecisionSupportServiceImpl.class);
+		
+		log.debug("I am inside POST submit in DesionSupportResource");
 
 		DecisionSupport ds = new DecisionSupport();
 
@@ -119,6 +121,7 @@ public class DecisionSupportResource {
 		// add the service;
 		dsService.addDecisionSupport(ds);
 		// run the service
+		log.debug("computing getBestPair");
 		ds.getBestPair();
 		return ds.getId();
 	}
@@ -147,9 +150,12 @@ public class DecisionSupportResource {
 				.getInstance(DecisionSupportServiceImpl.class);
 		DecisionSupport ds = dsService.getDecisionSupport(id);
 
-		if(ds.getStatus() != DS_Status.RUNNING || ds.getStatus() != DS_Status.DONE){
-			ds.getBestPair();
-		}
+		log.debug("entered getJson decision support");
+			while(ds.getStatus()!=DS_Status.DONE){
+		//	if(ds.getStatus() != DS_Status.RUNNING || ds.getStatus() != DS_Status.DONE){
+			//ds.getBestPair();
+		//}
+			}
 		
 		log.debug("get json");
 		Map<String, Object> json = new HashMap<String, Object>();
@@ -158,7 +164,8 @@ public class DecisionSupportResource {
 			json.put("status", ds.getStatus());
 			json.put("decidedMethod", ds.getDecidedMethod());
 			json.put("rankedResults", ds.getBestResultsList());
-
+			json.put("distanceValues", ds.getValues()); // added by Smruti to send distance values to client
+            json.put("MeasureSpread",ds.getmeasureSpread());
 		} else {
 			json.put("Error", "Adapter not found");
 		}
@@ -188,18 +195,23 @@ public class DecisionSupportResource {
 				ds.getDissimilarData());
 		ArrayList<DSInfo> decisionSupportData = ds.getDecisionSupportData();
 
-		ArrayList<String> s_comparisonIds = new ArrayList<String>();
-		ArrayList<String> d_comparisonIds = new ArrayList<String>();
+		//ArrayList<String> s_comparisonIds = new ArrayList<String>();
+		//ArrayList<String> d_comparisonIds = new ArrayList<String>();
 		ComparisonResource a = new ComparisonResource();
+		
 
 		for (int x = 0; x < decisionSupportData.size(); x++) {
-
+			ArrayList<String> s_comparisonIds = new ArrayList<String>();
+			ArrayList<String> d_comparisonIds = new ArrayList<String>();
+              log.debug("x"+x+"decisionSupportData.size():"+decisionSupportData.size());  
+			  log.debug("x"+x+"decisionSupportData.ExactorID:"+decisionSupportData.get(x).getExtractorID()); 
+			  log.debug("x"+x+"decisionSupportData.MeasureID:"+decisionSupportData.get(x).getMeasureID());
+			  
 			// setup similar file comparisons
 			while (!similarFiles.isEmpty()) {
-
-				for (int j = 0; j < similarFiles.size()-1; j++) {
-
-					String cid = comparisonService.findComparison(
+				log.debug("similarFiles.size():"+similarFiles.size());
+				for (int j = 1; j < similarFiles.size(); j++) {
+                    		String cid = comparisonService.findComparison(
 							similarFiles.get(0), similarFiles.get(j),
 							decisionSupportData.get(x).getAdapterID(),
 							decisionSupportData.get(x).getExtractorID(),
@@ -245,6 +257,7 @@ public class DecisionSupportResource {
 								log.error("Internal error writing to disk", e);
 							}
 						}
+						
 						s_comparisonIds.add(id);
 					} else {
 						s_comparisonIds.add(cid);
@@ -252,9 +265,11 @@ public class DecisionSupportResource {
 				}
 				similarFiles.remove(0);
 			}
+			 
 			// setup dissimilar file comparisons
 			while (!dissimilarFiles.isEmpty()) {
-				for (int j = 0; j < dissimilarFiles.size()-1; j++) {
+				log.debug("dissimilarFiles.size():"+dissimilarFiles.size());
+				for (int j = 1; j < dissimilarFiles.size(); j++) {
 
 					String cid = comparisonService.findComparison(
 							dissimilarFiles.get(0), dissimilarFiles.get(j),
@@ -313,10 +328,13 @@ public class DecisionSupportResource {
 			dissimilarFiles = new ArrayList<String>(ds.getDissimilarData());
 			// add similarFiles and dissimilarFiles to the corresponding DSInfo
 			decisionSupportData.get(x).setSimilarComparisons(s_comparisonIds);
-			decisionSupportData.get(x)
-					.setDissimilarComparisons(d_comparisonIds);
+			log.debug("s_comparisonIDs.size():"+s_comparisonIds.size());
+			decisionSupportData.get(x).setDissimilarComparisons(d_comparisonIds);
+			log.debug("d_comparisonIDs.size():"+d_comparisonIds.size());
+			//log.debug("x"+x+"decisionSupportData.get(x).getSimilarComparison():"+decisionSupportData.get(x).getSimilarComparisons().size());
 		}
 		ds.setDecisionSupportData(decisionSupportData);
+		//ds.
 	}
 
 	private Collection<Extractor> getExtractors(ServletContext context) {
