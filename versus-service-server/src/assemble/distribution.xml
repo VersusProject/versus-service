@@ -19,7 +19,7 @@
 		</fileSet>
 			<fileSet>
 			<directory>src/main/resources</directory>
-			<outputDirectory>/lib</outputDirectory>
+			<outputDirectory>/bin</outputDirectory>
 			<includes>
 				<include>**/*.properties</include>
 			</includes>
