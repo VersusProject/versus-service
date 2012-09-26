@@ -187,7 +187,7 @@ public class DecisionSupportResource {
 			CompareRegistry registry, ExecutionEngine engine)
 			throws IOException {
 
-		Injector injector = Guice.createInjector(new RepositoryModule());
+		Injector injector = ServerApplication.getInjector();
 		ComparisonServiceImpl comparisonService = injector
 				.getInstance(ComparisonServiceImpl.class);
 

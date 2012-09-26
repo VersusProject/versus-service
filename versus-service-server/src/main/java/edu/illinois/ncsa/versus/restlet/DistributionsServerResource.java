@@ -19,7 +19,6 @@ import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.Get;
 import org.restlet.resource.Post;
 
-import com.google.inject.Guice;
 import com.google.inject.Injector;
 
 import edu.illinois.ncsa.versus.core.comparison.Comparison;
@@ -28,7 +27,6 @@ import edu.illinois.ncsa.versus.restlet.comparison.ComparisonSubmitter;
 import edu.illinois.ncsa.versus.store.ComparisonServiceImpl;
 import edu.illinois.ncsa.versus.store.DistributionService;
 import edu.illinois.ncsa.versus.store.DistributionServiceImpl;
-import edu.illinois.ncsa.versus.store.RepositoryModule;
 
 public class DistributionsServerResource extends VersusServerResource {
 	
@@ -37,7 +35,7 @@ public class DistributionsServerResource extends VersusServerResource {
 	public Representation list() {
 			
 		// Guice storage
-		Injector injector                       = Guice.createInjector(new RepositoryModule());
+		Injector injector                       = ServerApplication.getInjector();
 		DistributionService distributionService = injector.getInstance(DistributionServiceImpl.class);
 		Collection<Distribution> distributions  = distributionService.listAll();
 
@@ -64,7 +62,7 @@ public class DistributionsServerResource extends VersusServerResource {
 	public Representation submit(Representation entity) {
 					
 		// Guice storage
-		Injector injector                           = Guice.createInjector(new RepositoryModule());
+		Injector injector                           = ServerApplication.getInjector();
 		DistributionServiceImpl distributionService = injector.getInstance(DistributionServiceImpl.class);
 		
 		Distribution distribution = new Distribution();
@@ -87,7 +85,7 @@ public class DistributionsServerResource extends VersusServerResource {
 	
 	private List<String> submitComparisons(Distribution distribution){
 		
-		Injector injector                       = Guice.createInjector(new RepositoryModule());
+		Injector injector                       = ServerApplication.getInjector();
 		ComparisonServiceImpl comparisonService = injector.getInstance(ComparisonServiceImpl.class);		
 		List<String> fileUrls                   = new ArrayList<String>( Arrays.asList( distribution.getDataset() ) );
 		String adapter                          = distribution.getAdapterId();

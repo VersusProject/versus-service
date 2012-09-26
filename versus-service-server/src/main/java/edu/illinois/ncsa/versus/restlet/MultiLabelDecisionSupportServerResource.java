@@ -14,12 +14,10 @@ import org.restlet.resource.Get;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import com.google.inject.Guice;
 import com.google.inject.Injector;
 
 import edu.illinois.ncsa.versus.restlet.MultiLabelDecisionSupport.MLDS_Status;
 import edu.illinois.ncsa.versus.store.MultiLabelDecisionSupportServiceImpl;
-import edu.illinois.ncsa.versus.store.RepositoryModule;
 
 
 
@@ -29,7 +27,7 @@ public class MultiLabelDecisionSupportServerResource extends VersusServerResourc
 	public Representation asXML() {		
 	
 		String id                                  				 = (String) getRequest().getAttributes().get("id");
-		Injector injector                           		     = Guice.createInjector(new RepositoryModule());
+		Injector injector                           		     = ServerApplication.getInjector();
 		MultiLabelDecisionSupportServiceImpl distributionService = injector.getInstance(MultiLabelDecisionSupportServiceImpl.class);
 		MultiLabelDecisionSupport mlds                  		 = distributionService.getMultiLabelDecisionSupport(id);
 		

@@ -8,7 +8,6 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.TreeSet;
 import java.util.logging.Level;
 
@@ -29,7 +28,6 @@ import org.restlet.resource.Post;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.json.JettisonMappedXmlDriver;
 
-import com.google.inject.Guice;
 import com.google.inject.Injector;
 
 import edu.illinois.ncsa.versus.core.StringCollectionConverter;
@@ -38,7 +36,6 @@ import edu.illinois.ncsa.versus.restlet.NoSlaveAvailableException;
 import edu.illinois.ncsa.versus.restlet.ServerApplication;
 import edu.illinois.ncsa.versus.restlet.VersusServerResource;
 import edu.illinois.ncsa.versus.store.ComparisonServiceImpl;
-import edu.illinois.ncsa.versus.store.RepositoryModule;
 
 /**
  * Multiple comparisons.
@@ -55,7 +52,7 @@ public class ComparisonsServerResource extends VersusServerResource {
     @Get()
     public HashSet<String> retrieve() {
         // Guice storage
-        Injector injector = Guice.createInjector(new RepositoryModule());
+        Injector injector = ServerApplication.getInjector();
         ComparisonServiceImpl comparisonService =
                 injector.getInstance(ComparisonServiceImpl.class);
         Collection<Comparison> comparisons = comparisonService.listAll();

@@ -20,7 +20,6 @@ import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.Get;
 import org.restlet.resource.Post;
 
-import com.google.inject.Guice;
 import com.google.inject.Injector;
 
 import edu.illinois.ncsa.versus.core.comparison.Comparison;
@@ -32,7 +31,6 @@ import edu.illinois.ncsa.versus.restlet.comparison.ComparisonSubmitter;
 import edu.illinois.ncsa.versus.restlet.comparison.ComparisonsServerResource;
 import edu.illinois.ncsa.versus.store.ComparisonServiceImpl;
 import edu.illinois.ncsa.versus.store.MultiLabelDecisionSupportServiceImpl;
-import edu.illinois.ncsa.versus.store.RepositoryModule;
 
 public class MultiLabelDecisionSupportsServerResource extends VersusServerResource {
 	
@@ -40,7 +38,7 @@ public class MultiLabelDecisionSupportsServerResource extends VersusServerResour
 	public Representation list() {
 			
 		// Guice storage
-		Injector injector                                  = Guice.createInjector(new RepositoryModule());
+		Injector injector                                  = ServerApplication.getInjector();
 		MultiLabelDecisionSupportServiceImpl dsService     = injector.getInstance(MultiLabelDecisionSupportServiceImpl.class);	
 		Collection<MultiLabelDecisionSupport> dsCollection = dsService.listAll();
 
@@ -63,7 +61,7 @@ public class MultiLabelDecisionSupportsServerResource extends VersusServerResour
 	public Representation submit(Representation entity) {
 					
 		// Guice storage
-		Injector injector                    		     = Guice.createInjector(new RepositoryModule());
+		Injector injector                    		     = ServerApplication.getInjector();
 		MultiLabelDecisionSupportServiceImpl mldsService = injector.getInstance(MultiLabelDecisionSupportServiceImpl.class);		
 		MultiLabelDecisionSupport mlds                   = new MultiLabelDecisionSupport();
 		// parse entity
@@ -100,7 +98,7 @@ public class MultiLabelDecisionSupportsServerResource extends VersusServerResour
 	
 	private void submitComparisons(MultiLabelDecisionSupport mlds){
 		
-		Injector injector                       = Guice.createInjector(new RepositoryModule());
+		Injector injector                       = ServerApplication.getInjector();
 		ComparisonServiceImpl comparisonService = injector.getInstance(ComparisonServiceImpl.class);		
 		ArrayList<ArrayList<String>> data       = mlds.getData();
 		ArrayList<MLDSInfo> decisionSupportData = mlds.getMultiLabelDecisionSupportData(); 

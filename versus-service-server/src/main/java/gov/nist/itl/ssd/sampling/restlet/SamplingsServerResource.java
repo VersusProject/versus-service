@@ -38,14 +38,12 @@ import org.restlet.resource.Post;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.json.JettisonMappedXmlDriver;
 
-import com.google.inject.Guice;
 import com.google.inject.Injector;
 
 import edu.illinois.ncsa.versus.core.StringCollectionConverter;
 import edu.illinois.ncsa.versus.restlet.NoSlaveAvailableException;
 import edu.illinois.ncsa.versus.restlet.ServerApplication;
 import edu.illinois.ncsa.versus.restlet.VersusServerResource;
-import edu.illinois.ncsa.versus.store.RepositoryModule;
 import gov.nist.itl.ssd.sampling.Sampling;
 import gov.nist.itl.ssd.versus.store.SamplingService;
 
@@ -60,7 +58,7 @@ public class SamplingsServerResource extends VersusServerResource {
     public static final String PATH_TEMPLATE = URL;
 
     public HashSet<String> retrieve() {
-        Injector injector = Guice.createInjector(new RepositoryModule());
+        Injector injector = ServerApplication.getInjector();
         SamplingService samplingService =
                 injector.getInstance(SamplingService.class);
         Collection<Sampling> samplings = samplingService.listAll();

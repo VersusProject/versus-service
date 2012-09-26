@@ -9,7 +9,6 @@ import org.restlet.resource.Get;
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.json.JettisonMappedXmlDriver;
 
-import com.google.inject.Guice;
 import com.google.inject.Injector;
 
 import edu.illinois.ncsa.versus.core.comparison.Comparison;
@@ -18,7 +17,6 @@ import edu.illinois.ncsa.versus.restlet.ServerApplication;
 import edu.illinois.ncsa.versus.restlet.Slave;
 import edu.illinois.ncsa.versus.restlet.VersusServerResource;
 import edu.illinois.ncsa.versus.store.ComparisonServiceImpl;
-import edu.illinois.ncsa.versus.store.RepositoryModule;
 
 /**
  * Single comparison.
@@ -39,7 +37,7 @@ public class ComparisonServerResource extends VersusServerResource {
         String id = (String) getRequest().getAttributes().get(ID_PARAMETER);
 
         // Guice storage
-        Injector injector = Guice.createInjector(new RepositoryModule());
+        Injector injector = ServerApplication.getInjector();
         ComparisonServiceImpl comparisonService =
                 injector.getInstance(ComparisonServiceImpl.class);
         Comparison comparison = comparisonService.getComparison(id);

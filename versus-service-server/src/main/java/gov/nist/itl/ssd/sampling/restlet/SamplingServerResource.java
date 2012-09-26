@@ -19,10 +19,11 @@ import org.restlet.resource.Get;
 
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.json.JettisonMappedXmlDriver;
-import com.google.inject.Guice;
+
 import com.google.inject.Injector;
+
+import edu.illinois.ncsa.versus.restlet.ServerApplication;
 import edu.illinois.ncsa.versus.restlet.VersusServerResource;
-import edu.illinois.ncsa.versus.store.RepositoryModule;
 import gov.nist.itl.ssd.sampling.Sampling;
 import gov.nist.itl.ssd.versus.store.SamplingService;
 
@@ -43,7 +44,7 @@ public class SamplingServerResource extends VersusServerResource {
         String id = (String) getRequest().getAttributes().get(ID_PARAMETER);
 
         // Guice storage
-        Injector injector = Guice.createInjector(new RepositoryModule());
+        Injector injector = ServerApplication.getInjector();
         SamplingService samplingService =
                 injector.getInstance(SamplingService.class);
         Sampling sampling = samplingService.getSampling(id);

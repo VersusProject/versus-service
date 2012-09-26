@@ -14,11 +14,9 @@ import org.restlet.resource.Get;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import com.google.inject.Guice;
 import com.google.inject.Injector;
 
 import edu.illinois.ncsa.versus.store.DecisionSupportServiceImpl;
-import edu.illinois.ncsa.versus.store.RepositoryModule;
 
 public class DecisionSupportServerResource extends VersusServerResource {
 	
@@ -27,7 +25,7 @@ public class DecisionSupportServerResource extends VersusServerResource {
 	public DecisionSupport getBean() {
 		
 		String id                            = (String) getRequest().getAttributes().get("id");
-		Injector injector                    = Guice.createInjector(new RepositoryModule());
+		Injector injector                    = ServerApplication.getInjector();
 		DecisionSupportServiceImpl dsService = injector.getInstance(DecisionSupportServiceImpl.class);		
 		return dsService.getDecisionSupport(id);
 	}	
@@ -38,7 +36,7 @@ public class DecisionSupportServerResource extends VersusServerResource {
 	public Representation asXML() {		
 	
 		String id                            = (String) getRequest().getAttributes().get("id");
-		Injector injector                    = Guice.createInjector(new RepositoryModule());
+		Injector injector                    = ServerApplication.getInjector();
 		DecisionSupportServiceImpl dsService = injector.getInstance(DecisionSupportServiceImpl.class);		
 		DecisionSupport ds                   = dsService.getDecisionSupport(id);
 		

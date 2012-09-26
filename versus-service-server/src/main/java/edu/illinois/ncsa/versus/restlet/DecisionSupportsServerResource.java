@@ -19,7 +19,6 @@ import org.restlet.representation.StringRepresentation;
 import org.restlet.resource.Get;
 import org.restlet.resource.Post;
 
-import com.google.inject.Guice;
 import com.google.inject.Injector;
 
 import edu.illinois.ncsa.versus.core.comparison.Comparison;
@@ -30,7 +29,6 @@ import edu.illinois.ncsa.versus.restlet.DecisionSupport.DS_Status;
 import edu.illinois.ncsa.versus.restlet.comparison.ComparisonSubmitter;
 import edu.illinois.ncsa.versus.store.ComparisonServiceImpl;
 import edu.illinois.ncsa.versus.store.DecisionSupportServiceImpl;
-import edu.illinois.ncsa.versus.store.RepositoryModule;
 
 public class DecisionSupportsServerResource extends VersusServerResource {
 	
@@ -39,7 +37,7 @@ public class DecisionSupportsServerResource extends VersusServerResource {
 	public Representation list() {
 			
 		// Guice storage
-		Injector injector                        = Guice.createInjector(new RepositoryModule());
+		Injector injector                        = ServerApplication.getInjector();
 		DecisionSupportServiceImpl dsService     = injector.getInstance(DecisionSupportServiceImpl.class);	
 		Collection<DecisionSupport> dsCollection = dsService.listAll();
 
@@ -62,7 +60,7 @@ public class DecisionSupportsServerResource extends VersusServerResource {
 	public Representation submit(Representation entity) {
 					
 		// Guice storage
-		Injector injector                    = Guice.createInjector(new RepositoryModule());
+		Injector injector                    = ServerApplication.getInjector();
 		DecisionSupportServiceImpl dsService = injector.getInstance(DecisionSupportServiceImpl.class);		
 		DecisionSupport ds                   = new DecisionSupport();
 		// parse entity
@@ -87,7 +85,7 @@ public class DecisionSupportsServerResource extends VersusServerResource {
 	
 	private void submitSimilarComparisons(DecisionSupport ds){
 		
-		Injector injector                       = Guice.createInjector(new RepositoryModule());
+		Injector injector                       = ServerApplication.getInjector();
 		ComparisonServiceImpl comparisonService = injector.getInstance(ComparisonServiceImpl.class);		
 		ArrayList<String> similarFiles          = new ArrayList<String>( ds.getSimilarData() );
 		ArrayList<String> dissimilarFiles       = new ArrayList<String>(ds.getDissimilarData() );		

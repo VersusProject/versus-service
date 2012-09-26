@@ -18,11 +18,9 @@ import org.restlet.resource.Get;
 import org.w3c.dom.Document;
 import org.w3c.dom.Element;
 
-import com.google.inject.Guice;
 import com.google.inject.Injector;
 
 import edu.illinois.ncsa.versus.store.DistributionServiceImpl;
-import edu.illinois.ncsa.versus.store.RepositoryModule;
 
 
 
@@ -33,7 +31,7 @@ public class DistributionServerResource extends VersusServerResource {
 	public Distribution getBean() {
 		
 		String id                                   = (String) getRequest().getAttributes().get("id");
-		Injector injector                           = Guice.createInjector(new RepositoryModule());
+		Injector injector                           = ServerApplication.getInjector();
 		DistributionServiceImpl distributionService = injector.getInstance(DistributionServiceImpl.class);		
 		return distributionService.getDistribution(id);
 	}	
@@ -42,7 +40,7 @@ public class DistributionServerResource extends VersusServerResource {
 	public Representation asJSON(){
 
 		String id                                   = (String) getRequest().getAttributes().get("id");
-		Injector injector                           = Guice.createInjector(new RepositoryModule());
+		Injector injector                           = ServerApplication.getInjector();
 		DistributionServiceImpl distributionService = injector.getInstance(DistributionServiceImpl.class);
 		Distribution distribution                   = distributionService.getDistribution(id);
 		
@@ -77,7 +75,7 @@ public class DistributionServerResource extends VersusServerResource {
 //	public Representation asHTML() {
 //			
 //		String id                                   = (String) getRequest().getAttributes().get("id");
-//		Injector injector                           = Guice.createInjector(new RepositoryModule());
+//		Injector injector                           = ServerApplication.getInjector();
 //		DistributionServiceImpl distributionService = injector.getInstance(DistributionServiceImpl.class);
 //		Distribution distribution                   = distributionService.getDistribution(id);
 //
@@ -113,7 +111,7 @@ public class DistributionServerResource extends VersusServerResource {
 	public Representation asXML() {		
 	
 		String id                                   = (String) getRequest().getAttributes().get("id");
-		Injector injector                           = Guice.createInjector(new RepositoryModule());
+		Injector injector                           = ServerApplication.getInjector();
 		DistributionServiceImpl distributionService = injector.getInstance(DistributionServiceImpl.class);
 		Distribution distribution                   = distributionService.getDistribution(id);
 

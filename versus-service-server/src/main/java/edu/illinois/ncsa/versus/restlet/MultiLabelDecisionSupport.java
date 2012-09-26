@@ -2,28 +2,22 @@ package edu.illinois.ncsa.versus.restlet;
 
 import java.io.Serializable;
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import com.google.inject.Guice;
 import com.google.inject.Injector;
 
 import edu.illinois.ncsa.versus.adapter.Adapter;
 import edu.illinois.ncsa.versus.core.comparison.Comparison;
-import edu.illinois.ncsa.versus.descriptor.Descriptor;
 import edu.illinois.ncsa.versus.core.comparison.Comparison.ComparisonStatus;
+import edu.illinois.ncsa.versus.descriptor.Descriptor;
 import edu.illinois.ncsa.versus.extract.Extractor;
 import edu.illinois.ncsa.versus.measure.Measure;
-import edu.illinois.ncsa.versus.restlet.DecisionSupport.DSInfo;
-import edu.illinois.ncsa.versus.restlet.DecisionSupport.DS_Status;
 import edu.illinois.ncsa.versus.restlet.MultiLabelDecisionSupport.MLDS_Status;
 import edu.illinois.ncsa.versus.store.ComparisonServiceImpl;
-import edu.illinois.ncsa.versus.store.RepositoryModule;
 
 @SuppressWarnings("serial")
 public class MultiLabelDecisionSupport implements Serializable {
@@ -205,7 +199,7 @@ public class MultiLabelDecisionSupport implements Serializable {
 	
 	private boolean checkIfComplete(){
 		
-		Injector injector                       = Guice.createInjector(new RepositoryModule());
+		Injector injector                       = ServerApplication.getInjector();
 		ComparisonServiceImpl comparisonService = injector.getInstance(ComparisonServiceImpl.class);
 		
 		for( int i=0; i<mldsData.size(); i++){
@@ -253,7 +247,7 @@ public class MultiLabelDecisionSupport implements Serializable {
 		if( checkIfComplete() ){
 			this.status = MLDS_Status.RUNNING;
 			
-			Injector injector                       = Guice.createInjector(new RepositoryModule());
+			Injector injector                       = ServerApplication.getInjector();
 			ComparisonServiceImpl comparisonService = injector.getInstance(ComparisonServiceImpl.class);
 			
 			if(method.equals("inverseKmeans")){			
@@ -345,7 +339,7 @@ public class MultiLabelDecisionSupport implements Serializable {
 	
 	private double computeComparisonPEValue(ArrayList<ArrayList<String>> comparisons){//PE Val for each EM Pair
 		
-		Injector injector                       = Guice.createInjector(new RepositoryModule());
+		Injector injector                       = ServerApplication.getInjector();
 		ComparisonServiceImpl comparisonService = injector.getInstance(ComparisonServiceImpl.class);
 
 		//get all the values (distances)

@@ -6,13 +6,11 @@ import java.util.Collection;
 import java.util.Iterator;
 import java.util.List;
 
-import com.google.inject.Guice;
 import com.google.inject.Injector;
 
 import edu.illinois.ncsa.versus.core.comparison.Comparison;
 import edu.illinois.ncsa.versus.core.comparison.Comparison.ComparisonStatus;
 import edu.illinois.ncsa.versus.store.ComparisonServiceImpl;
-import edu.illinois.ncsa.versus.store.RepositoryModule;
 
 @SuppressWarnings("serial")
 public class Distribution implements Serializable {
@@ -131,7 +129,7 @@ public class Distribution implements Serializable {
 		}
 		else{
 			
-			Injector injector                       = Guice.createInjector(new RepositoryModule());
+			Injector injector                       = ServerApplication.getInjector();
 			ComparisonServiceImpl comparisonService = injector.getInstance(ComparisonServiceImpl.class);
 			Collection<Comparison> comparisons      = comparisonService.listAll();
 			Iterator<Comparison> itr                = comparisons.iterator();
@@ -190,7 +188,7 @@ public class Distribution implements Serializable {
 			if( completedComparisonIds.size() > 1 ){
 				
 				int count                               = 0;			
-				Injector injector                       = Guice.createInjector(new RepositoryModule());
+				Injector injector                       = ServerApplication.getInjector();
 				ComparisonServiceImpl comparisonService = injector.getInstance(ComparisonServiceImpl.class);
 				comparisonService.getComparison(id);			
 				Iterator<String> itr                    = completedComparisonIds.iterator();

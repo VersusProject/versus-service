@@ -3,15 +3,12 @@ package edu.illinois.ncsa.versus.restlet;
 import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Comparator;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
-import com.google.inject.Guice;
 import com.google.inject.Injector;
 
 import edu.illinois.ncsa.versus.adapter.Adapter;
@@ -21,7 +18,6 @@ import edu.illinois.ncsa.versus.descriptor.Descriptor;
 import edu.illinois.ncsa.versus.extract.Extractor;
 import edu.illinois.ncsa.versus.measure.Measure;
 import edu.illinois.ncsa.versus.store.ComparisonServiceImpl;
-import edu.illinois.ncsa.versus.store.RepositoryModule;
 
 @SuppressWarnings("serial")
 public class DecisionSupport implements Serializable {
@@ -246,7 +242,7 @@ public class DecisionSupport implements Serializable {
 	
 	private boolean checkIfComplete(){
 		
-		Injector injector                       = Guice.createInjector(new RepositoryModule());
+		Injector injector                       = ServerApplication.getInjector();
 		ComparisonServiceImpl comparisonService = injector.getInstance(ComparisonServiceImpl.class);
 		for( int i=0; i<decisionSupportData.size(); i++){
 			
@@ -352,7 +348,7 @@ public class DecisionSupport implements Serializable {
 		
 	private double computeComparisonPEValue(ArrayList<String> similarCL, ArrayList<String> dissimilarCL){
 		
-		Injector injector                       = Guice.createInjector(new RepositoryModule());
+		Injector injector                       = ServerApplication.getInjector();
 		ComparisonServiceImpl comparisonService = injector.getInstance(ComparisonServiceImpl.class);
 		Iterator<String> s_itr                  = similarCL.iterator();
 		Iterator<String> d_itr                  = dissimilarCL.iterator();
