@@ -2,6 +2,7 @@ package edu.illinois.ncsa.versus.store;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -32,22 +33,20 @@ public class JDBCComparisonProcessor implements ComparisonProcessor {
 
     @Override
     public void addComparison(Comparison comparison) {
-        Statement stmt = null;
+        PreparedStatement stmt = null;
         try {
-            stmt = con.createStatement();
-            stmt.executeUpdate("INSERT INTO comparisons (id, firstDataset, secondDataset, adapterId, extractorId, measureId)"
-                    + " VALUES ('"
-                    + comparison.getId()
-                    + "', '"
-                    + comparison.getFirstDataset()
-                    + "', '"
-                    + comparison.getSecondDataset()
-                    + "', '"
-                    + comparison.getAdapterId()
-                    + "', '"
-                    + comparison.getExtractorId()
-                    + "', '"
-                    + comparison.getMeasureId() + "')");
+            stmt = con.prepareStatement("INSERT INTO comparisons "
+                    + "(id, firstDataset, secondDataset, "
+                    + "adapterId, extractorId, measureId, slave)"
+                    + " VALUES (?, ?, ?, ?, ?, ?, ?)");
+            stmt.setString(1, comparison.getId());
+            stmt.setString(2, comparison.getFirstDataset());
+            stmt.setString(3, comparison.getSecondDataset());
+            stmt.setString(4, comparison.getAdapterId());
+            stmt.setString(5, comparison.getExtractorId());
+            stmt.setString(6, comparison.getMeasureId());
+            stmt.setString(7, comparison.getSlave());
+            stmt.executeUpdate();
         } catch (SQLException e) {
             Logger.getLogger(JDBCComparisonProcessor.class.getName()).log(Level.SEVERE, null, e);
         } finally {
@@ -64,14 +63,15 @@ public class JDBCComparisonProcessor implements ComparisonProcessor {
 
     @Override
     public Comparison getComparison(String id) {
-        Statement stmt = null;
+        PreparedStatement stmt = null;
         try {
-            stmt = con.createStatement();
-            ResultSet rs = stmt.executeQuery("SELECT * FROM comparisons WHERE id = '" + id
-                    + "'");
-            while (rs.next()) {
-                return getComparisonFromResultSet(rs);
+            stmt = con.prepareStatement("SELECT * FROM comparisons WHERE id=?");
+            stmt.setString(1, id);
+            ResultSet rs = stmt.executeQuery();
+            if (!rs.next()) {
+                return null;
             }
+            return getComparisonFromResultSet(rs);
         } catch (SQLException e) {
             Logger.getLogger(JDBCComparisonProcessor.class.getName()).log(Level.SEVERE, null, e);
         } finally {
@@ -124,16 +124,19 @@ public class JDBCComparisonProcessor implements ComparisonProcessor {
         }
         comparison.setValue(rs.getString("value"));
         comparison.setError(rs.getString("error"));
+        comparison.setSlave(rs.getString("slave"));
         return comparison;
     }
 
     @Override
     public void updateValue(String id, String value) {
-        Statement stmt = null;
+        PreparedStatement stmt = null;
         try {
-            stmt = con.createStatement();
-            stmt.executeUpdate("UPDATE comparisons SET value='" + value
-                    + "' WHERE id ='" + id + "'");
+            stmt = con.prepareStatement("UPDATE comparisons SET value=? "
+                    + "WHERE id=?");
+            stmt.setString(1, value);
+            stmt.setString(2, id);
+            stmt.executeUpdate();
         } catch (SQLException e) {
             Logger.getLogger(JDBCComparisonProcessor.class.getName()).log(Level.SEVERE, null, e);
         } finally {
@@ -149,11 +152,13 @@ public class JDBCComparisonProcessor implements ComparisonProcessor {
 
     @Override
     public void setStatus(String id, ComparisonStatus status) {
-        Statement stmt = null;
+        PreparedStatement stmt = null;
         try {
-            stmt = con.createStatement();
-            stmt.executeUpdate("UPDATE comparisons SET status='"
-                    + status.name() + "' WHERE id ='" + id + "'");
+            stmt = con.prepareStatement("UPDATE comparisons SET status=? "
+                    + "WHERE id=?");
+            stmt.setString(1, status.name());
+            stmt.setString(2, id);
+            stmt.executeUpdate();
         } catch (SQLException e) {
             Logger.getLogger(JDBCComparisonProcessor.class.getName()).log(Level.SEVERE, null, e);
         } finally {
@@ -169,11 +174,12 @@ public class JDBCComparisonProcessor implements ComparisonProcessor {
 
     @Override
     public ComparisonStatus getStatus(String id) {
-        Statement stmt = null;
+        PreparedStatement stmt = null;
         try {
-            stmt = con.createStatement();
-            ResultSet rs = stmt.executeQuery("SELECT status FROM comparisons WHERE id = '"
-                    + id + "'");
+            stmt = con.prepareStatement("SELECT status FROM comparisons "
+                    + "WHERE id=?");
+            stmt.setString(1, id);
+            ResultSet rs = stmt.executeQuery();
             while (rs.next()) {
                 ComparisonStatus status = ComparisonStatus.valueOf(rs.getString("status"));
                 return status;
@@ -195,11 +201,13 @@ public class JDBCComparisonProcessor implements ComparisonProcessor {
 
     @Override
     public void setError(String id, String error) {
-        Statement stmt = null;
+        PreparedStatement stmt = null;
         try {
-            stmt = con.createStatement();
-            stmt.executeUpdate("UPDATE comparisons SET error='"
-                    + error + "' WHERE id ='" + id + "'");
+            stmt = con.prepareStatement("UPDATE comparisons SET error=? "
+                    + "WHERE id=?");
+            stmt.setString(1, error);
+            stmt.setString(2, id);
+            stmt.executeUpdate();
         } catch (SQLException e) {
             Logger.getLogger(JDBCComparisonProcessor.class.getName()).log(Level.SEVERE, null, e);
         } finally {

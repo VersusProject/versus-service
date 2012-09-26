@@ -2,6 +2,8 @@ package edu.illinois.ncsa.versus.store;
 
 import java.io.IOException;
 import java.util.Properties;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Singleton;
@@ -30,6 +32,8 @@ public class RepositoryModule extends AbstractModule {
             // comparison results
             String repository = properties.getProperty("repository", "mem");
             if ("mem".equals(repository)) {
+                Logger.getLogger(RepositoryModule.class.getName()).log(
+                        Level.INFO, "Using in memory repository");
                 bind(ComparisonProcessor.class).to(
                         InMemoryComparisonProcessor.class).in(Singleton.class);
 
@@ -37,6 +41,8 @@ public class RepositoryModule extends AbstractModule {
                 bind(SamplingService.class).to(InMemorySamplingService.class).
                         in(Singleton.class);
             } else if ("mysql".equals(repository)) {
+                Logger.getLogger(RepositoryModule.class.getName()).log(
+                        Level.INFO, "Using mysql repository");
                 bind(ComparisonProcessor.class).to(
                         JDBCComparisonProcessor.class).in(Singleton.class);
 
@@ -44,6 +50,8 @@ public class RepositoryModule extends AbstractModule {
                 bind(SamplingService.class).to(JDBCSamplingService.class).
                         in(Singleton.class);
             } else if ("mongo".equals(repository)) {
+                Logger.getLogger(RepositoryModule.class.getName()).log(
+                        Level.INFO, "Using mongo repository for comparisons and in memory repository for sampling");
                 bind(ComparisonProcessor.class).to(
                         MongoComparisonProcessor.class).in(Singleton.class);
 

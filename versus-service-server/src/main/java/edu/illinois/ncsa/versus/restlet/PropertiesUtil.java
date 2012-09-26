@@ -18,27 +18,32 @@ import java.util.logging.Logger;
  */
 public class PropertiesUtil {
 
+    private static Properties properties = null;
+
     public static Properties load() throws IOException {
-        Properties defaultProps = new Properties();
-        File props = new File("versus.properties");
+        if (properties == null) {
+            Properties defaultProps = new Properties();
+            File props = new File("versus.properties");
 
-        InputStream inputStream;
-        if (props.exists()) {
-            inputStream = new FileInputStream(props);
-            Logger.getLogger(PropertiesUtil.class.getName()).log(Level.INFO, 
-                    "Loading properties from versus.properties file");
-        } else {
-            inputStream = PropertiesUtil.class.getClassLoader()
-                    .getResourceAsStream("versus.properties");
-            Logger.getLogger(PropertiesUtil.class.getName()).log(Level.INFO, 
-                    "Loading properties from versus.properties jar resource");
-        }
-        try {
-            defaultProps.load(inputStream);
-        } finally {
-            inputStream.close();
-        }
+            InputStream inputStream;
+            if (props.exists()) {
+                inputStream = new FileInputStream(props);
+                Logger.getLogger(PropertiesUtil.class.getName()).log(Level.INFO,
+                        "Loading properties from versus.properties file");
+            } else {
+                inputStream = PropertiesUtil.class.getClassLoader()
+                        .getResourceAsStream("versus.properties");
+                Logger.getLogger(PropertiesUtil.class.getName()).log(Level.INFO,
+                        "Loading properties from versus.properties jar resource");
+            }
+            try {
+                defaultProps.load(inputStream);
+            } finally {
+                inputStream.close();
+            }
 
-        return defaultProps;
+            properties = defaultProps;
+        }
+        return properties;
     }
 }
