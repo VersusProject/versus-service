@@ -12,8 +12,8 @@
     <packaging>pom</packaging>
     <name>Versus Service</name>
     <properties>
-        <restletVersion>2.1-RC5</restletVersion>
-        <jetty.version>7.4.2.v20110526</jetty.version>
+        <restletVersion>2.1.0</restletVersion>
+        <jetty.version>7.6.5.v20120716</jetty.version>
     </properties>
     <modules>
         <module>versus-service-client</module>
