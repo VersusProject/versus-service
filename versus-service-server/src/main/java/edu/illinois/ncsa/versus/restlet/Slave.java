@@ -8,9 +8,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.Callable;
 
 import org.restlet.resource.ClientResource;
 
+import edu.illinois.ncsa.versus.core.ClientResourceFactory;
+import edu.illinois.ncsa.versus.core.RetryService;
 import edu.illinois.ncsa.versus.core.adapter.AdapterDescriptor;
 import edu.illinois.ncsa.versus.core.adapter.AdaptersClient;
 import edu.illinois.ncsa.versus.core.comparison.Comparison;
@@ -30,9 +33,13 @@ public class Slave {
     private final String url;
 
     private final ComparisonClient comparisonClient;
+
     private final AdaptersClient adaptersClient;
+
     private final ExtractorsClient extractorsClient;
+
     private final MeasuresClient measuresClient;
+
     private final ClientResource nodeStatusClient;
 
     public Slave(String hostRef) {
@@ -41,7 +48,8 @@ public class Slave {
         extractorsClient = new ExtractorsClient(url);
         measuresClient = new MeasuresClient(url);
         comparisonClient = new ComparisonClient(url);
-        nodeStatusClient = new ClientResource(url + NodeStatusServerResource.URL);
+        nodeStatusClient = ClientResourceFactory.getNew(
+                url + NodeStatusServerResource.URL);
     }
 
     public String getUrl() {
@@ -128,8 +136,14 @@ public class Slave {
     }
 
     public long getNodeStatus() {
-        String string = nodeStatusClient.get(String.class);
-        return Long.parseLong(string);
+        RetryService<String> rs = new RetryService<String>(
+                new Callable<String>() {
+                    @Override
+                    public String call() throws Exception {
+                        return nodeStatusClient.get(String.class);
+                    }
+                });
+        return Long.parseLong(rs.run());
     }
 
     @Override

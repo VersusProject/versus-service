@@ -23,18 +23,20 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.concurrent.Callable;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
-import org.restlet.Client;
 import org.restlet.data.MediaType;
-import org.restlet.data.Protocol;
 import org.restlet.ext.html.FormData;
 import org.restlet.ext.html.FormDataSet;
 import org.restlet.representation.InputRepresentation;
 import org.restlet.representation.Representation;
 import org.restlet.resource.ClientResource;
 import org.restlet.util.Series;
+
+import edu.illinois.ncsa.versus.core.ClientResourceFactory;
+import edu.illinois.ncsa.versus.core.RetryService;
 
 /**
  *
@@ -45,22 +47,26 @@ public class ComparisonClient {
     private static final String URL = "/comparisons";
 
     private final String host;
-    
-    private final Client client = new Client(Protocol.HTTP);
 
     public ComparisonClient(String host) {
         this.host = host;
     }
 
-    public Comparison getComparison(String id) {
-        ClientResource cr = new ClientResource(host + URL + '/' + id);
-        cr.setNext(client);
-        return cr.get(Comparison.class);
+    public Comparison getComparison(final String id) {
+        RetryService<Comparison> rs = new RetryService<Comparison>(
+                new Callable<Comparison>() {
+                    @Override
+                    public Comparison call() throws Exception {
+                        ClientResource cr = ClientResourceFactory.getNew(
+                                host + URL + '/' + id);
+                        return cr.get(Comparison.class);
+                    }
+                });
+        return rs.run();
     }
 
     public HashSet<String> getComparisons() {
-        ClientResource cr = new ClientResource(host + URL);
-        cr.setNext(client);
+        ClientResource cr = ClientResourceFactory.getNew(host + URL);
         return cr.get(HashSet.class);
     }
 
@@ -113,8 +119,7 @@ public class ComparisonClient {
         }
 
 
-        ClientResource clientResource = new ClientResource(host + URL);
-        clientResource.setNext(client);
+        ClientResource clientResource = ClientResourceFactory.getNew(host + URL);
         Representation post = clientResource.post(form);
         String response = post.getText();
 
@@ -155,8 +160,7 @@ public class ComparisonClient {
         }
 
 
-        ClientResource clientResource = new ClientResource(host + URL);
-        clientResource.setNext(client);
+        ClientResource clientResource = ClientResourceFactory.getNew(host + URL);
         Representation post = clientResource.post(form);
         String response = post.getText();
 
@@ -178,10 +182,19 @@ public class ComparisonClient {
                 .get(0);
     }
 
-    public boolean supportComparison(String adapterId, String extractorId, String measureId) {
-        ClientResource cr = new ClientResource(host + URL + '/'
-                + adapterId + '/' + extractorId + '/' + measureId);
-        cr.setNext(client);
-        return cr.get(Boolean.class);
+    public boolean supportComparison(final String adapterId,
+            final String extractorId, final String measureId) {
+        
+        RetryService<Boolean> rs = new RetryService<Boolean>(
+                new Callable<Boolean>() {
+                    @Override
+                    public Boolean call() throws Exception {
+                        ClientResource cr = ClientResourceFactory.getNew(
+                                host + URL + '/' + adapterId + '/'
+                                + extractorId + '/' + measureId);
+                        return cr.get(Boolean.class);
+                    }
+                });
+        return rs.run();
     }
 }

@@ -11,6 +11,8 @@
  */
 package edu.illinois.ncsa.versus.core;
 
+import org.restlet.Client;
+import org.restlet.data.Protocol;
 import org.restlet.resource.ClientResource;
 
 /**
@@ -20,6 +22,8 @@ import org.restlet.resource.ClientResource;
 public class ClientResourceFactory {
 
     private volatile static long retryDelay = 2000;
+    
+    private static final Client client = new Client(Protocol.HTTP);
 
     private ClientResourceFactory() {
     }
@@ -27,6 +31,7 @@ public class ClientResourceFactory {
     public static ClientResource getNew(String url) {
         ClientResource cr = new ClientResource(url);
         cr.setRetryDelay(retryDelay);
+        cr.setNext(client);
         return cr;
     }
 
