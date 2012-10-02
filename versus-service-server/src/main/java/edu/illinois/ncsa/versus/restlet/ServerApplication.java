@@ -1,5 +1,6 @@
 package edu.illinois.ncsa.versus.restlet;
 
+import gov.nist.itl.ssd.similarity.test.execution.TestResultServerResource;
 import edu.illinois.ncsa.versus.restlet.node.SlavesServerResource;
 import java.io.IOException;
 import java.io.InputStream;
@@ -67,6 +68,7 @@ import gov.nist.itl.ssd.sampling.restlet.SamplerServerResource;
 import gov.nist.itl.ssd.sampling.restlet.SamplersServerResource;
 import gov.nist.itl.ssd.sampling.restlet.SamplingServerResource;
 import gov.nist.itl.ssd.sampling.restlet.SamplingsServerResource;
+import gov.nist.itl.ssd.similarity.test.execution.TestServerResource;
 
 /**
  * Main restlet application.
@@ -79,7 +81,7 @@ public class ServerApplication extends Application {
     private final CompareRegistry registry = new CompareRegistry();
 
     private final SamplingRegistry samplingRegistry = new SamplingRegistry();
-    
+
     private final SlavesManager slavesManager = new SlavesManager();
 
     private final String masterURL;
@@ -87,7 +89,7 @@ public class ServerApplication extends Application {
     private final ExecutionEngine engine = new ExecutionEngine();
 
     private final SamplingExecutionEngine samplingEngine = new SamplingExecutionEngine();
-    
+
     private final int port;
 
     private final String baseUrl;
@@ -197,14 +199,22 @@ public class ServerApplication extends Application {
         router.attach("/decisionSupport", DecisionSupportsServerResource.class);
         router.attach("/decisionSupport/{id}", DecisionSupportServerResource.class);
 
-        
+
         router.attach(IndividualsServerResource.PATH_TEMPLATE, IndividualsServerResource.class);
         router.attach(IndividualServerResource.PATH_TEMPLATE, IndividualServerResource.class);
         router.attach(SamplersServerResource.PATH_TEMPLATE, SamplersServerResource.class);
         router.attach(SamplerServerResource.PATH_TEMPLATE, SamplerServerResource.class);
         router.attach(SamplingsServerResource.PATH_TEMPLATE, SamplingsServerResource.class);
         router.attach(SamplingServerResource.PATH_TEMPLATE, SamplingServerResource.class);
-        
+
+
+
+        router.attach("/tests", TestServerResource.class);
+        router.attach("/tests/{command}", TestServerResource.class);
+        TemplateRoute testResultRoute = router.attach(
+                "/testsresult" + '/' + "{file}", TestResultServerResource.class);
+        testResultRoute.getTemplate().getVariables().put("file", new Variable(Variable.TYPE_ALL));
+
         router.attachDefault(DefaultServerResource.class);
 
         return router;
@@ -223,7 +233,6 @@ public class ServerApplication extends Application {
         }
         AdapterDescriptor ad = slavesManager.querySlavesFirstNotNull(
                 new SlaveQuery<AdapterDescriptor>() {
-
                     @Override
                     public AdapterDescriptor executeQuery(Slave slave) {
                         return slave.getAdapter(id);
@@ -245,7 +254,6 @@ public class ServerApplication extends Application {
         }
         Collection<Set<String>> slavesResults = slavesManager.querySlaves(
                 new SlaveQuery<Set<String>>() {
-
                     @Override
                     public Set<String> executeQuery(Slave slave) {
                         return slave.getAdaptersId();
@@ -268,7 +276,6 @@ public class ServerApplication extends Application {
         }
         String sha1 = slavesManager.querySlavesFirstNotNull(
                 new SlaveQuery<String>() {
-
                     @Override
                     public String executeQuery(Slave slave) {
                         return slave.getAdapterHelpSha1(adapterId);
@@ -291,7 +298,6 @@ public class ServerApplication extends Application {
         }
         InputStream help = slavesManager.querySlavesFirstNotNull(
                 new SlaveQuery<InputStream>() {
-
                     @Override
                     public InputStream executeQuery(Slave slave) {
                         try {
@@ -325,7 +331,6 @@ public class ServerApplication extends Application {
 
         ExtractorDescriptor ed = slavesManager.querySlavesFirstNotNull(
                 new SlaveQuery<ExtractorDescriptor>() {
-
                     @Override
                     public ExtractorDescriptor executeQuery(Slave slave) {
                         return slave.getExtractor(id);
@@ -346,7 +351,6 @@ public class ServerApplication extends Application {
         }
         Collection<Set<String>> slavesResult = slavesManager.querySlaves(
                 new SlaveQuery<Set<String>>() {
-
                     @Override
                     public Set<String> executeQuery(Slave slave) {
                         return slave.getExtractorsId();
@@ -369,7 +373,6 @@ public class ServerApplication extends Application {
         }
         String sha1 = slavesManager.querySlavesFirstNotNull(
                 new SlaveQuery<String>() {
-
                     @Override
                     public String executeQuery(Slave slave) {
                         return slave.getExtractorHelpSha1(extractorId);
@@ -392,7 +395,6 @@ public class ServerApplication extends Application {
         }
         InputStream help = slavesManager.querySlavesFirstNotNull(
                 new SlaveQuery<InputStream>() {
-
                     @Override
                     public InputStream executeQuery(Slave slave) {
                         try {
@@ -426,7 +428,6 @@ public class ServerApplication extends Application {
         }
         MeasureDescriptor md = slavesManager.querySlavesFirstNotNull(
                 new SlaveQuery<MeasureDescriptor>() {
-
                     @Override
                     public MeasureDescriptor executeQuery(Slave slave) {
                         return slave.getMeasure(id);
@@ -447,7 +448,6 @@ public class ServerApplication extends Application {
         }
         Collection<Set<String>> slavesResult = slavesManager.querySlaves(
                 new SlaveQuery<Set<String>>() {
-
                     @Override
                     public Set<String> executeQuery(Slave slave) {
                         return slave.getMeasuresId();
@@ -470,7 +470,6 @@ public class ServerApplication extends Application {
         }
         String sha1 = slavesManager.querySlavesFirstNotNull(
                 new SlaveQuery<String>() {
-
                     @Override
                     public String executeQuery(Slave slave) {
                         return slave.getMeasureHelpSha1(measureId);
@@ -493,7 +492,6 @@ public class ServerApplication extends Application {
         }
         InputStream help = slavesManager.querySlavesFirstNotNull(
                 new SlaveQuery<InputStream>() {
-
                     @Override
                     public InputStream executeQuery(Slave slave) {
                         try {
@@ -526,7 +524,7 @@ public class ServerApplication extends Application {
     public CompareRegistry getRegistry() {
         return registry;
     }
-    
+
     public SamplingRegistry getSamplingRegistry() {
         return samplingRegistry;
     }
