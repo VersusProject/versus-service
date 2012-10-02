@@ -11,7 +11,6 @@
  */
 package edu.illinois.ncsa.versus.core.comparison;
 
-import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -27,7 +26,9 @@ import java.util.List;
 
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang.StringUtils;
+import org.restlet.Client;
 import org.restlet.data.MediaType;
+import org.restlet.data.Protocol;
 import org.restlet.ext.html.FormData;
 import org.restlet.ext.html.FormDataSet;
 import org.restlet.representation.InputRepresentation;
@@ -44,6 +45,8 @@ public class ComparisonClient {
     private static final String URL = "/comparisons";
 
     private final String host;
+    
+    private final Client client = new Client(Protocol.HTTP);
 
     public ComparisonClient(String host) {
         this.host = host;
@@ -51,11 +54,13 @@ public class ComparisonClient {
 
     public Comparison getComparison(String id) {
         ClientResource cr = new ClientResource(host + URL + '/' + id);
+        cr.setNext(client);
         return cr.get(Comparison.class);
     }
 
     public HashSet<String> getComparisons() {
         ClientResource cr = new ClientResource(host + URL);
+        cr.setNext(client);
         return cr.get(HashSet.class);
     }
 
@@ -109,6 +114,7 @@ public class ComparisonClient {
 
 
         ClientResource clientResource = new ClientResource(host + URL);
+        clientResource.setNext(client);
         Representation post = clientResource.post(form);
         String response = post.getText();
 
@@ -150,6 +156,7 @@ public class ComparisonClient {
 
 
         ClientResource clientResource = new ClientResource(host + URL);
+        clientResource.setNext(client);
         Representation post = clientResource.post(form);
         String response = post.getText();
 
@@ -174,6 +181,7 @@ public class ComparisonClient {
     public boolean supportComparison(String adapterId, String extractorId, String measureId) {
         ClientResource cr = new ClientResource(host + URL + '/'
                 + adapterId + '/' + extractorId + '/' + measureId);
+        cr.setNext(client);
         return cr.get(Boolean.class);
     }
 }

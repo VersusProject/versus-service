@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Set;
 
 import org.restlet.resource.ClientResource;
+
 import edu.illinois.ncsa.versus.core.adapter.AdapterDescriptor;
 import edu.illinois.ncsa.versus.core.adapter.AdaptersClient;
 import edu.illinois.ncsa.versus.core.comparison.Comparison;
@@ -28,8 +29,19 @@ public class Slave {
 
     private final String url;
 
+    private final ComparisonClient comparisonClient;
+    private final AdaptersClient adaptersClient;
+    private final ExtractorsClient extractorsClient;
+    private final MeasuresClient measuresClient;
+    private final ClientResource nodeStatusClient;
+
     public Slave(String hostRef) {
         url = hostRef;
+        adaptersClient = new AdaptersClient(url);
+        extractorsClient = new ExtractorsClient(url);
+        measuresClient = new MeasuresClient(url);
+        comparisonClient = new ComparisonClient(url);
+        nodeStatusClient = new ClientResource(url + NodeStatusServerResource.URL);
     }
 
     public String getUrl() {
@@ -37,61 +49,61 @@ public class Slave {
     }
 
     public AdapterDescriptor getAdapter(String id) {
-        return new AdaptersClient(url).getAdapterDescriptor(id);
+        return adaptersClient.getAdapterDescriptor(id);
     }
 
     public Set<String> getAdaptersId() {
-        return new AdaptersClient(url).getAdapters();
+        return adaptersClient.getAdapters();
     }
 
     public String getAdapterHelpSha1(String adapterId) {
-        return new AdaptersClient(url).getAdapterHelpSha1(adapterId);
+        return adaptersClient.getAdapterHelpSha1(adapterId);
     }
 
     public InputStream getAdapterZippedHelp(String adapterId) throws IOException {
-        return new AdaptersClient(url).getAdapterZippedHelp(adapterId);
+        return adaptersClient.getAdapterZippedHelp(adapterId);
     }
 
     public ExtractorDescriptor getExtractor(String id) {
-        return new ExtractorsClient(url).getExtractorDescriptor(id);
+        return extractorsClient.getExtractorDescriptor(id);
     }
 
     public Set<String> getExtractorsId() {
-        return new ExtractorsClient(url).getExtractors();
+        return extractorsClient.getExtractors();
     }
 
     public String getExtractorHelpSha1(String extractorId) {
-        return new ExtractorsClient(url).getExtractorHelpSha1(extractorId);
+        return extractorsClient.getExtractorHelpSha1(extractorId);
     }
 
     public InputStream getExtractorZippedHelp(String extractorId) throws IOException {
-        return new AdaptersClient(url).getAdapterZippedHelp(extractorId);
+        return extractorsClient.getExtractorZippedHelp(extractorId);
     }
 
     public MeasureDescriptor getMeasure(String id) {
-        return new MeasuresClient(url).getMeasureDescriptor(id);
+        return measuresClient.getMeasureDescriptor(id);
     }
 
     public Set<String> getMeasuresId() {
-        return new MeasuresClient(url).getMeasures();
+        return measuresClient.getMeasures();
     }
 
     public String getMeasureHelpSha1(String measureId) {
-        return new MeasuresClient(url).getMeasureHelpSha1(measureId);
+        return measuresClient.getMeasureHelpSha1(measureId);
     }
 
     public InputStream getMeasureZippedHelp(String measureId) throws IOException {
-        return new MeasuresClient(url).getMeasureZippedHelp(measureId);
+        return measuresClient.getMeasureZippedHelp(measureId);
     }
 
     public Comparison getComparison(Comparison comparison) {
-        comparison = new ComparisonClient(url).getComparison(comparison.getId());
+        comparison = comparisonClient.getComparison(comparison.getId());
         comparison.setSlave(url);
         return comparison;
     }
 
     public Comparison submit(Comparison comparison, InputStream dataset1Stream, InputStream dataset2Stream) throws IOException {
-        String comparisonId = new ComparisonClient(url).submit(comparison, dataset1Stream, dataset2Stream);
+        String comparisonId = comparisonClient.submit(comparison, dataset1Stream, dataset2Stream);
         comparison.setId(comparisonId);
         comparison.setSlave(url);
         return comparison;
@@ -100,7 +112,7 @@ public class Slave {
     public List<String> submit(String adapter, String extractor, String measure,
             List<String> datasetsNames, List<File> datasetsFiles,
             List<Integer> referenceDatasets) throws IOException {
-        List<String> ids = new ComparisonClient(url).submitFiles(
+        List<String> ids = comparisonClient.submitFiles(
                 adapter, extractor, measure,
                 datasetsNames, datasetsFiles, referenceDatasets);
         return ids;
@@ -112,12 +124,11 @@ public class Slave {
     }
 
     public boolean supportComparison(String adapterId, String extractorId, String measureId) {
-        return new ComparisonClient(url).supportComparison(adapterId, extractorId, measureId);
+        return comparisonClient.supportComparison(adapterId, extractorId, measureId);
     }
 
     public long getNodeStatus() {
-        ClientResource client = new ClientResource(url + NodeStatusServerResource.URL);
-        String string = client.get(String.class);
+        String string = nodeStatusClient.get(String.class);
         return Long.parseLong(string);
     }
 
