@@ -1,5 +1,7 @@
 package edu.illinois.ncsa.versus.restlet.comparison;
 
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.restlet.data.MediaType;
 import org.restlet.data.Status;
 import org.restlet.representation.Representation;
@@ -47,17 +49,22 @@ public class ComparisonServerResource extends VersusServerResource {
             return null;
         }
         
-        if (comparison.getSlave() != null) {
+        String slaveUrl = comparison.getSlave();
+        if (slaveUrl != null) {
             ComparisonStatus status = comparison.getStatus();
             if (status != ComparisonStatus.DONE
                     && status != ComparisonStatus.FAILED
                     && status != ComparisonStatus.ABORTED) {
+                Logger.getLogger(ComparisonServerResource.class.getName()).log(
+                        Level.INFO, 
+                        "Querying slave {0} to update comparison {1}", 
+                        new Object[]{slaveUrl, id});
                 ServerApplication server = (ServerApplication) getApplication();
-                Slave slave = server.getSlavesManager().getSlave(comparison.getSlave());
+                Slave slave = server.getSlavesManager().getSlave(slaveUrl);
                 comparison = slave.getComparison(comparison);
-                comparisonService.updateValue(comparison.getId(), comparison.getValue());
-                comparisonService.setStatus(comparison.getId(), comparison.getStatus());
-                comparisonService.setError(comparison.getId(), comparison.getError());
+                comparisonService.updateValue(id, comparison.getValue());
+                comparisonService.setStatus(id, comparison.getStatus());
+                comparisonService.setError(id, comparison.getError());
             }
         }
         return comparison;
