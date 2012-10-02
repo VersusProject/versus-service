@@ -1,7 +1,13 @@
 package edu.illinois.ncsa.versus.restlet.comparison;
 
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
 import org.restlet.data.MediaType;
 import org.restlet.data.Status;
 import org.restlet.representation.Representation;
@@ -34,6 +40,24 @@ public class ComparisonServerResource extends VersusServerResource {
 
     public static final String PATH_TEMPLATE = URL + '{' + ID_PARAMETER + '}';
 
+    // Workaround for https://github.com/restlet/restlet-framework-java/issues/669
+    private class UpdateFromSlave implements Callable<Comparison> {
+
+        private final Slave slave;
+
+        private final Comparison comparison;
+
+        public UpdateFromSlave(Slave slave, Comparison comparison) {
+            this.slave = slave;
+            this.comparison = comparison;
+        }
+
+        @Override
+        public Comparison call() {
+            return slave.getComparison(comparison);
+        }
+    }
+
     @Get
     public Comparison retrieve() {
         String id = (String) getRequest().getAttributes().get(ID_PARAMETER);
@@ -44,11 +68,11 @@ public class ComparisonServerResource extends VersusServerResource {
                 injector.getInstance(ComparisonServiceImpl.class);
         Comparison comparison = comparisonService.getComparison(id);
 
-        if(comparison == null) {
+        if (comparison == null) {
             setStatus(Status.CLIENT_ERROR_NOT_FOUND);
             return null;
         }
-        
+
         String slaveUrl = comparison.getSlave();
         if (slaveUrl != null) {
             ComparisonStatus status = comparison.getStatus();
@@ -61,10 +85,33 @@ public class ComparisonServerResource extends VersusServerResource {
                         new Object[]{slaveUrl, id});
                 ServerApplication server = (ServerApplication) getApplication();
                 Slave slave = server.getSlavesManager().getSlave(slaveUrl);
-                comparison = slave.getComparison(comparison);
-                comparisonService.updateValue(id, comparison.getValue());
-                comparisonService.setStatus(id, comparison.getStatus());
-                comparisonService.setError(id, comparison.getError());
+                //                comparison = slave.getComparison(comparison);
+
+                // Workaround for https://github.com/restlet/restlet-framework-java/issues/669
+                ExecutorService executor = Executors.newFixedThreadPool(1);
+                int retry = 0;
+                do {
+                    UpdateFromSlave updateFromSlave = new UpdateFromSlave(slave, comparison);
+                    Future<Comparison> future = executor.submit(updateFromSlave);
+                    try {
+                        comparison = future.get(1, TimeUnit.SECONDS);
+                        break;
+                    } catch (Exception e) {
+                        Logger.getLogger(ComparisonServerResource.class.getName()).log(Level.INFO, "Error while getting comparison status", e);
+                    } finally {
+                        future.cancel(true);
+                    }
+
+                    retry++;
+                } while (retry < 2);
+                if (retry == 2) {
+                    comparisonService.setStatus(id, ComparisonStatus.ABORTED);
+                } else {
+                    comparisonService.updateValue(comparison.getId(), comparison.getValue());
+                    comparisonService.setStatus(comparison.getId(), comparison.getStatus());
+                    comparisonService.setError(comparison.getId(), comparison.getError());
+                }
+                executor.shutdownNow();
             }
         }
         return comparison;
@@ -81,6 +128,14 @@ public class ComparisonServerResource extends VersusServerResource {
         XStream xstream = new XStream(new JettisonMappedXmlDriver());
         xstream.setMode(XStream.NO_REFERENCES);
         return fillAndConvert(xstream);
+
+
+
+
+
+
+
+
     }
 
     private String fillAndConvert(XStream xstream) {
@@ -91,7 +146,7 @@ public class ComparisonServerResource extends VersusServerResource {
     @Get("html")
     public Representation asHtml() {
         Comparison comparison = retrieve();
-        if(comparison == null) {
+        if (comparison == null) {
             return new StringRepresentation("Comparison not found.");
         }
         StringBuilder sb = new StringBuilder();
