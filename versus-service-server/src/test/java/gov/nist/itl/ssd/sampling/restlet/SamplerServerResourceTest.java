@@ -13,10 +13,9 @@ package gov.nist.itl.ssd.sampling.restlet;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 import java.util.Scanner;
+
 import org.apache.mina.util.AvailablePortFinder;
 import org.restlet.Component;
 import org.restlet.data.MediaType;
@@ -26,20 +25,19 @@ import org.restlet.resource.ClientResource;
 
 import com.thoughtworks.xstream.XStream;
 import com.thoughtworks.xstream.io.json.JettisonMappedXmlDriver;
+
 import org.junit.After;
 import org.junit.AfterClass;
-import org.junit.Before;
-import org.junit.Test;
 import static org.junit.Assert.*;
+import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Test;
 
 import edu.illinois.ncsa.versus.restlet.ServerApplication;
-import gov.nist.itl.ssd.sampling.Individual;
 import gov.nist.itl.ssd.sampling.SamplerDescriptor;
 import gov.nist.itl.ssd.sampling.SamplersClient;
 import gov.nist.itl.ssd.sampling.SamplingRegistry;
-import gov.nist.itl.ssd.sampling.impl.BasicIndividual;
-import gov.nist.itl.ssd.sampling.impl.RandomSampler;
+import gov.nist.itl.ssd.sampling.impl.SimpleRandomWoReplacementSampler;
 
 /**
  *
@@ -82,7 +80,7 @@ public class SamplerServerResourceTest {
     
     @Test
     public void test() throws IOException {
-        RandomSampler randomSampler = new RandomSampler();
+        SimpleRandomWoReplacementSampler randomSampler = new SimpleRandomWoReplacementSampler();
         SamplingRegistry registry = new SamplingRegistry();
         Collection<String> availableIndividualsIds = registry.getAvailableIndividualsIds(randomSampler);
         SamplerDescriptor expected = new SamplerDescriptor(
@@ -90,14 +88,14 @@ public class SamplerServerResourceTest {
                 "", availableIndividualsIds, false);
         
         ClientResource clientResource = new ClientResource(
-                url + SamplerServerResource.URL + RandomSampler.class.getName());
+                url + SamplerServerResource.URL + SimpleRandomWoReplacementSampler.class.getName());
         SamplerDescriptor sampler = clientResource.get(SamplerDescriptor.class);
         assertNotNull(sampler);
         assertEquals(expected, sampler);
         assertSamplersDescriptorEquals(expected, sampler);
         
         SamplersClient client = new SamplersClient(url);
-        SamplerDescriptor samplerDesc = client.getSamplerDescriptor(RandomSampler.class.getName());
+        SamplerDescriptor samplerDesc = client.getSamplerDescriptor(SimpleRandomWoReplacementSampler.class.getName());
         assertNotNull(samplerDesc);
         assertEquals(expected, samplerDesc);
         assertSamplersDescriptorEquals(expected, samplerDesc);
