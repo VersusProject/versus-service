@@ -266,53 +266,55 @@ public class ServerApplication extends Application {
     }
 
     public String getAdapterHelpSha1(final String adapterId) throws NotFoundException {
+        String sha1 = null;
         Adapter adapter = CompareRegistry.getAdapter(adapterId);
         if (adapter != null) {
-            if (!(adapter instanceof HasHelp)) {
-                throw new NotFoundException("The specified adapter has no help.");
+            if (adapter instanceof HasHelp) {
+                HasHelp hasHelp = (HasHelp) adapter;
+                sha1 = hasHelp.getHelpSHA1();
             }
-            HasHelp hasHelp = (HasHelp) adapter;
-            return hasHelp.getHelpSHA1();
+        } else {
+            sha1 = slavesManager.querySlavesFirstNotNull(
+                    new SlaveQuery<String>() {
+                        @Override
+                        public String executeQuery(Slave slave) {
+                            return slave.getAdapterHelpSha1(adapterId);
+                        }
+                    });
         }
-        String sha1 = slavesManager.querySlavesFirstNotNull(
-                new SlaveQuery<String>() {
-                    @Override
-                    public String executeQuery(Slave slave) {
-                        return slave.getAdapterHelpSha1(adapterId);
-                    }
-                });
-        if (sha1 != null) {
-            return sha1;
+        if (sha1 == null) {
+            throw new NotFoundException("The adapter " + adapterId + " has no help.");
         }
-        throw new NotFoundException("The specified adapter has no help.");
+        return sha1;
     }
 
     public InputStream getAdapterZippedHelp(final String adapterId) throws NotFoundException {
+        InputStream help = null;
         Adapter adapter = CompareRegistry.getAdapter(adapterId);
         if (adapter != null) {
-            if (!(adapter instanceof HasHelp)) {
-                throw new NotFoundException("The specified adapter has no help.");
+            if (adapter instanceof HasHelp) {
+                HasHelp hasHelp = (HasHelp) adapter;
+                return hasHelp.getHelpZipped();
             }
-            HasHelp hasHelp = (HasHelp) adapter;
-            return hasHelp.getHelpZipped();
-        }
-        InputStream help = slavesManager.querySlavesFirstNotNull(
-                new SlaveQuery<InputStream>() {
-                    @Override
-                    public InputStream executeQuery(Slave slave) {
-                        try {
-                            return slave.getAdapterZippedHelp(adapterId);
-                        } catch (IOException ex) {
-                            Logger.getLogger(ServerApplication.class.getName()).
-                                    log(Level.WARNING, "IOException when querying slave " + slave, ex);
-                            return null;
+        } else {
+            help = slavesManager.querySlavesFirstNotNull(
+                    new SlaveQuery<InputStream>() {
+                        @Override
+                        public InputStream executeQuery(Slave slave) {
+                            try {
+                                return slave.getAdapterZippedHelp(adapterId);
+                            } catch (IOException ex) {
+                                Logger.getLogger(ServerApplication.class.getName()).
+                                        log(Level.WARNING, "IOException when querying slave " + slave, ex);
+                                return null;
+                            }
                         }
-                    }
-                });
-        if (help != null) {
-            return help;
+                    });
         }
-        throw new NotFoundException("The specified adapter has no help.");
+        if (help == null) {
+            throw new NotFoundException("The adapter " + adapterId + " has no help.");
+        }
+        return help;
     }
 
     public ExtractorDescriptor getExtractor(final String id)
@@ -363,53 +365,55 @@ public class ServerApplication extends Application {
     }
 
     public String getExtractorHelpSha1(final String extractorId) throws NotFoundException {
+        String sha1 = null;
         Extractor extractor = CompareRegistry.getExtractor(extractorId);
         if (extractor != null) {
-            if (!(extractor instanceof HasHelp)) {
-                throw new NotFoundException("The specified extractor has no help.");
+            if (extractor instanceof HasHelp) {
+                HasHelp hasHelp = (HasHelp) extractor;
+                sha1 = hasHelp.getHelpSHA1();
             }
-            HasHelp hasHelp = (HasHelp) extractor;
-            return hasHelp.getHelpSHA1();
+        } else {
+            sha1 = slavesManager.querySlavesFirstNotNull(
+                    new SlaveQuery<String>() {
+                        @Override
+                        public String executeQuery(Slave slave) {
+                            return slave.getExtractorHelpSha1(extractorId);
+                        }
+                    });
         }
-        String sha1 = slavesManager.querySlavesFirstNotNull(
-                new SlaveQuery<String>() {
-                    @Override
-                    public String executeQuery(Slave slave) {
-                        return slave.getExtractorHelpSha1(extractorId);
-                    }
-                });
-        if (sha1 != null) {
-            return sha1;
+        if (sha1 == null) {
+            throw new NotFoundException("The extractor " + extractorId + " has no help.");
         }
-        throw new NotFoundException("The specified extractor has no help.");
+        return sha1;
     }
 
     public InputStream getExtractorZippedHelp(final String extractorId) throws NotFoundException {
+        InputStream help = null;
         Extractor extractor = registry.getExtractor(extractorId);
         if (extractor != null) {
-            if (!(extractor instanceof HasHelp)) {
-                throw new NotFoundException("The specified extractor has no help.");
+            if (extractor instanceof HasHelp) {
+                HasHelp hasHelp = (HasHelp) extractor;
+                help = hasHelp.getHelpZipped();
             }
-            HasHelp hasHelp = (HasHelp) extractor;
-            return hasHelp.getHelpZipped();
-        }
-        InputStream help = slavesManager.querySlavesFirstNotNull(
-                new SlaveQuery<InputStream>() {
-                    @Override
-                    public InputStream executeQuery(Slave slave) {
-                        try {
-                            return slave.getExtractorZippedHelp(extractorId);
-                        } catch (IOException ex) {
-                            Logger.getLogger(ServerApplication.class.getName()).
-                                    log(Level.WARNING, "IOException when querying slave " + slave, ex);
-                            return null;
+        } else {
+            help = slavesManager.querySlavesFirstNotNull(
+                    new SlaveQuery<InputStream>() {
+                        @Override
+                        public InputStream executeQuery(Slave slave) {
+                            try {
+                                return slave.getExtractorZippedHelp(extractorId);
+                            } catch (IOException ex) {
+                                Logger.getLogger(ServerApplication.class.getName()).
+                                        log(Level.WARNING, "IOException when querying slave " + slave, ex);
+                                return null;
+                            }
                         }
-                    }
-                });
-        if (help != null) {
-            return help;
+                    });
         }
-        throw new NotFoundException("The specified extractor has no help.");
+        if (help == null) {
+            throw new NotFoundException("The extractor " + extractorId + " has no help.");
+        }
+        return help;
     }
 
     public MeasureDescriptor getMeasure(final String id)
@@ -460,53 +464,55 @@ public class ServerApplication extends Application {
     }
 
     public String getMeasureHelpSha1(final String measureId) throws NotFoundException {
+        String sha1 = null;
         Measure measure = registry.getMeasure(measureId);
         if (measure != null) {
-            if (!(measure instanceof HasHelp)) {
-                throw new NotFoundException("The specified measure has no help.");
+            if (measure instanceof HasHelp) {
+                HasHelp hasHelp = (HasHelp) measure;
+                sha1 = hasHelp.getHelpSHA1();
             }
-            HasHelp hasHelp = (HasHelp) measure;
-            return hasHelp.getHelpSHA1();
+        } else {
+            sha1 = slavesManager.querySlavesFirstNotNull(
+                    new SlaveQuery<String>() {
+                        @Override
+                        public String executeQuery(Slave slave) {
+                            return slave.getMeasureHelpSha1(measureId);
+                        }
+                    });
         }
-        String sha1 = slavesManager.querySlavesFirstNotNull(
-                new SlaveQuery<String>() {
-                    @Override
-                    public String executeQuery(Slave slave) {
-                        return slave.getMeasureHelpSha1(measureId);
-                    }
-                });
-        if (sha1 != null) {
-            return sha1;
+        if (sha1 == null) {
+            throw new NotFoundException("The measure " + measureId + " has no help.");
         }
-        throw new NotFoundException("The specified extractor has no help.");
+        return sha1;
     }
 
     public InputStream getMeasureZippedHelp(final String measureId) throws NotFoundException {
+        InputStream help = null;
         Measure measure = registry.getMeasure(measureId);
         if (measure != null) {
-            if (!(measure instanceof HasHelp)) {
-                throw new NotFoundException("The specified measure has no help.");
+            if (measure instanceof HasHelp) {
+                HasHelp hasHelp = (HasHelp) measure;
+                help = hasHelp.getHelpZipped();
             }
-            HasHelp hasHelp = (HasHelp) measure;
-            return hasHelp.getHelpZipped();
-        }
-        InputStream help = slavesManager.querySlavesFirstNotNull(
-                new SlaveQuery<InputStream>() {
-                    @Override
-                    public InputStream executeQuery(Slave slave) {
-                        try {
-                            return slave.getMeasureZippedHelp(measureId);
-                        } catch (IOException ex) {
-                            Logger.getLogger(ServerApplication.class.getName()).
-                                    log(Level.WARNING, "IOException when querying slave " + slave, ex);
-                            return null;
+        } else {
+            help = slavesManager.querySlavesFirstNotNull(
+                    new SlaveQuery<InputStream>() {
+                        @Override
+                        public InputStream executeQuery(Slave slave) {
+                            try {
+                                return slave.getMeasureZippedHelp(measureId);
+                            } catch (IOException ex) {
+                                Logger.getLogger(ServerApplication.class.getName()).
+                                        log(Level.WARNING, "IOException when querying slave " + slave, ex);
+                                return null;
+                            }
                         }
-                    }
-                });
-        if (help != null) {
-            return help;
+                    });
         }
-        throw new NotFoundException("The specified measure has no help.");
+        if (help == null) {
+            throw new NotFoundException("The measure " + measureId + " has no help.");
+        }
+        return help;
     }
 
     public SlavesManager getSlavesManager() {
