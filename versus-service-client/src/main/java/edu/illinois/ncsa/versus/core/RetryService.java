@@ -32,12 +32,24 @@ public class RetryService<T> {
 
     private final Callable<T> callable;
     
-    private final int maxRetry = 3;
+    private final int maxRetry;
     
-    private final int timeout = 1;
+    private final int timeout;
 
     public RetryService(Callable<T> callable) {
+        this(callable, 1, 3);
+    }
+    
+    /**
+     * 
+     * @param callable
+     * @param timeout Timeout in seconds
+     * @param maxRetry 
+     */
+    public RetryService(Callable<T> callable, int timeout, int maxRetry) {
         this.callable = callable;
+        this.timeout = timeout;
+        this.maxRetry = maxRetry;
     }
 
     public T run() {
