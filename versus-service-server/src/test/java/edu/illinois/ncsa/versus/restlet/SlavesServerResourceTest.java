@@ -11,7 +11,6 @@
 // */
 //package edu.illinois.ncsa.versus.restlet;
 //
-//import edu.illinois.ncsa.versus.core.StringCollectionConverter;
 //import java.io.IOException;
 //import java.io.InputStream;
 //import java.util.ArrayList;
@@ -23,27 +22,27 @@
 //import java.util.concurrent.ExecutorService;
 //import java.util.concurrent.Executors;
 //import java.util.concurrent.Future;
-//import java.util.logging.Level;
-//import java.util.logging.Logger;
 //
 //import org.apache.commons.collections.CollectionUtils;
 //import org.apache.mina.util.AvailablePortFinder;
 //import org.restlet.Component;
 //import org.restlet.data.MediaType;
 //import org.restlet.data.Protocol;
-//import org.restlet.data.Status;
 //import org.restlet.representation.Representation;
 //import org.restlet.resource.ClientResource;
-//import org.restlet.resource.ResourceException;
 //
 //import com.thoughtworks.xstream.XStream;
 //import com.thoughtworks.xstream.io.json.JettisonMappedXmlDriver;
+//
 //import org.junit.After;
 //import org.junit.AfterClass;
-//import org.junit.Before;
-//import org.junit.Test;
 //import static org.junit.Assert.*;
+//import org.junit.Before;
 //import org.junit.BeforeClass;
+//import org.junit.Test;
+//
+//import edu.illinois.ncsa.versus.core.StringCollectionConverter;
+//import edu.illinois.ncsa.versus.restlet.node.SlavesServerResource;
 //
 ///**
 // *
