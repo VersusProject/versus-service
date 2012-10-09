@@ -20,6 +20,7 @@ import java.util.logging.Logger;
 import org.restlet.Application;
 import org.restlet.Restlet;
 import org.restlet.data.Form;
+import org.restlet.representation.Representation;
 import org.restlet.resource.ClientResource;
 import org.restlet.routing.Router;
 import org.restlet.routing.TemplateRoute;
@@ -111,7 +112,7 @@ public class ServerApplication extends Application {
             try {
                 registerWithMaster();
             } catch (Exception e) {
-                getLogger().log(Level.SEVERE, "Cannot register with master", e);
+                throw new RuntimeException("Cannot register with master at url: " + masterUrl, e);
             }
         }
 
@@ -142,7 +143,10 @@ public class ServerApplication extends Application {
         String slaveUrl = "http://" + ip + ':' + port + baseUrl;
         Form form = new Form();
         form.add("url", slaveUrl);
-        masterResource.post(form.getWebRepresentation());
+        Representation post = masterResource.post(form.getWebRepresentation());
+        if(post == null) {
+            throw new RuntimeException("No response from master.");
+        }
     }
 
     @Override

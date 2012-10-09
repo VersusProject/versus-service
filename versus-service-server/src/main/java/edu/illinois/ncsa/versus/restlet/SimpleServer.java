@@ -59,11 +59,11 @@ public class SimpleServer {
         JettyServerHelper jettyServerHelper = new HttpServerHelper(embedingJettyServer);
         jettyServerHelper.start();
 
-        // HACK get rid of first 500 message
+        // HACK get rid of first "error 500" message
         try {
             new URL("http://localhost:" + port + baseUrl + "/measures").openStream().close();
         } catch (Exception e) {
-            logger.log(Level.INFO, null, e);
+            logger.log(Level.FINE, null, e);
         }
     }
 }
