@@ -7,8 +7,11 @@ import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
+import java.util.Properties;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 import org.restlet.resource.ClientResource;
 
@@ -42,14 +45,34 @@ public class Slave {
 
     private final ClientResource nodeStatusClient;
 
+    private final int timeout;
+
+    private final int retry;
+
     public Slave(String hostRef) {
+        int timeout = 10;
+        int retry = 3;
+        Properties properties;
+        try {
+            properties = PropertiesUtil.load();
+            String timeoutString = properties.getProperty("slave.timeout", "10");
+            String retryString = properties.getProperty("slave.retry", "3");
+            timeout = Integer.parseInt(timeoutString);
+            retry = Integer.parseInt(retryString);
+        } catch (Exception ex) {
+            Logger.getLogger(Slave.class.getName()).log(Level.WARNING, 
+                    "Cannot read timeout and retry properties. Using default values.", ex);
+        }
+
         url = hostRef;
         adaptersClient = new AdaptersClient(url);
         extractorsClient = new ExtractorsClient(url);
         measuresClient = new MeasuresClient(url);
-        comparisonClient = new ComparisonClient(url);
+        comparisonClient = new ComparisonClient(url, timeout, retry);
         nodeStatusClient = ClientResourceFactory.getNew(
                 url + NodeStatusServerResource.URL);
+        this.timeout = timeout;
+        this.retry = retry;
     }
 
     public String getUrl() {
@@ -142,7 +165,7 @@ public class Slave {
                     public String call() throws Exception {
                         return nodeStatusClient.get(String.class);
                     }
-                });
+                }, timeout, retry);
         return Long.parseLong(rs.run());
     }
 

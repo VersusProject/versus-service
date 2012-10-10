@@ -48,8 +48,18 @@ public class ComparisonClient {
 
     private final String host;
 
+    private final int timeout;
+    
+    private final int retry;
+    
     public ComparisonClient(String host) {
+        this(host, 10, 3);
+    }
+    
+    public ComparisonClient(String host, int timeout, int retry) {
         this.host = host;
+        this.timeout = timeout;
+        this.retry = retry;
     }
 
     public Comparison getComparison(final String id) {
@@ -61,7 +71,7 @@ public class ComparisonClient {
                                 host + URL + '/' + id);
                         return cr.get(Comparison.class);
                     }
-                });
+                }, timeout, retry);
         return rs.run();
     }
 
@@ -194,7 +204,7 @@ public class ComparisonClient {
                                 + extractorId + '/' + measureId);
                         return cr.get(Boolean.class);
                     }
-                });
+                }, timeout, retry);
         return rs.run();
     }
 }

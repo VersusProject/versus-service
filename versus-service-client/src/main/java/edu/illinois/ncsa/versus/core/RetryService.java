@@ -36,10 +36,6 @@ public class RetryService<T> {
     
     private final int timeout;
 
-    public RetryService(Callable<T> callable) {
-        this(callable, 3, 3);
-    }
-    
     /**
      * 
      * @param callable
