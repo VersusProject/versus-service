@@ -45,22 +45,32 @@ public class Slave {
 
     private final ClientResource nodeStatusClient;
 
-    private final int timeout;
+    private final int postTimeout;
 
-    private final int retry;
+    private final int postRetry;
+
+    private final int getTimeout;
+
+    private final int getRetry;
 
     public Slave(String hostRef) {
-        int timeout = 10;
-        int retry = 3;
+        int postTimeout = 60;
+        int postRetry = 3;
+        int getTimeout = 10;
+        int getRetry = 3;
         Properties properties;
         try {
             properties = PropertiesUtil.load();
-            String timeoutString = properties.getProperty("slave.timeout", "10");
-            String retryString = properties.getProperty("slave.retry", "3");
-            timeout = Integer.parseInt(timeoutString);
-            retry = Integer.parseInt(retryString);
+            String postTimeoutString = properties.getProperty("slave.post.timeout", "60");
+            String postRetryString = properties.getProperty("slave.post.retry", "3");
+            String getTimeoutString = properties.getProperty("slave.get.timeout", "10");
+            String getRetryString = properties.getProperty("slave.get.retry", "3");
+            postTimeout = Integer.parseInt(postTimeoutString);
+            postRetry = Integer.parseInt(postRetryString);
+            getTimeout = Integer.parseInt(getTimeoutString);
+            getRetry = Integer.parseInt(getRetryString);
         } catch (Exception ex) {
-            Logger.getLogger(Slave.class.getName()).log(Level.WARNING, 
+            Logger.getLogger(Slave.class.getName()).log(Level.WARNING,
                     "Cannot read timeout and retry properties. Using default values.", ex);
         }
 
@@ -68,11 +78,13 @@ public class Slave {
         adaptersClient = new AdaptersClient(url);
         extractorsClient = new ExtractorsClient(url);
         measuresClient = new MeasuresClient(url);
-        comparisonClient = new ComparisonClient(url, timeout, retry);
+        comparisonClient = new ComparisonClient(url, postTimeout, postRetry, getTimeout, getRetry);
         nodeStatusClient = ClientResourceFactory.getNew(
                 url + NodeStatusServerResource.URL);
-        this.timeout = timeout;
-        this.retry = retry;
+        this.postTimeout = postTimeout;
+        this.postRetry = postRetry;
+        this.getTimeout = getTimeout;
+        this.getRetry = getRetry;
     }
 
     public String getUrl() {
@@ -165,7 +177,7 @@ public class Slave {
                     public String call() throws Exception {
                         return nodeStatusClient.get(String.class);
                     }
-                }, timeout, retry);
+                }, getTimeout, getRetry);
         return Long.parseLong(rs.run());
     }
 

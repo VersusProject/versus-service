@@ -48,18 +48,25 @@ public class ComparisonClient {
 
     private final String host;
 
-    private final int timeout;
-    
-    private final int retry;
-    
+    private final int postTimeout;
+
+    private final int postRetry;
+
+    private final int getTimeout;
+
+    private final int getRetry;
+
     public ComparisonClient(String host) {
-        this(host, 10, 3);
+        this(host, 60, 3, 10, 3);
     }
-    
-    public ComparisonClient(String host, int timeout, int retry) {
+
+    public ComparisonClient(String host, int postTimeout, int postRetry,
+            int getTimeout, int getRetry) {
         this.host = host;
-        this.timeout = timeout;
-        this.retry = retry;
+        this.postTimeout = postTimeout;
+        this.postRetry = postRetry;
+        this.getTimeout = getTimeout;
+        this.getRetry = getRetry;
     }
 
     public Comparison getComparison(final String id) {
@@ -71,7 +78,7 @@ public class ComparisonClient {
                                 host + URL + '/' + id);
                         return cr.get(Comparison.class);
                     }
-                }, timeout, retry);
+                }, getTimeout, getRetry);
         return rs.run();
     }
 
@@ -128,13 +135,7 @@ public class ComparisonClient {
             entries.add(new FormData("referenceDatasets", join));
         }
 
-
-        ClientResource clientResource = ClientResourceFactory.getNew(host + URL);
-        Representation post = clientResource.post(form);
-        String response = post.getText();
-
-        String[] split = StringUtils.split(response, ';');
-        return Arrays.asList(split);
+        return tryPost(form);
     }
 
     public List<String> submitFiles(
@@ -169,9 +170,19 @@ public class ComparisonClient {
             entries.add(new FormData("referenceDatasets", join));
         }
 
+        return tryPost(form);
+    }
 
-        ClientResource clientResource = ClientResourceFactory.getNew(host + URL);
-        Representation post = clientResource.post(form);
+    private List<String> tryPost(final FormDataSet form) throws IOException {
+        RetryService<Representation> rs = new RetryService<Representation>(
+                new Callable<Representation>() {
+                    @Override
+                    public Representation call() throws Exception {
+                        ClientResource clientResource = ClientResourceFactory.getNew(host + URL);
+                        return clientResource.post(form);
+                    }
+                }, postTimeout, postRetry);
+        Representation post = rs.run();
         String response = post.getText();
 
         String[] split = StringUtils.split(response, ';');
@@ -194,7 +205,7 @@ public class ComparisonClient {
 
     public boolean supportComparison(final String adapterId,
             final String extractorId, final String measureId) {
-        
+
         RetryService<Boolean> rs = new RetryService<Boolean>(
                 new Callable<Boolean>() {
                     @Override
@@ -204,7 +215,7 @@ public class ComparisonClient {
                                 + extractorId + '/' + measureId);
                         return cr.get(Boolean.class);
                     }
-                }, timeout, retry);
+                }, getTimeout, getRetry);
         return rs.run();
     }
 }
