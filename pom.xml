@@ -12,15 +12,15 @@
     <packaging>pom</packaging>
     <name>Versus Service</name>
     <properties>
-        <restletVersion>2.1.0</restletVersion>
+        <restletVersion>2.1-SNAPSHOT</restletVersion>
         <jetty.version>7.6.5.v20120716</jetty.version>
     </properties>
     <modules>
         <module>versus-service-client</module>
         <module>versus-service-server</module>
     </modules>
-		<!-- <dependency> <groupId>edu-illinois.ncsa.isda</groupId> <artifactId>versus-image-fiji</artifactId> 
-			<version>0.0.1-SNAPSHOT</version> </dependency> <dependency> <groupId>edu-illinois.ncsa.isda</groupId> 
-			<artifactId>versus-image-opencv</artifactId> <version>0.0.1-SNAPSHOT</version> 
-			</dependency> -->
+    <!-- <dependency> <groupId>edu-illinois.ncsa.isda</groupId> <artifactId>versus-image-fiji</artifactId> 
+ 			<version>0.0.1-SNAPSHOT</version> </dependency> <dependency> <groupId>edu-illinois.ncsa.isda</groupId> 
+ 			<artifactId>versus-image-opencv</artifactId> <version>0.0.1-SNAPSHOT</version> 
+ 			</dependency> -->
 </project>
