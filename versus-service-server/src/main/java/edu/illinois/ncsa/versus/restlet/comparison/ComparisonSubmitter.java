@@ -24,6 +24,10 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -36,6 +40,7 @@ import edu.illinois.ncsa.versus.engine.impl.ExecutionEngine;
 import edu.illinois.ncsa.versus.engine.impl.PairwiseComparison;
 import edu.illinois.ncsa.versus.registry.CompareRegistry;
 import edu.illinois.ncsa.versus.restlet.NoSlaveAvailableException;
+import edu.illinois.ncsa.versus.restlet.QueryExecutorProvider;
 import edu.illinois.ncsa.versus.restlet.ServerApplication;
 import edu.illinois.ncsa.versus.restlet.Slave;
 import edu.illinois.ncsa.versus.restlet.SlavesManager;
@@ -72,6 +77,9 @@ public class ComparisonSubmitter {
 
     private static final ComparisonServiceImpl comparisonService =
             ServerApplication.getInjector().getInstance(ComparisonServiceImpl.class);
+
+    private static final ExecutorService executor =
+            QueryExecutorProvider.getExecutor();
 
     public ComparisonSubmitter(ServerApplication server,
             String adapter, String extractor, String measure,
@@ -226,12 +234,40 @@ public class ComparisonSubmitter {
 
             HashMap<Slave, List<Integer>> slavesAssociation =
                     associateComparisonsWithSlave(supportLocal, waitingJobsNumber);
-
-            for (Slave slave : slavesAssociation.keySet()) {
+            Set<Slave> slaves = slavesAssociation.keySet();
+            ArrayList<Future<List<String>>> futures =
+                    new ArrayList<Future<List<String>>>(slaves.size());
+            for (final Slave slave : slaves) {
                 if (slave == null) {
-                    comparisons.addAll(submitLocal(slavesAssociation.get(null)));
+                    final List<Integer> associations = slavesAssociation.get(null);
+                    Future<List<String>> future =
+                            executor.submit(new Callable<List<String>>() {
+                        @Override
+                        public List<String> call() throws Exception {
+                            return submitLocal(associations);
+                        }
+                    });
+                    futures.add(future);
                 } else {
-                    comparisons.addAll(submitToSlave(slave, slavesAssociation.get(slave)));
+                    final List<Integer> associations = slavesAssociation.get(slave);
+                    Future<List<String>> future =
+                            executor.submit(new Callable<List<String>>() {
+                        @Override
+                        public List<String> call() throws Exception {
+                            return submitToSlave(slave, associations);
+                        }
+                    });
+                    futures.add(future);
+                }
+            }
+
+            for (Future<List<String>> future : futures) {
+                try {
+                    comparisons.addAll(future.get());
+                } catch (InterruptedException ex) {
+                    Logger.getLogger(ComparisonSubmitter.class.getName()).log(Level.SEVERE, null, ex);
+                } catch (ExecutionException ex) {
+                    Logger.getLogger(ComparisonSubmitter.class.getName()).log(Level.SEVERE, null, ex);
                 }
             }
             return comparisons;
