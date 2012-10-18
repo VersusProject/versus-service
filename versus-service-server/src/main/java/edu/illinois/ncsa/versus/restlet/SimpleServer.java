@@ -5,6 +5,7 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import org.restlet.Component;
+import org.restlet.Context;
 import org.restlet.Server;
 import org.restlet.data.Protocol;
 import org.restlet.ext.jetty.HttpServerHelper;
@@ -49,14 +50,17 @@ public class SimpleServer {
         component.getDefaultHost().attach(baseUrl,
                 new ServerApplication(port, baseUrl, master));
 
+        Context context = component.getContext().createChildContext();
+        context.getParameters().add("ioMaxIdleTimeMs", "0");
+        
         //create embedding jetty server
-        Server embedingJettyServer = new Server(
-                component.getContext().createChildContext(),
+        Server embeddingJettyServer = new Server(
+                context,
                 Protocol.HTTP,
                 port,
                 component);
         //construct and start JettyServerHelper
-        JettyServerHelper jettyServerHelper = new HttpServerHelper(embedingJettyServer);
+        JettyServerHelper jettyServerHelper = new HttpServerHelper(embeddingJettyServer);
         jettyServerHelper.start();
 
         // HACK get rid of first "error 500" message

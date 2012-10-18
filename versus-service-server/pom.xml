@@ -155,27 +155,27 @@
             <scope>runtime</scope>
         </dependency>
         <dependency>
-            <groupId>org.restlet.jse</groupId>
+            <groupId>${restletGroupId}</groupId>
             <artifactId>org.restlet</artifactId>
             <version>${restletVersion}</version>
         </dependency>
         <dependency>
-            <groupId>org.restlet.jse</groupId>
+            <groupId>${restletGroupId}</groupId>
             <artifactId>org.restlet.ext.xml</artifactId>
             <version>${restletVersion}</version>
         </dependency>
         <dependency>
-            <groupId>org.restlet.jse</groupId>
+            <groupId>${restletGroupId}</groupId>
             <artifactId>org.restlet.ext.json</artifactId>
             <version>${restletVersion}</version>
         </dependency>
         <dependency>
-            <groupId>org.restlet.jse</groupId>
+            <groupId>${restletGroupId}</groupId>
             <artifactId>org.restlet.ext.fileupload</artifactId>
             <version>${restletVersion}</version>
         </dependency>
         <dependency>
-            <groupId>org.restlet.jse</groupId>
+            <groupId>${restletGroupId}</groupId>
             <artifactId>org.restlet.ext.jetty</artifactId>
             <version>${restletVersion}</version>
         </dependency>

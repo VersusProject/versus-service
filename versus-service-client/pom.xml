@@ -85,12 +85,12 @@
             <version>1.4.2</version>
         </dependency>
         <dependency>
-            <groupId>org.restlet.jse</groupId>
+            <groupId>${restletGroupId}</groupId>
             <artifactId>org.restlet</artifactId>
             <version>${restletVersion}</version>
         </dependency>
         <dependency>
-            <groupId>org.restlet.jse</groupId>
+            <groupId>${restletGroupId}</groupId>
             <artifactId>org.restlet.ext.html</artifactId>
             <version>${restletVersion}</version>
             <type>jar</type>
