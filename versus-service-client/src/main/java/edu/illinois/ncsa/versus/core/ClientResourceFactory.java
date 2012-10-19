@@ -12,6 +12,7 @@
 package edu.illinois.ncsa.versus.core;
 
 import org.restlet.Client;
+import org.restlet.Context;
 import org.restlet.data.Protocol;
 import org.restlet.resource.ClientResource;
 
@@ -23,7 +24,13 @@ public class ClientResourceFactory {
 
     private volatile static long retryDelay = 2000;
     
-    private static final Client client = new Client(Protocol.HTTP);
+    private static final Client client;
+    
+    static {
+        Context context = new Context();
+        context.getParameters().add("maxIoIdleTimeMs", "0");
+        client = new Client(context, Protocol.HTTP);
+    }
 
     private ClientResourceFactory() {
     }
