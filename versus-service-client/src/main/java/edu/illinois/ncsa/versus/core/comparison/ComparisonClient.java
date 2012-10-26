@@ -83,8 +83,15 @@ public class ComparisonClient {
     }
 
     public HashSet<String> getComparisons() {
-        ClientResource cr = ClientResourceFactory.getNew(host + URL);
-        return cr.get(HashSet.class);
+        RetryService<HashSet<String>> rs = new RetryService<HashSet<String>>(
+                new Callable<HashSet<String>>() {
+                    @Override
+                    public HashSet<String> call() throws Exception {
+                        ClientResource cr = ClientResourceFactory.getNew(host + URL);
+                        return cr.get(HashSet.class);
+                    }
+                }, getTimeout, getRetry);
+        return rs.run();
     }
 
     public String submit(Comparison comparison) throws IOException {

@@ -12,10 +12,12 @@
 package gov.nist.itl.ssd.sampling;
 
 import java.util.HashSet;
+import java.util.concurrent.Callable;
 
 import org.restlet.resource.ClientResource;
 
 import edu.illinois.ncsa.versus.core.ClientResourceFactory;
+import edu.illinois.ncsa.versus.core.RetryService;
 
 /**
  *
@@ -27,17 +29,42 @@ public class SamplersClient {
 
     private final String host;
 
+    private final int getTimeout;
+
+    private final int getRetry;
+
     public SamplersClient(String host) {
+        this(host, 10, 3);
+    }
+
+    public SamplersClient(String host, int getTimeout, int getRetry) {
         this.host = host;
+        this.getTimeout = getTimeout;
+        this.getRetry = getRetry;
     }
 
     public HashSet<String> getSamplers() {
-        ClientResource cr = ClientResourceFactory.getNew(host + URL);
-        return cr.get(HashSet.class);
+        RetryService<HashSet<String>> rs = new RetryService<HashSet<String>>(
+                new Callable<HashSet<String>>() {
+                    @Override
+                    public HashSet<String> call() throws Exception {
+                        ClientResource cr = ClientResourceFactory.getNew(host + URL);
+                        return cr.get(HashSet.class);
+                    }
+                }, getTimeout, getRetry);
+        return rs.run();
     }
 
-    public SamplerDescriptor getSamplerDescriptor(String id) {
-        ClientResource cr = ClientResourceFactory.getNew(host + URL + '/' + id);
-        return cr.get(SamplerDescriptor.class);
+    public SamplerDescriptor getSamplerDescriptor(final String id) {
+        RetryService<SamplerDescriptor> rs = new RetryService<SamplerDescriptor>(
+                new Callable<SamplerDescriptor>() {
+                    @Override
+                    public SamplerDescriptor call() throws Exception {
+                        ClientResource cr = ClientResourceFactory.getNew(
+                                host + URL + '/' + id);
+                        return cr.get(SamplerDescriptor.class);
+                    }
+                }, getTimeout, getRetry);
+        return rs.run();
     }
 }

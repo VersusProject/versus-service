@@ -14,11 +14,13 @@ package edu.illinois.ncsa.versus.core.measure;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.HashSet;
+import java.util.concurrent.Callable;
 
 import org.restlet.representation.Representation;
 import org.restlet.resource.ClientResource;
 
 import edu.illinois.ncsa.versus.core.ClientResourceFactory;
+import edu.illinois.ncsa.versus.core.RetryService;
 
 /**
  *
@@ -30,28 +32,68 @@ public class MeasuresClient {
 
     private final String host;
 
+    private final int getTimeout;
+
+    private final int getRetry;
+
     public MeasuresClient(String host) {
+        this(host, 10, 3);
+    }
+
+    public MeasuresClient(String host, int getTimeout, int getRetry) {
         this.host = host;
+        this.getTimeout = getTimeout;
+        this.getRetry = getRetry;
     }
 
     public HashSet<String> getMeasures() {
-        ClientResource cr = ClientResourceFactory.getNew(host + URL);
-        return cr.get(HashSet.class);
+        RetryService<HashSet<String>> rs = new RetryService<HashSet<String>>(
+                new Callable<HashSet<String>>() {
+                    @Override
+                    public HashSet<String> call() throws Exception {
+                        ClientResource cr = ClientResourceFactory.getNew(host + URL);
+                        return cr.get(HashSet.class);
+                    }
+                }, getTimeout, getRetry);
+        return rs.run();
     }
 
-    public MeasureDescriptor getMeasureDescriptor(String id) {
-        ClientResource cr = ClientResourceFactory.getNew(host + URL + '/' + id);
-        return cr.get(MeasureDescriptor.class);
+    public MeasureDescriptor getMeasureDescriptor(final String id) {
+        RetryService<MeasureDescriptor> rs = new RetryService<MeasureDescriptor>(
+                new Callable<MeasureDescriptor>() {
+                    @Override
+                    public MeasureDescriptor call() throws Exception {
+                        ClientResource cr = ClientResourceFactory.getNew(
+                                host + URL + '/' + id);
+                        return cr.get(MeasureDescriptor.class);
+                    }
+                }, getTimeout, getRetry);
+        return rs.run();
     }
 
-    public String getMeasureHelpSha1(String measureId) {
-        ClientResource cr = ClientResourceFactory.getNew(host + URL + '/' + measureId + "/helpsha1");
-        return cr.get(String.class);
+    public String getMeasureHelpSha1(final String measureId) {
+        RetryService<String> rs = new RetryService<String>(
+                new Callable<String>() {
+                    @Override
+                    public String call() throws Exception {
+                        ClientResource cr = ClientResourceFactory.getNew(
+                                host + URL + '/' + measureId + "/helpsha1");
+                        return cr.get(String.class);
+                    }
+                }, getTimeout, getRetry);
+        return rs.run();
     }
 
-    public InputStream getMeasureZippedHelp(String measureId) throws IOException {
-        ClientResource cr = ClientResourceFactory.getNew(host + URL + '/' + measureId + "/help");
-        Representation representation = cr.get();
-        return representation.getStream();
+    public InputStream getMeasureZippedHelp(final String measureId) throws IOException {
+        RetryService<InputStream> rs = new RetryService<InputStream>(
+                new Callable<InputStream>() {
+                    @Override
+                    public InputStream call() throws Exception {
+                        ClientResource cr = ClientResourceFactory.getNew(host + URL + '/' + measureId + "/help");
+                        Representation representation = cr.get();
+                        return representation.getStream();
+                    }
+                }, getTimeout, getRetry);
+        return rs.run();
     }
 }

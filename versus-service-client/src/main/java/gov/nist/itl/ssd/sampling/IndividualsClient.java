@@ -12,10 +12,12 @@
 package gov.nist.itl.ssd.sampling;
 
 import java.util.HashSet;
+import java.util.concurrent.Callable;
 
 import org.restlet.resource.ClientResource;
 
 import edu.illinois.ncsa.versus.core.ClientResourceFactory;
+import edu.illinois.ncsa.versus.core.RetryService;
 
 /**
  *
@@ -27,17 +29,42 @@ public class IndividualsClient {
 
     private final String host;
 
+    private final int getTimeout;
+
+    private final int getRetry;
+
     public IndividualsClient(String host) {
+        this(host, 10, 3);
+    }
+
+    public IndividualsClient(String host, int getTimeout, int getRetry) {
         this.host = host;
+        this.getTimeout = getTimeout;
+        this.getRetry = getRetry;
     }
 
     public HashSet<String> getIndividuals() {
-        ClientResource cr = ClientResourceFactory.getNew(host + URL);
-        return cr.get(HashSet.class);
+        RetryService<HashSet<String>> rs = new RetryService<HashSet<String>>(
+                new Callable<HashSet<String>>() {
+                    @Override
+                    public HashSet<String> call() throws Exception {
+                        ClientResource cr = ClientResourceFactory.getNew(host + URL);
+                        return cr.get(HashSet.class);
+                    }
+                }, getTimeout, getRetry);
+        return rs.run();
     }
 
-    public IndividualDescriptor getIndividualDescriptor(String id) {
-        ClientResource cr = ClientResourceFactory.getNew(host + URL + '/' + id);
-        return cr.get(IndividualDescriptor.class);
+    public IndividualDescriptor getIndividualDescriptor(final String id) {
+        RetryService<IndividualDescriptor> rs = new RetryService<IndividualDescriptor>(
+                new Callable<IndividualDescriptor>() {
+                    @Override
+                    public IndividualDescriptor call() throws Exception {
+                        ClientResource cr = ClientResourceFactory.getNew(
+                                host + URL + '/' + id);
+                        return cr.get(IndividualDescriptor.class);
+                    }
+                }, getTimeout, getRetry);
+        return rs.run();
     }
 }
