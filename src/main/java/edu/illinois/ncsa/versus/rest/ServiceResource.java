@@ -22,7 +22,7 @@ public class ServiceResource {
 				+ "<li><a href='extractors'>Extractors</a></li>"
 				+ "<li><a href='measures'>Measures</a></li>"
 				+ "<li><a href='comparisons'>Comparisons</a></li>"
-				+ "<li><a href='slaves'>Slaves</a></li>"
+				+ "<li><a href='v1/slaves'>Slaves</a></li>"
 				+ "<li><a href='distributions'>Distributions</a></li>"
 				+ "<li><a href='decisionSupport'>DecisionSupport</a></li>"
 				+ "</ul>");
