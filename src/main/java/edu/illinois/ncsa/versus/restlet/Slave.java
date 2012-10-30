@@ -13,6 +13,7 @@ import java.net.URL;
 public class Slave {
 
 	private URL url;
+	private boolean statusBusy=false;
 
 	public Slave(String hostRef) {
 		try {
@@ -25,5 +26,13 @@ public class Slave {
 
 	public URL getUrl() {
 		return url;
+	}
+	
+	public boolean getStatus(){
+		return statusBusy;
+	}
+	
+	public void setStatus(boolean status){
+	      this.statusBusy=status;	
 	}
 }
