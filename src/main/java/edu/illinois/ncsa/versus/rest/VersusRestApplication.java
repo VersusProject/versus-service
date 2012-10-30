@@ -28,6 +28,7 @@ public class VersusRestApplication extends Application {
 		endpoints.add(new MeasureResource());
 		endpoints.add(new ServiceResource());
 		endpoints.add(new StatusResource());
+		endpoints.add(new SlavesResource());
 	}
 
 	@Override
