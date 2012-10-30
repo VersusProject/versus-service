@@ -3,13 +3,20 @@
  */
 package edu.illinois.ncsa.versus.rest;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.UnsupportedEncodingException;
+import java.net.InetAddress;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLDecoder;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -29,6 +36,20 @@ import javax.ws.rs.core.Response;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.apache.http.HttpResponse;
+import org.apache.http.NameValuePair;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.HttpClient;
+import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.methods.HttpPost;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.protocol.HTTP;
+import org.codehaus.jackson.JsonParseException;
+import org.codehaus.jackson.map.JsonMappingException;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.type.TypeReference;
 import org.jboss.resteasy.annotations.Form;
 
 import com.google.inject.Injector;
@@ -40,6 +61,7 @@ import edu.illinois.ncsa.versus.engine.impl.Job.ComparisonStatus;
 import edu.illinois.ncsa.versus.engine.impl.PairwiseComparison;
 import edu.illinois.ncsa.versus.registry.CompareRegistry;
 import edu.illinois.ncsa.versus.restlet.Comparison;
+import edu.illinois.ncsa.versus.restlet.Slave;
 import edu.illinois.ncsa.versus.store.ComparisonServiceImpl;
 
 /**
@@ -52,6 +74,9 @@ import edu.illinois.ncsa.versus.store.ComparisonServiceImpl;
 public class ComparisonResource {
 
 	private static Log log = LogFactory.getLog(ComparisonResource.class);
+	
+	//ArrayList<HashIdSlave> compList=new ArrayList<HashIdSlave>();
+	//HashMap<String,String> hashList=new HashMap<String,String>();
 
 	@GET
 	@Produces("application/json")
@@ -83,6 +108,7 @@ public class ComparisonResource {
 				.getInstance(ComparisonServiceImpl.class);
 		log.debug("I am inside GET getComparison ");
 		System.out.println("I am inside GET getComparison ");
+		
 		Comparison c = comparisonService.getComparison(id);
 		if (c == null) {
 			log.debug("Comparison not found " + id);
@@ -105,8 +131,49 @@ public class ComparisonResource {
 
 		ComparisonServiceImpl comparisonService = injector
 				.getInstance(ComparisonServiceImpl.class);
-		log.debug("I am inside GET getStatus ");
-		System.out.println("I am inside GET getStatus ");
+		
+		log.debug("I am inside GET: /id/status ");
+		
+		//Map<String, Object> json = new HashMap<String, Object>();
+		Response json;
+		
+		HashIdSlave compList= (HashIdSlave) context.getAttribute(HashIdSlave.class.getName());
+		
+		log.debug("hash List size: "+compList.gethashList().size()+"  containsKey"+compList.gethashList().containsKey(id));
+		
+		if(compList.gethashList().containsKey(id)){
+			
+	       log.debug("Slave Which did this Comparison:Url: "+compList.gethashList().get(id));		
+			
+	       json=queryGetStatusSlaves(id,compList.gethashList().get(id),context);
+			
+		
+	       	log.debug("Received Value from Slave Server: "+json);
+		
+					
+		return json;
+		}
+		else{
+			
+	   	
+		/*log.debug("Comparison status: "+c.getStatus());
+		
+		if( c.getStatus() != ComparisonStatus.DONE ){
+			 // while(c.getStatus()!=ComparisonStatus.DONE){	
+			    try {
+					//Thread.sleep(5);
+			    	synchronized(c){
+			    	c.wait();
+			    	}
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+		}
+		
+		return json;
+		}*/
+				
 		Comparison c = comparisonService.getComparison(id);
 		if (c == null) {
 			log.debug("Comparison not found " + id);
@@ -116,8 +183,77 @@ public class ComparisonResource {
 			log.debug("Comparison found " + id);
 			return Response.status(200).entity(c.getStatus()).build();
 		}
+		}
 	}
+	@GET
+	@Path("/{id}/value")
+	@Produces("text/plain")
+	public Response getValue(@PathParam("id") String id,
+			@Context ServletContext context) {
 
+		Injector injector = (Injector) context.getAttribute(Injector.class
+				.getName());
+
+		ComparisonServiceImpl comparisonService = injector
+				.getInstance(ComparisonServiceImpl.class);
+		
+		log.debug("I am inside GET: /id/value ");
+		
+		//Map<String, Object> json = new HashMap<String, Object>();
+		Response json;
+		
+		HashIdSlave compList= (HashIdSlave) context.getAttribute(HashIdSlave.class.getName());
+		
+		log.debug("hash List size: "+compList.gethashList().size()+"  containsKey"+compList.gethashList().containsKey(id));
+		
+		if(compList.gethashList().containsKey(id)){
+			
+	       log.debug("Slave Which did this Comparison:Url: "+compList.gethashList().get(id));		
+			
+	       json=queryGetStatusSlaves(id,compList.gethashList().get(id),context);
+			
+		
+	       	log.debug("Received Value from Slave Server: "+json);
+		
+					
+		return json;
+		}
+		else{
+			
+	   	
+		/*log.debug("Comparison status: "+c.getStatus());
+		
+		if( c.getStatus() != ComparisonStatus.DONE ){
+			 // while(c.getStatus()!=ComparisonStatus.DONE){	
+			    try {
+					//Thread.sleep(5);
+			    	synchronized(c){
+			    	c.wait();
+			    	}
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+		}
+		
+		return json;
+		}*/
+				
+		Comparison c = comparisonService.getComparison(id);
+		if (c == null) {
+			log.debug("Comparison not found " + id);
+			return Response.status(404)
+					.entity("Comparison " + id + " not found.").build();
+		} else {
+			log.debug("Comparison found " + id);
+			return Response.status(200).entity(c.getValue()).build();
+		}
+		}
+	}
+	
+	
+	
+	
 	@GET
 	@Path("/{id}/value")
 	@Produces("application/json")
@@ -131,8 +267,32 @@ public class ComparisonResource {
 
 		ComparisonServiceImpl comparisonService = injector
 				.getInstance(ComparisonServiceImpl.class);
-		log.debug("I am inside GET getValue ");
-		System.out.println("I am inside GET getValue ");
+		
+		log.debug("I am inside GET :/id/value:  ");
+		
+		
+		Map<String, Object> json = new HashMap<String, Object>();
+		
+		HashIdSlave compList= (HashIdSlave) context.getAttribute(HashIdSlave.class.getName());
+		
+		log.debug("hash List size: "+compList.gethashList().size()+"  containsKey"+compList.gethashList().containsKey(id));
+		
+		if(compList.gethashList().containsKey(id)){
+			
+	       log.debug("Slave Which did Comparison:Url: "+compList.gethashList().get(id));		
+			
+	       json=queryGetSlaves(id,compList.gethashList().get(id),context);
+		
+		
+		
+	       	log.debug("Received Value from Slave Server: "+json);
+		
+					
+		return json;
+		}
+		else{
+			
+	    log.debug("ELSE: Comparison ID not in List: Then it is in my memory ");		
 		Comparison c = comparisonService.getComparison(id);
 		/*if (c == null) {
 			log.debug("Comparison not found " + id);
@@ -143,7 +303,9 @@ public class ComparisonResource {
 			return Response.status(200).entity(c.getValue()).build();
 		}*/
 		//log.debug("getjson");
-		Map<String, Object> json = new HashMap<String, Object>();
+		
+		
+		
 		log.debug("Comparison status: "+c.getStatus());
 		
 		if( c.getStatus() != ComparisonStatus.DONE ){
@@ -164,11 +326,12 @@ public class ComparisonResource {
 			log.debug("getjson");
 			log.debug("c.getValue"+c.getValue());
 			log.debug("status"+c.getStatus());
-		json.put("value",c.getValue());
-		json.put("status", c.getStatus());
-		json.put("other", c.getExtractorId());
+		    json.put("value",c.getValue());
+		    json.put("status", c.getStatus());
+		    json.put("other", c.getExtractorId());
 		//}
 		return json;
+		}
 	}
 
 	/**
@@ -191,11 +354,19 @@ public class ComparisonResource {
 				.getName());
 		ComparisonServiceImpl comparisonService = injector
 				.getInstance(ComparisonServiceImpl.class);
-
-		if (checkRequirements(registry, comparisonForm.adapter,
+		
+     String master="";
+     String slaveurl="";
+	     
+     SlavesList slaveList = (SlavesList) context.getAttribute(SlavesList.class.getName());
+     List<Slave> slaves= slaveList.getSlaves();
+                      //log.debug("SLAVE URL= "+slaves.get(0).getUrl());  
+     if(slaves.size()==0){
+    	 
+        if (checkRequirements(registry, comparisonForm.adapter,
 				comparisonForm.extractor, comparisonForm.measure)) {
 			try {
-
+                log.debug("I am SLAVE");
 				final PairwiseComparison comparison = new PairwiseComparison();
 				comparison.setId(UUID.randomUUID().toString());
 				comparison.setFirstDataset(getFile(comparisonForm.dataset1));
@@ -210,8 +381,17 @@ public class ComparisonResource {
 				log.error("Internal error writing to disk", e);
 				return "Internal error writing to disk";
 			}
-		} else {
-			return querySlaves(comparisonForm, comparisonForm);
+		}
+        else
+            return querySlaves(comparisonForm,context); //extra addition due to master slave config 
+        
+          }
+		else {
+			log.debug("I am the MASTER");
+			String compId;
+			compId=querySlaves(comparisonForm, context);
+			log.debug("From querySlaves: Comparison ID "+compId);
+			return compId;
 		}
 	}
 
@@ -264,9 +444,6 @@ public class ComparisonResource {
 				log.debug("Comparison " + comparison.getId()
 						+ " done. Result is: " + value);
 				comparisons.setStatus(comparison.getId(), ComparisonStatus.DONE);
-				//if(comparison.)
-				//notify();
-				//comparison.notify();
 				comparisons.updateValue(comparison.getId(), value);
 			}
 
@@ -298,15 +475,297 @@ public class ComparisonResource {
 		return comparison.getId();
 	}
 
+	private Response queryGetStatusSlaves(String id, String requestUrl,@Context ServletContext context){
+		
+		
+		HttpClient client = new DefaultHttpClient();
+		
+		String reqUrl=requestUrl+"/"+id+"/status";
+		
+		log.debug("queryGETStatusSlaves Url: "+reqUrl);
+		
+		HashIdSlave list= (HashIdSlave) context.getAttribute(HashIdSlave.class.getName());
+		
+		HttpGet httpGet=new HttpGet(reqUrl);
+		HttpResponse response;
+		try {
+			
+			response = client.execute(httpGet);
+			
+			BufferedReader br = new BufferedReader(
+                    new InputStreamReader((response.getEntity().getContent())));
+
+	         String output,output1=null;
+	         log.debug("Response from Slave Server ....GET: \n");
+	       
+	         while ((output = br.readLine()) != null) {
+	        	 output1=output;
+	        	 log.debug(output);
+	           }
+	         
+	         //ObjectMapper mapper = new ObjectMapper();
+             // Map<String,Object> json=new HashMap<String,Object>();
+			 
+             /* try {
+					json = mapper.readValue(output1,new TypeReference<Map<String,Object>>() {});
+				} catch (JsonParseException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (JsonMappingException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}*/
+			return Response.status(200).entity(output1).build();
+	                        
+			
+			
+			//System.out.println(response.getEntity().getContent());
+		} catch (ClientProtocolException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return null;
+		
+		
+		
+	}
+	
+private Response queryGetValueSlaves(String id, String requestUrl,@Context ServletContext context){
+		
+		
+		HttpClient client = new DefaultHttpClient();
+		
+		String reqUrl=requestUrl+"/"+id+"/value";
+		
+		log.debug("queryGETValueSlaves Url: "+reqUrl);
+		
+		HashIdSlave list= (HashIdSlave) context.getAttribute(HashIdSlave.class.getName());
+		
+		HttpGet httpGet=new HttpGet(reqUrl);
+		HttpResponse response;
+		try {
+			
+			response = client.execute(httpGet);
+			
+			BufferedReader br = new BufferedReader(
+                    new InputStreamReader((response.getEntity().getContent())));
+
+	         String output,output1=null;
+	         log.debug("Response from Slave Server ....GET: \n");
+	       
+	         while ((output = br.readLine()) != null) {
+	        	 output1=output;
+	        	 log.debug(output);
+	           }
+	         
+	         //ObjectMapper mapper = new ObjectMapper();
+             // Map<String,Object> json=new HashMap<String,Object>();
+			 
+             /* try {
+					json = mapper.readValue(output1,new TypeReference<Map<String,Object>>() {});
+				} catch (JsonParseException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (JsonMappingException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}*/
+			return Response.status(200).entity(output1).build();
+	                        
+			
+			
+			//System.out.println(response.getEntity().getContent());
+		} catch (ClientProtocolException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return null;
+		
+		
+		
+	}
+	
+	
+	
+private Map<String,Object> queryGetSlaves(String id, String requestUrl,@Context ServletContext context){
+		
+		
+		HttpClient client = new DefaultHttpClient();
+		
+		String reqUrl=requestUrl+"/"+id+"/value";
+		
+		log.debug("quesryGETSlaves Url: "+reqUrl);
+		
+		HashIdSlave list= (HashIdSlave) context.getAttribute(HashIdSlave.class.getName());
+		
+		HttpGet httpGet=new HttpGet(reqUrl);
+		HttpResponse response;
+		try {
+			
+			response = client.execute(httpGet);
+			
+			BufferedReader br = new BufferedReader(
+                    new InputStreamReader((response.getEntity().getContent())));
+
+	         String output,output1=null;
+	         System.out.println("Response from Slave Server ....GET: \n");
+	       
+	         while ((output = br.readLine()) != null) {
+	        	 output1=output;
+	        	 System.out.println(output);
+	           }
+	         
+	         ObjectMapper mapper = new ObjectMapper();
+              Map<String,Object> json=new HashMap<String,Object>();
+			 
+              try {
+					json = mapper.readValue(output1,new TypeReference<Map<String,Object>>() {});
+				} catch (JsonParseException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (JsonMappingException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+	                        
+			return json;
+			
+			//System.out.println(response.getEntity().getContent());
+		} catch (ClientProtocolException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return null;
+		
+		
+		
+	}
+	
+	
 	/**
 	 * 
 	 * @param comparison
-	 * @param comparison2
 	 * @return
 	 */
-	private String querySlaves(ComparisonForm comparison,
-			ComparisonForm comparison2) {
+	//private String querySlaves(ComparisonForm comparison,
+	//		ComparisonForm comparison2,@Context ServletContext context) {
+		
+		private String querySlaves(ComparisonForm comparison,@Context ServletContext context){
+		
 		// TODO Auto-generated method stub
+		
+			//SlavesList slaveList=(SlavesList) context.getAttribute(SlavesList.class.getName());
+		    // Collection<Slave> slaves = slaveList.getSlaves();
+			
+			log.debug("Inside quesrySlaves():");
+			HashIdSlave list= (HashIdSlave) context.getAttribute(HashIdSlave.class.getName());
+			
+		     RankSlaves slaveList=(RankSlaves) context.getAttribute(RankSlaves.class.getName());
+		     ArrayList<Slave> slaves=(ArrayList<Slave>) slaveList.getSlaves();
+		
+		//if (slaves.size() == 0) {
+		//	return "No slaves";
+		//} else {
+			
+			//for (Slave slave : slaves) {
+			//	log.debug(slave.getUrl());
+			//}
+			
+			HttpClient client = new DefaultHttpClient();
+			if(RankSlaves.nextIndex<0){
+				RankSlaves.nextIndex=0;
+				
+			}
+			else{
+				if(RankSlaves.nextIndex==(slaves.size()-1)){
+					RankSlaves.nextIndex=0;
+				}
+				else
+					RankSlaves.nextIndex++;
+				
+			}
+			
+			
+			////String requestUrl = "http://localhost:8182/api/v1/comparisons";
+			String requestUrl=(slaves.get(RankSlaves.nextIndex).getUrl()).toString()+"/comparisons";
+			HttpPost httpPost = new HttpPost(requestUrl);
+			
+			/*HashIdSlave idSlaveobject=new HashIdSlave();
+			
+			try {
+				idSlaveobject.setUrl(new URL(requestUrl));
+			} catch (MalformedURLException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}*/
+			
+			log.debug("MASTER: I am here to send data to slave");
+			List<NameValuePair> nvps = new ArrayList<NameValuePair>();
+			nvps.add(new BasicNameValuePair("dataset1",comparison.dataset1));
+			nvps.add(new BasicNameValuePair("dataset2",comparison.dataset2));
+			nvps.add(new BasicNameValuePair("adapter",comparison.adapter));
+			nvps.add(new BasicNameValuePair("extractor",comparison.extractor));
+			nvps.add(new BasicNameValuePair("measure",comparison.measure));
+			try {
+				httpPost.setEntity(new UrlEncodedFormEntity(nvps, HTTP.UTF_8));
+			} catch (UnsupportedEncodingException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			HttpResponse response;
+			try {
+				
+				response = client.execute(httpPost);
+				
+				BufferedReader br = new BufferedReader(
+                        new InputStreamReader((response.getEntity().getContent())));
+
+		                String output,output1=null;
+		               System.out.println("Response from Slave Server ....POST: \n");
+		        
+		               while ((output = br.readLine()) != null) {
+		        	    output1=output;
+			            System.out.println(output);
+		               }
+		        //idSlaveobject.setId(output);
+		        //compList.add(idSlaveobject);
+		        log.debug("Comparison ID: "+output1+"  Working Slave URL"+requestUrl);
+		        list.addTohashList(output1,requestUrl);
+		        log.debug("Size of HashList Id-Slave mapping: "+list.gethashList().size());
+				return output1;
+				
+				//System.out.println(response.getEntity().getContent());
+			} catch (ClientProtocolException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
+			
+		//}
 		return null;
 	}
 
