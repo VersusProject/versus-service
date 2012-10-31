@@ -57,6 +57,7 @@ import edu.illinois.ncsa.versus.restlet.measure.MeasureHelpServerResource;
 import edu.illinois.ncsa.versus.restlet.measure.MeasureHelpSha1ServerResource;
 import edu.illinois.ncsa.versus.restlet.measure.MeasureServerResource;
 import edu.illinois.ncsa.versus.restlet.measure.MeasuresServerResource;
+import edu.illinois.ncsa.versus.restlet.node.MasterRegistrationService;
 import edu.illinois.ncsa.versus.restlet.node.NodeStatusServerResource;
 import edu.illinois.ncsa.versus.store.RepositoryModule;
 import edu.illinois.ncsa.versus.utility.HasCategory;
@@ -86,7 +87,9 @@ public class ServerApplication extends Application {
     private final SlavesManager slavesManager = new SlavesManager();
 
     private final String masterURL;
-
+    
+    private final MasterRegistrationService masterRegistrationService;
+    
     private final ExecutionEngine engine = new ExecutionEngine();
 
     private final SamplingExecutionEngine samplingEngine = new SamplingExecutionEngine();
@@ -108,45 +111,17 @@ public class ServerApplication extends Application {
         this.baseUrl = baseUrl;
         this.masterURL = masterUrl;
 
+        MasterRegistrationService mrs  = null;
         if (masterURL != null) {
             try {
-                registerWithMaster();
-            } catch (Exception e) {
-                throw new RuntimeException("Cannot register with master at url: " + masterUrl, e);
+                mrs = new MasterRegistrationService(port, baseUrl, masterUrl);
+            } catch (SocketException ex) {
+                throw new RuntimeException(ex);
             }
         }
+        masterRegistrationService = mrs;
 
         ClientResourceFactory.setRetryDelay(500);
-    }
-
-    private void registerWithMaster() throws UnknownHostException, SocketException {
-        getLogger().log(Level.INFO, "Registering to master {0}", masterURL);
-
-        ArrayList<String> ips = new ArrayList<String>();
-        Enumeration<NetworkInterface> nis = NetworkInterface.getNetworkInterfaces();
-        while (nis.hasMoreElements()) {
-            NetworkInterface ni = nis.nextElement();
-            if (ni.isUp() && !ni.isLoopback()) {
-                Enumeration<InetAddress> inetAddresses = ni.getInetAddresses();
-                while (inetAddresses.hasMoreElements()) {
-                    InetAddress ia = inetAddresses.nextElement();
-                    if (ia instanceof Inet4Address) {
-                        ips.add(ia.getHostAddress());
-                    }
-                }
-            }
-        }
-        String ip = ips.get(0); //TODO choose the good IP on computers with multiple network interfaces
-
-        ClientResource masterResource = new ClientResource(masterURL
-                + SlavesServerResource.URL);
-        String slaveUrl = "http://" + ip + ':' + port + baseUrl;
-        Form form = new Form();
-        form.add("url", slaveUrl);
-        Representation post = masterResource.post(form.getWebRepresentation());
-        if(post == null) {
-            throw new RuntimeException("No response from master.");
-        }
     }
 
     @Override

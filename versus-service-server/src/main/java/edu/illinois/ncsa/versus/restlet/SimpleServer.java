@@ -52,7 +52,7 @@ public class SimpleServer {
 
         Context context = component.getContext().createChildContext();
         context.getParameters().add("ioMaxIdleTimeMs", "0");
-        
+
         //create embedding jetty server
         Server embeddingJettyServer = new Server(
                 context,
