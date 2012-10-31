@@ -36,9 +36,9 @@ import edu.illinois.ncsa.versus.core.node.SlavesClient;
  */
 public class MasterRegistrationService {
 
-    private static final long checkFrequency = 10;
+    private static final long checkFrequency = 3600;
 
-    private static final long retryFrequency = 5;
+    private static final long retryFrequency = 10;
 
     private final String masterUrl;
 
