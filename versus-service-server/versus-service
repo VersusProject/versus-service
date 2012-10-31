@@ -5,8 +5,8 @@
 # Required-Stop:     $remote_fs
 # Default-Start:     2 3 4 5
 # Default-Stop:      1
-# Short-Description: MMDB Extraction Server
-# Description:       Extracts metadata from datasets.
+# Short-Description: Versus Web Services
+# Description:       Web accessible comparisons framework.
 ### END INIT INFO
 #
 # Author:       Antoine Vandecreme <antoine.vandecreme@nist.gov>
@@ -20,6 +20,7 @@ umask 0002
 PATH=/bin:/usr/bin:/sbin:/usr/sbin
 DIR=/home/medici/versus-service/bin
 DAEMON=$DIR/startup.sh
+PARAMETERS=
 DAEMON_JAVA_CLASS=edu.illinois.ncsa.versus.restlet.SimpleServer
 NAME=versus-service
 LOCK=/tmp/$NAME.lck
@@ -34,7 +35,7 @@ pid_of_daemon() {
 start() {
   log_daemon_msg "Starting $NAME daemon" "$NAME"
 
-  su -s /bin/bash - $USER -c "cd $DIR && nohup $DAEMON >& /dev/null &"
+  su -s /bin/bash - $USER -c "cd $DIR && nohup $DAEMON $PARAMETERS >& /dev/null &"
 
   pid_of_daemon > /dev/null
   RETVAL=$?
