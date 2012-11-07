@@ -81,7 +81,7 @@ public class ExtractorResource {
 		}
 	}
 
-	@GET
+	/*@GET
 	@Path("/{id}")
 	@Produces("text/html")
 	public String getExtractorHTML(@PathParam("id") String id,
@@ -98,7 +98,7 @@ public class ExtractorResource {
 		} else {
 			return "Extractor not found";
 		}
-	}
+	}*/
 
 	@GET
 	@Path("/{id}")
