@@ -12,8 +12,8 @@ public class SimpleServer {
 
 	private static int port = 8182;
 	private static String master;
-	private static Logger logger = Logger
-			.getLogger("edu.illinois.ncsa.versus.restlet.SimpleServer");
+	//private static Logger logger = Logger
+	//		.getLogger("edu.illinois.ncsa.versus.restlet.SimpleServer");
 
 	public static void main(String[] args) throws Exception {
 		// if (args.length > 0) {
@@ -57,7 +57,10 @@ public class SimpleServer {
 		// // component.getServers().add(embedingJettyServer);
 		// // component.start();
 	}
-
+      
+	
+	
+	
 	public static String getMaster() {
 		return master;
 	}

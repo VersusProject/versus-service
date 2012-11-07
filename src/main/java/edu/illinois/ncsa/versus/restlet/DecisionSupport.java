@@ -653,6 +653,19 @@ public class DecisionSupport implements Serializable {
 			return mean;
 			
 		}
+        private double computeMean(double [] array){
+			
+			int n=0;
+			double mean=0.0;
+			
+			
+			for(n=0;n<array.length;n++){
+				mean=mean+array[n];
+			}
+			mean=mean/(double)(array.length-1);
+			return mean;
+			
+		}
 		
 		private double computeSD(double mean,ArrayList<String> array){
 			double sum=0.0;
@@ -667,6 +680,18 @@ public class DecisionSupport implements Serializable {
 
 		}
 		
+		private double computeSD(double mean,double[] array){
+			double sum=0.0;
+			double sd;
+			
+		        for(int i=0;i<array.length;i++){
+					
+					sum=sum+(array[i]-mean)*(array[i]-mean);
+				}
+					sd=Math.sqrt(sum/(array.length-1));
+					return sd;
+
+		}
 	private double[] estimatePDensityfunction(double [] filesCL, double max, double min){
 		Injector injector                       = Guice.createInjector(new RepositoryModule());
 		ComparisonServiceImpl comparisonService = injector.getInstance(ComparisonServiceImpl.class);
@@ -744,6 +769,19 @@ public class DecisionSupport implements Serializable {
 		
 	}
 	
+	private double computeHopt(double sd,double [] array){
+		
+		double q2=array[(int)array.length/2];
+		double q1=array[(int)array.length/4];
+		double q3=array[(int)3*array.length/4];
+		double R=(q3-q1)/1.34;
+		log.debug("q1="+q1+" q2="+q2+" q3="+q3+" R="+R);
+		double sf_esig=Math.min(sd,R);
+		//double hopt=(0.9*sf_esig)/Math.pow((double)array.length,1.0/5.0);
+		double hopt=1.06*sd/Math.pow((double)array.length,1.0/5.0);
+		log.debug("sd="+sd+" R="+R+" sf_hopt="+hopt);
+        return hopt;
+	}
 	
 	private double computeComparisonPEValue(ArrayList<String> similarCL, ArrayList<String> dissimilarCL){
 		
@@ -871,12 +909,24 @@ public class DecisionSupport implements Serializable {
 			
 				/*int srange=(int)((s_max-s_min)/sf_hopt);
 				int dsrange=(int)((ds_max-ds_min)/dsf_hopt);*/
+		
+		        double mean_S=computeMean(similarVals);
+		        double mean_D=computeMean(dissimilarVals);
+		        double sd_S=computeSD(mean_S,similarVals);
+		        double sd_D=computeSD(mean_D,dissimilarVals);
 				
 				double hopt=0.1;
 				
 					//hopt=Math.max(sf_hopt,dsf_hopt);
-				
-				
+				/*Arrays.sort(similarVals);
+				Arrays.sort(dissimilarVals);
+				 //hopt=Math.min(sd_S, sd_D);
+				//hopt=Math.max(sd_S, sd_D);
+				double hoptSF=computeHopt(sd_S,similarVals);
+				double hoptDF=computeHopt(sd_D,dissimilarVals);
+				hopt=Math.max(hoptSF, hoptDF);
+				 log.debug("sd_S="+sd_S+" sd_D="+sd_D+" hopt="+hopt);
+				 log.debug("hoptSF="+hoptSF+" hoptDF="+hoptDF);*/
 				int range=(int)((max-min)/resolution);
 					//int range=(int)((max-min)/hopt);
 				
@@ -898,8 +948,8 @@ public class DecisionSupport implements Serializable {
 				//log.debug("x="+x+" : dissimilarVals["+d+"]="+dissimilarVals[d]);
 				fnDissimilar[i] += Math.exp( -1*Math.pow( (double)x1 -dissimilarVals[d],2)/(2.0*hopt*hopt));
 			}
-			fnSimilar[i]=1.0/(hopt*(similarVals.length)*Math.sqrt(2.0*Math.PI))*fnSimilar[i];
-			fnDissimilar[i]=1.0/(hopt*(dissimilarVals.length)*Math.sqrt(2.0*Math.PI))*fnDissimilar[i];
+			fnSimilar[i]=(1.0/(hopt*(similarVals.length)*Math.sqrt(2.0*Math.PI)))*fnSimilar[i];
+			fnDissimilar[i]=(1.0/(hopt*(dissimilarVals.length)*Math.sqrt(2.0*Math.PI)))*fnDissimilar[i];
 			//perrorComplement += Math.max(fnDissimilar[x], fnSimilar[x]);
 			perrorComplement += Math.min(fnDissimilar[i], fnSimilar[i])*resolution;
 			x1=x1+hopt;

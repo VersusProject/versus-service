@@ -25,6 +25,8 @@ import org.junit.Test;
 
 import edu.illinois.ncsa.versus.service.JettyServer;
 
+//import edu.illinois.ncsa.versus.ds.web.JettyServer;
+
 /**
  * Test compirison resource.
  * 
@@ -45,7 +47,7 @@ public class ComparisonResourceTest {
 	@Test
 	public void testSubmit() throws ClientProtocolException, IOException {
 		HttpClient client = new DefaultHttpClient();
-		String requestUrl = "http://localhost:8080/versus/api/v1/comparisons";
+		String requestUrl = "http://localhost:8080/api/v1/comparisons";
 		HttpPost httpPost = new HttpPost(requestUrl);
 		List<NameValuePair> nvps = new ArrayList<NameValuePair>();
 		nvps.add(new BasicNameValuePair("dataset1",
