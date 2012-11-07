@@ -75,9 +75,7 @@ public class ComparisonResource {
 
 	private static Log log = LogFactory.getLog(ComparisonResource.class);
 	
-	//ArrayList<HashIdSlave> compList=new ArrayList<HashIdSlave>();
-	//HashMap<String,String> hashList=new HashMap<String,String>();
-
+	
 	@GET
 	@Produces("application/json")
 	public List<String> list(@Context ServletContext context) {
@@ -87,7 +85,7 @@ public class ComparisonResource {
 		ComparisonServiceImpl comparisonService = injector
 				.getInstance(ComparisonServiceImpl.class);
 		log.debug("I am inside GET list ");
-		System.out.println("I am inside GET list ");
+		
 		List<String> json = new ArrayList<String>();
 		for (Comparison comparison : comparisonService.listAll()) {
 			json.add(comparison.getId());
@@ -107,9 +105,8 @@ public class ComparisonResource {
 		ComparisonServiceImpl comparisonService = injector
 				.getInstance(ComparisonServiceImpl.class);
 		log.debug("I am inside GET getComparison ");
-		System.out.println("I am inside GET getComparison ");
-		
 		Comparison c = comparisonService.getComparison(id);
+		
 		if (c == null) {
 			log.debug("Comparison not found " + id);
 			return Response.status(404)
@@ -123,8 +120,7 @@ public class ComparisonResource {
 	@GET
 	@Path("/{id}/status")
 	@Produces("text/plain")
-	public Response getStatus(@PathParam("id") String id,
-			@Context ServletContext context) {
+	public Response getStatus(@PathParam("id") String id,@Context ServletContext context) {
 
 		Injector injector = (Injector) context.getAttribute(Injector.class
 				.getName());
@@ -139,23 +135,22 @@ public class ComparisonResource {
 		
 		HashIdSlave compList= (HashIdSlave) context.getAttribute(HashIdSlave.class.getName());
 		
-		log.debug("hash List size: "+compList.gethashList().size()+"  containsKey"+compList.gethashList().containsKey(id));
+		log.debug("hash List size: "+compList.gethashList().size()+"  containsKey : "+compList.gethashList().containsKey(id));
 		
 		if(compList.gethashList().containsKey(id)){
 			
-	       log.debug("Slave Which did this Comparison:Url: "+compList.gethashList().get(id));		
+	       log.debug("Server Which did this Comparison:Url: "+compList.gethashList().get(id));		
 			
 	       json=queryGetStatusSlaves(id,compList.gethashList().get(id),context);
 			
 		
-	       	log.debug("Received Value from Slave Server: "+json);
+	       	log.debug("Received Status from Server: "+json);
 		
 					
 		return json;
 		}
 		else{
-			
-	   	
+			  	
 		/*log.debug("Comparison status: "+c.getStatus());
 		
 		if( c.getStatus() != ComparisonStatus.DONE ){
@@ -185,6 +180,7 @@ public class ComparisonResource {
 		}
 		}
 	}
+	
 	@GET
 	@Path("/{id}/value")
 	@Produces("text/plain")
@@ -197,9 +193,8 @@ public class ComparisonResource {
 		ComparisonServiceImpl comparisonService = injector
 				.getInstance(ComparisonServiceImpl.class);
 		
-		log.debug("I am inside GET: /id/value ");
+		log.debug("I am inside getValue: /id/value ");
 		
-		//Map<String, Object> json = new HashMap<String, Object>();
 		Response json;
 		
 		HashIdSlave compList= (HashIdSlave) context.getAttribute(HashIdSlave.class.getName());
@@ -208,44 +203,43 @@ public class ComparisonResource {
 		
 		if(compList.gethashList().containsKey(id)){
 			
-	       log.debug("Slave Which did this Comparison:Url: "+compList.gethashList().get(id));		
+	       log.debug("Server which did this Comparison:Url: "+compList.gethashList().get(id));		
 			
-	       json=queryGetStatusSlaves(id,compList.gethashList().get(id),context);
+	       json=queryGetValueSlaves(id,compList.gethashList().get(id),context);
 			
 		
-	       	log.debug("Received Value from Slave Server: "+json);
+	       	log.debug("Received Value from Server: "+json);
 		
 					
 		return json;
 		}
 		else{
-			
-	   	
-		/*log.debug("Comparison status: "+c.getStatus());
+			    Comparison c = comparisonService.getComparison(id);
+			    
+			    if (c == null) {
+					log.debug("Comparison not found " + id);
+					return Response.status(404)
+							.entity("Comparison " + id + " not found.").build();
+			    }else {
+						log.debug("Comparison found " + id);
+			    
+	   			       log.debug("Comparison status: "+c.getStatus());
 		
-		if( c.getStatus() != ComparisonStatus.DONE ){
+	   			
+	   			if( c.getStatus() != ComparisonStatus.DONE ){
 			 // while(c.getStatus()!=ComparisonStatus.DONE){	
-			    try {
-					//Thread.sleep(5);
-			    	synchronized(c){
-			    	c.wait();
-			    	}
-				} catch (InterruptedException e) {
+	   				try {
+	   					//Thread.sleep(5);
+	   					synchronized(c){
+	   					c.wait();
+			        	}
+				       } catch (InterruptedException e) {
 					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}
-		}
+				    	   e.printStackTrace();
+				        }
+	   			}
 		
-		return json;
-		}*/
-				
-		Comparison c = comparisonService.getComparison(id);
-		if (c == null) {
-			log.debug("Comparison not found " + id);
-			return Response.status(404)
-					.entity("Comparison " + id + " not found.").build();
-		} else {
-			log.debug("Comparison found " + id);
+					
 			return Response.status(200).entity(c.getValue()).build();
 		}
 		}
@@ -253,7 +247,7 @@ public class ComparisonResource {
 	
 	
 	
-	
+/*	
 	@GET
 	@Path("/{id}/value")
 	@Produces("application/json")
@@ -268,7 +262,7 @@ public class ComparisonResource {
 		ComparisonServiceImpl comparisonService = injector
 				.getInstance(ComparisonServiceImpl.class);
 		
-		log.debug("I am inside GET :/id/value:  ");
+		log.debug("I am inside GET getJson :/id/value:  ");
 		
 		
 		Map<String, Object> json = new HashMap<String, Object>();
@@ -279,20 +273,17 @@ public class ComparisonResource {
 		
 		if(compList.gethashList().containsKey(id)){
 			
-	       log.debug("Slave Which did Comparison:Url: "+compList.gethashList().get(id));		
+	       log.debug("Server Which did Comparison: Url: "+compList.gethashList().get(id));		
 			
 	       json=queryGetSlaves(id,compList.gethashList().get(id),context);
-		
-		
-		
-	       	log.debug("Received Value from Slave Server: "+json);
-		
-					
-		return json;
+		 	
+	       log.debug("Received Value from Server: "+json);
+						
+	       return json;
 		}
 		else{
 			
-	    log.debug("ELSE: Comparison ID not in List: Then it is in my memory ");		
+	    log.debug("ELSE: Comparison ID not in HashIdList: Then it is in my memory ");		
 		Comparison c = comparisonService.getComparison(id);
 		/*if (c == null) {
 			log.debug("Comparison not found " + id);
@@ -304,9 +295,9 @@ public class ComparisonResource {
 		}*/
 		//log.debug("getjson");
 		
-		
-		
+	/*	
 		log.debug("Comparison status: "+c.getStatus());
+	 
 		
 		if( c.getStatus() != ComparisonStatus.DONE ){
 			 // while(c.getStatus()!=ComparisonStatus.DONE){	
@@ -323,9 +314,7 @@ public class ComparisonResource {
 		//while(c.getStatus()!=ComparisonStatus.DONE){
 		//}	
 		
-			log.debug("getjson");
-			log.debug("c.getValue"+c.getValue());
-			log.debug("status"+c.getStatus());
+			log.debug("getjson: "+" c.getValue: "+c.getValue()+ "status: "+c.getStatus());
 		    json.put("value",c.getValue());
 		    json.put("status", c.getStatus());
 		    json.put("other", c.getExtractorId());
@@ -362,11 +351,11 @@ public class ComparisonResource {
      List<Slave> slaves= slaveList.getSlaves();
                       //log.debug("SLAVE URL= "+slaves.get(0).getUrl());  
      if(slaves.size()==0){
-    	 
+    	
         if (checkRequirements(registry, comparisonForm.adapter,
 				comparisonForm.extractor, comparisonForm.measure)) {
 			try {
-                log.debug("I am SLAVE");
+                log.debug("I am ready to perform the comparison");
 				final PairwiseComparison comparison = new PairwiseComparison();
 				comparison.setId(UUID.randomUUID().toString());
 				comparison.setFirstDataset(getFile(comparisonForm.dataset1));
@@ -383,15 +372,21 @@ public class ComparisonResource {
 			}
 		}
         else
-            return querySlaves(comparisonForm,context); //extra addition due to master slave config 
-        
+            //return querySlaves(comparisonForm,context); //extra addition due to master slave config 
+             return "Modules not Supported by any Slaves";
           }
 		else {
 			log.debug("I am the MASTER");
 			String compId;
 			compId=querySlaves(comparisonForm, context);
-			log.debug("From querySlaves: Comparison ID "+compId);
+			if(compId.equals("Modules not Supported by any Slaves")){
+				return "Modules not Supported by any Slaves";
+				
+			}
+			else{
+				log.debug("From querySlaves: Comparison ID "+compId);
 			return compId;
+			}
 		}
 	}
 
@@ -608,11 +603,12 @@ private Map<String,Object> queryGetSlaves(String id, String requestUrl,@Context 
 		
 		String reqUrl=requestUrl+"/"+id+"/value";
 		
-		log.debug("quesryGETSlaves Url: "+reqUrl);
+		log.debug("queryGETSlaves Url: "+reqUrl);
 		
 		HashIdSlave list= (HashIdSlave) context.getAttribute(HashIdSlave.class.getName());
 		
 		HttpGet httpGet=new HttpGet(reqUrl);
+		
 		HttpResponse response;
 		try {
 			
@@ -626,7 +622,7 @@ private Map<String,Object> queryGetSlaves(String id, String requestUrl,@Context 
 	       
 	         while ((output = br.readLine()) != null) {
 	        	 output1=output;
-	        	 System.out.println(output);
+	        	 log.debug(output);
 	           }
 	         
 	         ObjectMapper mapper = new ObjectMapper();
@@ -678,37 +674,51 @@ private Map<String,Object> queryGetSlaves(String id, String requestUrl,@Context 
 			//SlavesList slaveList=(SlavesList) context.getAttribute(SlavesList.class.getName());
 		    // Collection<Slave> slaves = slaveList.getSlaves();
 			
-			log.debug("Inside quesrySlaves():");
+			log.debug("Inside querySlaves():");
 			HashIdSlave list= (HashIdSlave) context.getAttribute(HashIdSlave.class.getName());
 			
 		     RankSlaves slaveList=(RankSlaves) context.getAttribute(RankSlaves.class.getName());
 		     ArrayList<Slave> slaves=(ArrayList<Slave>) slaveList.getSlaves();
 		
-		//if (slaves.size() == 0) {
-		//	return "No slaves";
-		//} else {
-			
-			//for (Slave slave : slaves) {
-			//	log.debug(slave.getUrl());
-			//}
-			
+					
 			HttpClient client = new DefaultHttpClient();
-			if(RankSlaves.nextIndex<0){
+			
+			int startindex=RankSlaves.nextIndex;
+			int ssize=slaveList.getSlaves().size();
+			boolean flag=false;
+			
+			do{
+				if(RankSlaves.nextIndex<0){
 				RankSlaves.nextIndex=0;
-				
-			}
+				 }
 			else{
 				if(RankSlaves.nextIndex==(slaves.size()-1)){
 					RankSlaves.nextIndex=0;
-				}
+				 }
 				else
 					RankSlaves.nextIndex++;
-				
-			}
-			
+			    }
+				log.debug("RankSlaves.nextIndex= "+RankSlaves.nextIndex);
+				if(supportComparison(slaves.get(RankSlaves.nextIndex),comparison,context,client)){
+					log.debug("querySlaves(): ADAPTER, EXTRACTOR,MEASURE Supported");	
+					flag=true;
+					break;
+				    }
+				ssize--;
+			  // }
+			 }while(ssize!=0);
 			
 			////String requestUrl = "http://localhost:8182/api/v1/comparisons";
+			if(flag==false){
+				return "Modules not Supported by any Slaves";
+				
+			}
+			else{
 			String requestUrl=(slaves.get(RankSlaves.nextIndex).getUrl()).toString()+"/comparisons";
+			
+			
+			
+			
 			HttpPost httpPost = new HttpPost(requestUrl);
 			
 			/*HashIdSlave idSlaveobject=new HashIdSlave();
@@ -741,18 +751,22 @@ private Map<String,Object> queryGetSlaves(String id, String requestUrl,@Context 
 				BufferedReader br = new BufferedReader(
                         new InputStreamReader((response.getEntity().getContent())));
 
-		                String output,output1=null;
-		               System.out.println("Response from Slave Server ....POST: \n");
+		        String output,output1=null;
+		        log.debug("Response from Slave Server : "+requestUrl+" ..POST: ");
 		        
-		               while ((output = br.readLine()) != null) {
-		        	    output1=output;
-			            System.out.println(output);
+		         while ((output = br.readLine()) != null) {
+		              output1=output;
+			          log.debug(output);
 		               }
 		        //idSlaveobject.setId(output);
 		        //compList.add(idSlaveobject);
+		         
 		        log.debug("Comparison ID: "+output1+"  Working Slave URL"+requestUrl);
+		        
 		        list.addTohashList(output1,requestUrl);
+		        
 		        log.debug("Size of HashList Id-Slave mapping: "+list.gethashList().size());
+		        
 				return output1;
 				
 				//System.out.println(response.getEntity().getContent());
@@ -763,11 +777,86 @@ private Map<String,Object> queryGetSlaves(String id, String requestUrl,@Context 
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			
-			
-		//}
+			//}//if all modules supported
+			}
 		return null;
 	}
+		
+		private boolean supportComparison(Slave slave, ComparisonForm comparison,@Context ServletContext context,HttpClient client){
+			String adapterUrl=slave.getUrl().toString()+"/adapters/"+comparison.adapter;
+			String extractorUrl=slave.getUrl().toString()+"/extractors/"+comparison.extractor;
+			String measureUrl=slave.getUrl().toString()+"/measures/"+comparison.measure;
+			log.debug("adapterUrl: "+adapterUrl);
+			log.debug("extractorUrl: "+extractorUrl);
+			log.debug("measureUrl: "+measureUrl);
+			if(supportModule(adapterUrl,client) && supportModule(extractorUrl,client)&& supportModule(measureUrl,client)){
+				log.debug("All Modules Supported");
+				return true;
+				}
+			else
+				return false;
+			
+		}
+		private boolean supportModule(String url,HttpClient client){
+			HttpGet httpGet=new HttpGet(url);
+			HttpResponse response=null;
+			try {
+				response=client.execute(httpGet);
+			} catch (ClientProtocolException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			BufferedReader br=null;
+			
+			try {
+				br = new BufferedReader(
+				        new InputStreamReader((response.getEntity().getContent())));
+			} catch (IllegalStateException e2) {
+				// TODO Auto-generated catch block
+				e2.printStackTrace();
+			} catch (IOException e2) {
+				// TODO Auto-generated catch block
+				e2.printStackTrace();
+			}
+
+	         String output,output1=null;
+	         log.debug("Response from Slave Server ....GET module response: \n");
+	       
+	         try {
+				while ((output = br.readLine()) != null) {
+					 output1=output;
+					 log.debug(output);
+				   }
+			} catch (IOException e1) {
+				// TODO Auto-generated catch block
+				e1.printStackTrace();
+			}
+	         ObjectMapper mapper = new ObjectMapper();
+             Map<String,Object> json=new HashMap<String,Object>();
+			 
+             try {
+					json = mapper.readValue(output1,new TypeReference<Map<String,Object>>() {});
+				} catch (JsonParseException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (JsonMappingException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+             
+             if(json==null || json.containsKey("Error")){
+            	 return false;
+             }
+             else
+            	 return true;
+			
+		}
 
 	/**
 	 * Make temp copy of remote file.
