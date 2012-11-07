@@ -79,14 +79,14 @@ public class AdapterResource {
 		}
 	}
 
-	@GET
+	/*@GET
 	@Path("/{id}")
 	@Produces("text/html")
 	public String getAdapterHTML(@PathParam("id") String id,
 			@Context ServletContext context) throws IOException,
 			TemplateException {
 
-		log.trace("/adapters/" + id + " requested");
+		log.debug("/adapters/" + id + " requested");
 		Adapter adapter = getAdapter(context, id);
 		if (adapter != null) {
 			Configuration freeMarker = (Configuration) context
@@ -96,7 +96,7 @@ public class AdapterResource {
 		} else {
 			return "Adapter not found";
 		}
-	}
+	}*/
 
 	@GET
 	@Path("/{id}")
@@ -104,7 +104,7 @@ public class AdapterResource {
 	public Map<String, Object> getAdapterJSON(@PathParam("id") String id,
 			@Context ServletContext context) {
 
-		log.trace("/adapters/" + id + " requested");
+		log.debug("/adapters/" + id + " requested");
 		Adapter adapter = getAdapter(context, id);
 		Map<String, Object> json = new HashMap<String, Object>();
 		if (adapter != null) {
