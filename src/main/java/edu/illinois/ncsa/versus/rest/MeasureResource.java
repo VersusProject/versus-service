@@ -75,7 +75,7 @@ public class MeasureResource {
 			return jsonReturn;
 		}
 	}
-
+/*
 	@GET
 	@Path("/{id}")
 	@Produces("text/html")
@@ -93,7 +93,7 @@ public class MeasureResource {
 		} else {
 			return "Measure not found";
 		}
-	}
+	}*/
 
 	@GET
 	@Path("/{id}")
