@@ -76,6 +76,6 @@ public class RetryService<T> {
         } finally {
             executor.shutdownNow();
         }
-        throw new RuntimeException("The computation failed after " + retry + " retry.");
+        throw new RuntimeException("The request failed after " + retry + " retry.");
     }
 }
