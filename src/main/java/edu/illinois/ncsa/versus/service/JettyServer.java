@@ -45,7 +45,7 @@ public class JettyServer {
 	static int port=8080;
 	
 	public static void main(String[] args) {
-		String Master;
+		String Master="";
 		
 		try {
 			
@@ -61,25 +61,40 @@ public class JettyServer {
 			}
 			else	
 			{		
-			
+				log.debug("Master="+Master);
 				Properties properties=PropertiesUtil.load();
 				Master=properties.getProperty("master");
+				log.debug("Master="+Master);
 			}	
 			
 			String ownurl="http://"+InetAddress.getLocalHost().getHostAddress()+":"+port+"/api/v1";
-			
+				
 			URL myURL=new URL(ownurl);
+			if(Master==null){
+				log.debug("I am the defult Master");
+				Master=ownurl;
+			}
+			
+			
 			URL masterURL=new URL(Master);
 			
 			log.debug("myURL= "+myURL+"masterURL"+masterURL);
+			//System.out.println("myURL= "+myURL+"masterURL"+masterURL);
 			
 			if(!masterURL.equals(myURL)){
 				    log.debug("I am a SLAVE.");
+				    //System.out.println("I am a SLAVE.");
+				    
 				    log.debug("Registering with the Master");
+				  System.out.println("Registering with the Master");
 			        registerWithMaster(masterURL);
 			}
 			 else
-			       log.debug("I am the MASTER");
+			       {
+				 			log.debug("I am the MASTER");
+				 			//System.out.println("I am the MASTER");
+			       
+			       }
 		} catch (Exception e) {
 			  log.debug("Error starting jetty " + e);
 		}
@@ -99,6 +114,7 @@ public class JettyServer {
 		context.setContextPath("/");
 		context.setParentLoaderPriority(true);
 		server.setHandler(context);
+		System.out.println("context created");
 		server.start();
 		return server;
 	}
@@ -115,6 +131,7 @@ public class JettyServer {
 		httpPost.setEntity(new UrlEncodedFormEntity(nvps, HTTP.UTF_8));
 		HttpResponse response = client.execute(httpPost);
 		log.debug(response);
+		System.out.println(response);
 	}
 	
 
