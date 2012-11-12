@@ -4,9 +4,13 @@
 package edu.illinois.ncsa.versus.service;
 
 import java.io.IOException;
+import java.net.Inet4Address;
 import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Properties;
 
@@ -45,7 +49,7 @@ public class JettyServer {
 	static int port=8080;
 	
 	public static void main(String[] args) {
-		String Master;
+		String Master="";
 		
 		try {
 			
@@ -61,25 +65,41 @@ public class JettyServer {
 			}
 			else	
 			{		
-			
+				log.debug("Master="+Master);
 				Properties properties=PropertiesUtil.load();
 				Master=properties.getProperty("master");
+				log.debug("Master="+Master);
 			}	
 			
-			String ownurl="http://"+InetAddress.getLocalHost().getHostAddress()+":"+port+"/api/v1";
-			
+			//String ownurl="http://"+InetAddress.getLocalHost().getHostAddress()+":"+port+"/api/v1";
+			String ownurl="http://"+getmyUrl()+":"+port+"/api/v1";
+				
 			URL myURL=new URL(ownurl);
+			if(Master==null){
+				log.debug("I am the defult Master");
+				Master=ownurl;
+			}
+			
+			
 			URL masterURL=new URL(Master);
 			
 			log.debug("myURL= "+myURL+"masterURL"+masterURL);
+			//System.out.println("myURL= "+myURL+"masterURL"+masterURL);
 			
 			if(!masterURL.equals(myURL)){
 				    log.debug("I am a SLAVE.");
+				    //System.out.println("I am a SLAVE.");
+				    
 				    log.debug("Registering with the Master");
+				//  System.out.println("Registering with the Master");
 			        registerWithMaster(masterURL);
 			}
 			 else
-			       log.debug("I am the MASTER");
+			       {
+				 			log.debug("I am the MASTER");
+				 			//System.out.println("I am the MASTER");
+			       
+			       }
 		} catch (Exception e) {
 			  log.debug("Error starting jetty " + e);
 		}
@@ -99,13 +119,17 @@ public class JettyServer {
 		context.setContextPath("/");
 		context.setParentLoaderPriority(true);
 		server.setHandler(context);
+		System.out.println("context created");
 		server.start();
 		return server;
 	}
 	
 	private static void registerWithMaster(URL masterURL) throws ClientProtocolException, IOException{
-		String slaveurl;
-		slaveurl="http://"+InetAddress.getLocalHost().getHostAddress()+":"+port+"/api/v1";
+		String slaveurl="";
+			
+		slaveurl="http://"+getmyUrl()+":"+port+"/api/v1";
+		
+		//slaveurl="http://"+InetAddress.getLocalHost().getHostAddress()+":"+port+"/api/v1";
 		HttpClient client = new DefaultHttpClient();
 		//String requestUrl = "http://localhost:8080/api/v1/slaves/add";
 		String requestUrl=masterURL.toString()+"/slaves/add";
@@ -115,10 +139,39 @@ public class JettyServer {
 		httpPost.setEntity(new UrlEncodedFormEntity(nvps, HTTP.UTF_8));
 		HttpResponse response = client.execute(httpPost);
 		log.debug(response);
+		System.out.println(response);
 	}
 	
-
+	static String getmyUrl() throws ClientProtocolException, IOException{
+		String url="";
+		Enumeration<NetworkInterface> interfaces;
+		
+			interfaces = NetworkInterface.getNetworkInterfaces();
+		
+		while (interfaces.hasMoreElements()){
+		    NetworkInterface current = interfaces.nextElement();
+		   // System.out.println(current);
+		    
+				if (!current.isUp() || current.isLoopback() || current.isVirtual()) continue;
+			
+		    Enumeration<InetAddress> addresses = current.getInetAddresses();
+		    while (addresses.hasMoreElements()){
+		        InetAddress current_addr = addresses.nextElement();
+		        if (current_addr instanceof Inet4Address)
+		        {  
+		        	url=current_addr.getHostAddress();
+		        	//System.out.println(current_addr.getHostAddress());
+		        	
+		        }
+		        //if (current_addr.isLoopbackAddress()) continue;
+		        //System.out.println(current_addr.getHostAddress());
+		    }
+		}
+		return url;
+	}
 }
+
+
 
 
 
