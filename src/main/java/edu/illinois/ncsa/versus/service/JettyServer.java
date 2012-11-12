@@ -4,9 +4,13 @@
 package edu.illinois.ncsa.versus.service;
 
 import java.io.IOException;
+import java.net.Inet4Address;
 import java.net.InetAddress;
+import java.net.NetworkInterface;
+import java.net.SocketException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.Properties;
 
@@ -67,7 +71,8 @@ public class JettyServer {
 				log.debug("Master="+Master);
 			}	
 			
-			String ownurl="http://"+InetAddress.getLocalHost().getHostAddress()+":"+port+"/api/v1";
+			//String ownurl="http://"+InetAddress.getLocalHost().getHostAddress()+":"+port+"/api/v1";
+			String ownurl="http://"+getmyUrl()+":"+port+"/api/v1";
 				
 			URL myURL=new URL(ownurl);
 			if(Master==null){
@@ -86,7 +91,7 @@ public class JettyServer {
 				    //System.out.println("I am a SLAVE.");
 				    
 				    log.debug("Registering with the Master");
-				  System.out.println("Registering with the Master");
+				//  System.out.println("Registering with the Master");
 			        registerWithMaster(masterURL);
 			}
 			 else
@@ -120,8 +125,11 @@ public class JettyServer {
 	}
 	
 	private static void registerWithMaster(URL masterURL) throws ClientProtocolException, IOException{
-		String slaveurl;
-		slaveurl="http://"+InetAddress.getLocalHost().getHostAddress()+":"+port+"/api/v1";
+		String slaveurl="";
+			
+		slaveurl="http://"+getmyUrl()+":"+port+"/api/v1";
+		
+		//slaveurl="http://"+InetAddress.getLocalHost().getHostAddress()+":"+port+"/api/v1";
 		HttpClient client = new DefaultHttpClient();
 		//String requestUrl = "http://localhost:8080/api/v1/slaves/add";
 		String requestUrl=masterURL.toString()+"/slaves/add";
@@ -134,8 +142,36 @@ public class JettyServer {
 		System.out.println(response);
 	}
 	
-
+	static String getmyUrl() throws ClientProtocolException, IOException{
+		String url="";
+		Enumeration<NetworkInterface> interfaces;
+		
+			interfaces = NetworkInterface.getNetworkInterfaces();
+		
+		while (interfaces.hasMoreElements()){
+		    NetworkInterface current = interfaces.nextElement();
+		   // System.out.println(current);
+		    
+				if (!current.isUp() || current.isLoopback() || current.isVirtual()) continue;
+			
+		    Enumeration<InetAddress> addresses = current.getInetAddresses();
+		    while (addresses.hasMoreElements()){
+		        InetAddress current_addr = addresses.nextElement();
+		        if (current_addr instanceof Inet4Address)
+		        {  
+		        	url=current_addr.getHostAddress();
+		        	//System.out.println(current_addr.getHostAddress());
+		        	
+		        }
+		        //if (current_addr.isLoopbackAddress()) continue;
+		        //System.out.println(current_addr.getHostAddress());
+		    }
+		}
+		return url;
+	}
 }
+
+
 
 
 
