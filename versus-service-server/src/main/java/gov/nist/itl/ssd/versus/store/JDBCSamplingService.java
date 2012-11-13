@@ -12,7 +12,6 @@
 package gov.nist.itl.ssd.versus.store;
 
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -24,7 +23,7 @@ import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
-import edu.illinois.ncsa.versus.store.JDBCComparisonProcessor;
+import edu.illinois.ncsa.versus.store.JDBCConnectionProvider;
 import gov.nist.itl.ssd.sampling.Sampling;
 import gov.nist.itl.ssd.sampling.Sampling.SamplingStatus;
 
@@ -34,24 +33,15 @@ import gov.nist.itl.ssd.sampling.Sampling.SamplingStatus;
  */
 public class JDBCSamplingService implements SamplingService {
 
-    private Connection con;
+    private JDBCConnectionProvider connectionProvider = new JDBCConnectionProvider();
 
-    public JDBCSamplingService() {
-        try {
-            Class.forName("com.mysql.jdbc.Driver");
-            con = DriverManager.getConnection("jdbc:mysql://localhost/versus",
-                    "versus", "versus");
-            con.setAutoCommit(false);
-            con.setTransactionIsolation(Connection.TRANSACTION_READ_UNCOMMITTED);
-        } catch (SQLException e) {
-            Logger.getLogger(JDBCComparisonProcessor.class.getName()).log(Level.SEVERE, null, e);
-        } catch (ClassNotFoundException e) {
-            Logger.getLogger(JDBCComparisonProcessor.class.getName()).log(Level.SEVERE, null, e);
-        }
+    private Connection getConnection() {
+        return connectionProvider.getConnection();
     }
-
+    
     @Override
     public void addSampling(Sampling sampling) {
+        Connection con = getConnection();
         PreparedStatement stmt = null;
         try {
             stmt = con.prepareStatement("INSERT INTO samplings "
@@ -104,6 +94,7 @@ public class JDBCSamplingService implements SamplingService {
 
     @Override
     public Sampling getSampling(String id) {
+        Connection con = getConnection();
         PreparedStatement dsStmt = null;
         PreparedStatement samplingStmt = null;
         try {
@@ -176,6 +167,7 @@ public class JDBCSamplingService implements SamplingService {
     @Override
     public Collection<Sampling> listAll() {
         ArrayList<Sampling> samplings = new ArrayList<Sampling>();
+        Connection con = getConnection();
         Statement samplingStmt = null;
         try {
             samplingStmt = con.createStatement();
@@ -238,6 +230,7 @@ public class JDBCSamplingService implements SamplingService {
         }
         query.append(" )");
 
+        Connection con = getConnection();
         PreparedStatement ps = null;
         try {
             ps = con.prepareStatement(query.toString());
@@ -273,6 +266,7 @@ public class JDBCSamplingService implements SamplingService {
 
     @Override
     public void setStatus(String id, SamplingStatus status) {
+        Connection con = getConnection();
         PreparedStatement ps = null;
         try {
             ps = con.prepareStatement("UPDATE samplings SET status=? WHERE id=?");
@@ -300,6 +294,7 @@ public class JDBCSamplingService implements SamplingService {
 
     @Override
     public void setError(String id, String error) {
+        Connection con = getConnection();
         PreparedStatement ps = null;
         try {
             ps = con.prepareStatement("UPDATE samplings SET error=? WHERE id=?");

@@ -16,26 +16,17 @@ import edu.illinois.ncsa.versus.core.comparison.Comparison.ComparisonStatus;
 
 public class JDBCComparisonProcessor implements ComparisonProcessor {
 
-    private Connection con;
+    private JDBCConnectionProvider connectionProvider = new JDBCConnectionProvider();
 
-    public JDBCComparisonProcessor() {
-
-        try {
-            Class.forName("com.mysql.jdbc.Driver");
-            con = DriverManager.getConnection("jdbc:mysql://localhost/versus",
-                    "versus", "versus");
-        } catch (SQLException e) {
-            Logger.getLogger(JDBCComparisonProcessor.class.getName()).log(Level.SEVERE, null, e);
-        } catch (ClassNotFoundException e) {
-            Logger.getLogger(JDBCComparisonProcessor.class.getName()).log(Level.SEVERE, null, e);
-        }
+    private Connection getConnection() {
+        return connectionProvider.getConnection();
     }
 
     @Override
     public void addComparison(Comparison comparison) {
         PreparedStatement stmt = null;
         try {
-            stmt = con.prepareStatement("INSERT INTO comparisons "
+            stmt = getConnection().prepareStatement("INSERT INTO comparisons "
                     + "(id, firstDataset, secondDataset, "
                     + "adapterId, extractorId, measureId, slave)"
                     + " VALUES (?, ?, ?, ?, ?, ?, ?)");
@@ -65,7 +56,7 @@ public class JDBCComparisonProcessor implements ComparisonProcessor {
     public Comparison getComparison(String id) {
         PreparedStatement stmt = null;
         try {
-            stmt = con.prepareStatement("SELECT * FROM comparisons WHERE id=?");
+            stmt = getConnection().prepareStatement("SELECT * FROM comparisons WHERE id=?");
             stmt.setString(1, id);
             ResultSet rs = stmt.executeQuery();
             if (!rs.next()) {
@@ -91,7 +82,7 @@ public class JDBCComparisonProcessor implements ComparisonProcessor {
         Collection<Comparison> comparisons = new ArrayList<Comparison>();
         Statement stmt = null;
         try {
-            stmt = con.createStatement();
+            stmt = getConnection().createStatement();
             ResultSet rs = stmt.executeQuery("SELECT * FROM comparisons");
             while (rs.next()) {
                 comparisons.add(getComparisonFromResultSet(rs));
@@ -132,7 +123,7 @@ public class JDBCComparisonProcessor implements ComparisonProcessor {
     public void updateValue(String id, String value) {
         PreparedStatement stmt = null;
         try {
-            stmt = con.prepareStatement("UPDATE comparisons SET value=? "
+            stmt = getConnection().prepareStatement("UPDATE comparisons SET value=? "
                     + "WHERE id=?");
             stmt.setString(1, value);
             stmt.setString(2, id);
@@ -154,7 +145,7 @@ public class JDBCComparisonProcessor implements ComparisonProcessor {
     public void setStatus(String id, ComparisonStatus status) {
         PreparedStatement stmt = null;
         try {
-            stmt = con.prepareStatement("UPDATE comparisons SET status=? "
+            stmt = getConnection().prepareStatement("UPDATE comparisons SET status=? "
                     + "WHERE id=?");
             stmt.setString(1, status.name());
             stmt.setString(2, id);
@@ -176,7 +167,7 @@ public class JDBCComparisonProcessor implements ComparisonProcessor {
     public ComparisonStatus getStatus(String id) {
         PreparedStatement stmt = null;
         try {
-            stmt = con.prepareStatement("SELECT status FROM comparisons "
+            stmt = getConnection().prepareStatement("SELECT status FROM comparisons "
                     + "WHERE id=?");
             stmt.setString(1, id);
             ResultSet rs = stmt.executeQuery();
@@ -203,7 +194,7 @@ public class JDBCComparisonProcessor implements ComparisonProcessor {
     public void setError(String id, String error) {
         PreparedStatement stmt = null;
         try {
-            stmt = con.prepareStatement("UPDATE comparisons SET error=? "
+            stmt = getConnection().prepareStatement("UPDATE comparisons SET error=? "
                     + "WHERE id=?");
             stmt.setString(1, error);
             stmt.setString(2, id);
