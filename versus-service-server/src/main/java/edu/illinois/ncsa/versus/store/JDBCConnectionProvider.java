@@ -23,8 +23,17 @@ import java.util.logging.Logger;
  */
 public class JDBCConnectionProvider {
 
+    private final boolean autoCommit;
     private Connection con;
-    
+
+    public JDBCConnectionProvider() {
+        this(true);
+    }
+
+    public JDBCConnectionProvider(boolean autoCommit) {
+        this.autoCommit = autoCommit;
+    }
+
     public Connection getConnection() {
         if (con == null) {
             con = openConnection();
@@ -50,8 +59,13 @@ public class JDBCConnectionProvider {
     private Connection openConnection() {
         try {
             Class.forName("com.mysql.jdbc.Driver");
-            return DriverManager.getConnection("jdbc:mysql://localhost/versus",
+            Connection connection = DriverManager.getConnection("jdbc:mysql://localhost/versus",
                     "versus", "versus");
+            if (!autoCommit) {
+                connection.setAutoCommit(false);
+                connection.setTransactionIsolation(Connection.TRANSACTION_READ_UNCOMMITTED);
+            }
+            return connection;
         } catch (SQLException e) {
             Logger.getLogger(JDBCConnectionProvider.class.getName()).log(Level.SEVERE, null, e);
         } catch (ClassNotFoundException e) {

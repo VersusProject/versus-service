@@ -33,7 +33,7 @@ import gov.nist.itl.ssd.sampling.Sampling.SamplingStatus;
  */
 public class JDBCSamplingService implements SamplingService {
 
-    private JDBCConnectionProvider connectionProvider = new JDBCConnectionProvider();
+    private JDBCConnectionProvider connectionProvider = new JDBCConnectionProvider(false);
 
     private Connection getConnection() {
         return connectionProvider.getConnection();
