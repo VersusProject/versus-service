@@ -71,8 +71,9 @@ public class JettyServer {
 				log.debug("Master="+Master);
 			}	
 			
-			//String ownurl="http://"+InetAddress.getLocalHost().getHostAddress()+":"+port+"/api/v1";
-			String ownurl="http://"+getmyUrl()+":"+port+"/api/v1";
+			String ownurl="http://"+InetAddress.getLocalHost().getHostAddress()+":"+port+"/api/v1";
+			log.debug(ownurl);
+			 ownurl="http://"+getmyUrl()+":"+port+"/api/v1";
 				
 			URL myURL=new URL(ownurl);
 			if(Master==null){
@@ -160,11 +161,11 @@ public class JettyServer {
 		        if (current_addr instanceof Inet4Address)
 		        {  
 		        	url=current_addr.getHostAddress();
-		        	//System.out.println(current_addr.getHostAddress());
+		        	//System.out.println("IP4:"+ current_addr.getHostAddress());
 		        	
 		        }
-		        //if (current_addr.isLoopbackAddress()) continue;
-		        //System.out.println(current_addr.getHostAddress());
+		       // if (current_addr.isLoopbackAddress()) continue;
+		      //  System.out.println(current_addr.getHostAddress());
 		    }
 		}
 		return url;
