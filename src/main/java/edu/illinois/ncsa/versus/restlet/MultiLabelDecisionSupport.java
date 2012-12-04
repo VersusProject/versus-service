@@ -10,6 +10,11 @@ import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
+import org.apache.commons.logging.LogFactory;
+//import org.eclipse.jetty.util.log.Log;
+import org.apache.commons.logging.Log;
+
+
 import com.google.inject.Guice;
 import com.google.inject.Injector;
 
@@ -38,6 +43,8 @@ public class MultiLabelDecisionSupport implements Serializable {
 	private String method                       = "Not Set";
 	private boolean computationFinished         = false;
 	private String rankedResults                = "";
+		
+	private static Log log = LogFactory.getLog(MultiLabelDecisionSupport.class);
 	
 	public enum MLDS_Status {
 		UNINITIALZED, STARTED, RUNNING, DONE, FAILED
@@ -205,14 +212,27 @@ public class MultiLabelDecisionSupport implements Serializable {
 				
 				for( int k=0; k < comparisons.get(j).size(); k++){
 				
-					Comparison c = comparisonService.getComparison( comparisons.get(j).get(k) );
+					Comparison c = comparisonService.getComparison(comparisons.get(j).get(k) );
 				
 					if( (c.getStatus() == ComparisonStatus.ABORTED) || (c.getStatus() == ComparisonStatus.FAILED) ){
 						cErrorFlag = true;
 						break;
 					}
 					else if( c.getStatus() != ComparisonStatus.DONE ){
-						return false;
+						log.debug("Befor:Status is not DONE");
+						try {
+							//Thread.sleep(5);
+					    	synchronized(c){
+					    	c.wait();
+					    	}
+						} catch (InterruptedException e) {
+							// TODO Auto-generated catch block
+							e.printStackTrace();
+						}
+						log.debug("After:Status=DONE");
+						//return true;
+						
+						//return false;
 					}
 
 				}
@@ -237,35 +257,44 @@ public class MultiLabelDecisionSupport implements Serializable {
 	//chen's method, but applying it towards multi-label data
 	public void getBestPair(){
 		
-		if( checkIfComplete() ){
+		if(!computationFinished){
+			
+			log.debug("Entered getBestPair");
+			
 			this.status = MLDS_Status.RUNNING;
 			
 			Injector injector                       = Guice.createInjector(new RepositoryModule());
 			ComparisonServiceImpl comparisonService = injector.getInstance(ComparisonServiceImpl.class);
 			
-			if(method.equals("inverseKmeans")){			
+			boolean state        = checkIfComplete();
 			
+			
+			if(method.equals("inverseKmeans")){			
+			    log.debug("Inside inverseKmeans");
 				double minMeanSum = Double.MAX_VALUE;
 				int minMeanIndex = -1;
-				
-				for( int i=0; i<mldsData.size(); i++){
+				if(state){
+					log.debug("ALL COMPARISONS DONE");
+				for( int i=0; i<mldsData.size(); i++){ //each E-M pair
 				
 					ArrayList<ArrayList<String>> comparisons = mldsData.get(i).getComparisons();
 					
-					double[] mean = new double[comparisons.size()];
+					double[] mean = new double[comparisons.size()];//means for each label
 					double meanSum = 0;
 	
-					for( int j=0; j < comparisons.size(); j++){
+					for( int j=0; j < comparisons.size(); j++){//each label
 					
 						double sum    = 0;
 						
-						for( int k=0; k<comparisons.get(j).size(); k++){
+						for( int k=0; k<comparisons.get(j).size(); k++){ //distance values for each label
 						
 							String value = ((Comparison) comparisonService.getComparison( comparisons.get(j).get(k) )).getValue();
 							sum +=Double.parseDouble( value );
 						}
-						mean[j] = sum / k;
-						meanSum += sum / k;
+						mean[j] = sum / k; // mean for label j
+						meanSum += sum / k;// Mean sum for each EM pair
+						
+						
 					}
 					mldsData.get(i).setMeans(mean);
 					mldsData.get(i).setMeanSum(meanSum);
@@ -273,14 +302,44 @@ public class MultiLabelDecisionSupport implements Serializable {
 					if(meanSum < minMeanSum){
 						minMeanSum   = meanSum;
 						minMeanIndex = i;
+						log.debug(" minMeanSum="+meanSum+" minMeanIndex="+minMeanIndex);
 					}
 				}// end i
 	
 				if( minMeanIndex != -1 ){
 					decidedMethod = mldsData.get(minMeanIndex).extractorID + " " + mldsData.get(minMeanIndex).measureID;
+					log.debug("decidedMethod="+decidedMethod);
 				}
+				
+				Collections.sort(mldsData,new Comparator<MLDSInfo>() {
+		            public int compare(MLDSInfo info1, MLDSInfo info2) {
+		                return info1.getMeanSum().compareTo(info2.getMeanSum());
+		            }
+		        });
+				
+				 //return top 5 or 25% of methods
+			       int numTopMethods = (int)(mldsData.size() * 0.30);
+			       
+			       if( numTopMethods > 5 ){
+			    	   numTopMethods = 5;
+			       }
+			       
+			       for( int i=0; i<=numTopMethods; i++){
+			    	   
+			    	   int exIn=mldsData.get(i).extractorID.lastIndexOf('.');
+			    	   String exName=mldsData.get(i).extractorID.substring(exIn+1);
+			    	   int meIn=mldsData.get(i).measureID.lastIndexOf('.');
+			    	   String meName=mldsData.get(i).measureID.substring(meIn+1);
+			    	   
+			    	  // rankedResults = rankedResults + (i+1) + ".) " + decisionSupportData.get(i).extractorID + " " + decisionSupportData.get(i).measureID + " ";
+			    	   rankedResults = rankedResults + (i+1) + ".) " + exName +(i+1)+"-" +meName+ (i+1)+":"+mldsData.get(i).getMeanSum() +" ";
+			    	   log.debug(rankedResults);
+			    	   //rankedResults = rankedResults + (i+1) + ".) " + mldsData.get(i).extractorID + " " + mldsData.get(i).measureID + " ";
+			       }
+				
 				status              = MLDS_Status.DONE;
 				computationFinished = true;
+				}
 			}
 			else if( method.equals("probabilistic") ){//chen et al's method
 								
@@ -290,12 +349,16 @@ public class MultiLabelDecisionSupport implements Serializable {
 				Iterator<MLDSInfo> eid = mldsData.iterator();
 				String extractorID_d = "";
 				String measureID_d   = "";
-				
-				
+				//if(checkIfComplete()){
+				if(state){
+					log.debug("ALL COMPARISONS DONE");
+					log.debug("mldsData.size()="+mldsData.size());
 				while( eid.hasNext() ){
 					
-					MLDSInfo dsTuple = eid.next();								
+					MLDSInfo dsTuple = eid.next();		
+					log.debug("Extractor id="+dsTuple.getExtractorID()+" Measure ID="+dsTuple.getMeasureID());
 					Double val       = new Double( computeComparisonPEValue( dsTuple.getComparisons() ) );
+					log.debug("PEVal="+val);
 					dsTuple.setPEVal(val);
 					
 					if( val.doubleValue() < smallestPE.doubleValue()){
@@ -321,11 +384,21 @@ public class MultiLabelDecisionSupport implements Serializable {
 		       }
 		       
 		       for( int i=0; i<=numTopMethods; i++){
-		    	   rankedResults = rankedResults + (i+1) + ".) " + mldsData.get(i).extractorID + " " + mldsData.get(i).measureID + " ";
+		    	   int exIn=mldsData.get(i).extractorID.lastIndexOf('.');
+		    	   String exName=mldsData.get(i).extractorID.substring(exIn+1);
+		    	   int meIn=mldsData.get(i).measureID.lastIndexOf('.');
+		    	   String meName=mldsData.get(i).measureID.substring(meIn+1);
+		    	   
+		    	  // rankedResults = rankedResults + (i+1) + ".) " + decisionSupportData.get(i).extractorID + " " + decisionSupportData.get(i).measureID + " ";
+		    	   rankedResults = rankedResults + (i+1) + ".) " + exName +(i+1)+"-" +meName+ (i+1)+":"+mldsData.get(i).getPEVal() +" ";
+		    	   log.debug(rankedResults);
+		    	   
+		    	   
+		    	   //rankedResults = rankedResults + (i+1) + ".) " + mldsData.get(i).extractorID + " " + mldsData.get(i).measureID + " ";
 		       }
 				status              = MLDS_Status.DONE;
 				computationFinished = true;
-
+				}
 			}
 		}//end if (for completion check)
 	}
@@ -340,15 +413,16 @@ public class MultiLabelDecisionSupport implements Serializable {
 
 		double max = 0;
 		double min = Double.MAX_VALUE;
-		
+		log.debug("EachPair: comparisons.size= "+comparisons.size());
 		for( int i=0; i<comparisons.size(); i++){
 			
 			ArrayList<String> kComps = comparisons.get(i);
 			double[] kVals           = new double[kComps.size()];
-			
+			//Double[] kVals      =new Double[kComps.size()];
 			for( int k=0; k<kComps.size(); k++){
 				
-				String value =  ((Comparison) comparisonService.getComparison( kComps.get(k) )).getValue();
+				String value =  ((Comparison) comparisonService.getComparison( kComps.get(k))).getValue();
+				log.debug("i="+i+" k="+k+" kComps.size="+kComps.size()+" value="+value);
 				kVals[k] = Double.parseDouble( value );
 				
 				if( kVals[k] > max){ 
@@ -359,32 +433,51 @@ public class MultiLabelDecisionSupport implements Serializable {
 				}
 			}
 			values.add(kVals);
+			//values.addAll(kVals);
 		}
 
 		//integration using the gaussian kernels over the distance support 
-		max+=2; //account for sigma in integration
-		min+=-2;
+		//max+=2; //account for sigma in integration, do not understand the justification
+		//min+=-2;
 		double perrorComplement = 0;
 		double resolution       = 0.10;
 		int range               = (int)((max-min)/resolution);
 		double integral         = 0;
+		double hopt=0.10;
+		double x1=min;
+		
 		
 		for( int x=0; x<range; x++){
 			
 			double maxPt = 0;
-			for( int i=0; i<values.size(); i++){
+			
+			double [] fnvalue=new double[values.size()]; //added
+			Arrays.fill(fnvalue, 0);
+			for( int i=0; i<values.size(); i++){ //for each label
 				
-				double[] kVals = values.get(i);
+				double[] kVals = values.get(i); //all distance values for each label
 				
 				for(int s=0; s<kVals.length; s++){
-					integral += integral + Math.exp( -1*Math.pow( (double)x -kVals[s],2) );
+					fnvalue[i]= fnvalue[i] + Math.exp( -1*Math.pow( (double)x1 -kVals[s],2)/(2.0*hopt*hopt) );
+					//integral += integral + Math.exp( -1*Math.pow( (double)x -kVals[s],2) );
 					
-					if(integral > maxPt){
-						maxPt = integral;
-					}
+					//if(integral > maxPt){
+					//	maxPt = integral;
+					//}
 				}
 			}
-			perrorComplement += maxPt;
+			double fnmin=Double.MAX_VALUE;
+			for(int i=0;i<values.size();i++){
+				fnvalue[i]=(1.0/(hopt*(values.get(i).length)*Math.sqrt(2.0*Math.PI)))*fnvalue[i];
+				if(fnmin>fnvalue[i]){
+					fnmin=fnvalue[i];
+				}
+			}
+			
+			perrorComplement += fnmin*resolution;
+			
+			x1=x1+hopt;
+			//perrorComplement += maxPt;
 		}//end x
 				
 		return 1-perrorComplement;
@@ -397,7 +490,7 @@ public class MultiLabelDecisionSupport implements Serializable {
 		private String            			 measureID;
 		private double[]          			 means;
 		private ArrayList<ArrayList<String>> comparisons;
-		private double 				 		 meanSum;
+		private Double 				 		 meanSum;
 		private Double            			 PE_Value;
 		public MLDSInfo(){}
 		
@@ -484,7 +577,7 @@ public class MultiLabelDecisionSupport implements Serializable {
 		public void setMeanSum(double meanSum) {
 			this.meanSum = meanSum;
 		}
-		public double getMeanSUm(){
+		public Double getMeanSum(){
 			return meanSum;
 		}
 		
