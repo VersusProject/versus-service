@@ -8,6 +8,9 @@ import java.util.Set;
 
 import javax.ws.rs.core.Application;
 
+import edu.illinois.ncsa.versus.restlet.MultiLabelDecisionSupportServerResource;
+import edu.illinois.ncsa.versus.restlet.MultiLabelDecisionSupportsServerResource;
+
 /**
  * Versus REST service application.
  * 
@@ -29,6 +32,7 @@ public class VersusRestApplication extends Application {
 		endpoints.add(new ServiceResource());
 		endpoints.add(new StatusResource());
 		endpoints.add(new SlavesResource());
+		endpoints.add(new MultiLabelDecisionSupportResource());
 	}
 
 	@Override
