@@ -78,7 +78,7 @@
 				<configuration>
 					<programs>
 						<program>
-							<mainClass>edu.illinois.ncsa.versus.restlet.SimpleServer</mainClass>
+							<mainClass>edu.illinois.ncsa.versus.service.JettyServer</mainClass>
 							<name>Versus Server</name>
 						</program>
 					</programs>
