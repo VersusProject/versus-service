@@ -39,7 +39,7 @@ public class MeasureResourceTest {
 
 	@Test
 	public void testSubmit() throws ClientProtocolException, IOException {
-		String requestUrl = "http://localhost:8080/versus/api/v1/measures";
+		String requestUrl = "http://localhost:8080/api/v1/measures";
 		HttpGet httpGet = new HttpGet(requestUrl);
 		// httpGet.addHeader("Accept:", "application/json");
 		ResponseHandler<String> responseHandler = new BasicResponseHandler();
