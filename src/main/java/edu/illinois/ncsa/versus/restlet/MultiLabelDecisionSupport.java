@@ -224,6 +224,9 @@ public class MultiLabelDecisionSupport implements Serializable {
 							//Thread.sleep(5);
 					    	synchronized(c){
 					    	c.wait();
+					    	if(c.getStatus()!=ComparisonStatus.DONE){
+					    		c.wait();
+					    	   }
 					    	}
 						} catch (InterruptedException e) {
 							// TODO Auto-generated catch block
