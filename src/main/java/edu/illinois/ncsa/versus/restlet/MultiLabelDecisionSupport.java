@@ -43,7 +43,9 @@ public class MultiLabelDecisionSupport implements Serializable {
 	private String method                       = "Not Set";
 	private boolean computationFinished         = false;
 	private String rankedResults                = "";
-		
+	private String values                       ="";	
+	private String maxList                      ="";
+	private String minList                      ="";
 	private static Log log = LogFactory.getLog(MultiLabelDecisionSupport.class);
 	
 	public enum MLDS_Status {
@@ -66,6 +68,15 @@ public class MultiLabelDecisionSupport implements Serializable {
 		return computationFinished;
 	}
 	
+	public String getValues(){ // method added by Smruti to send all distance values to Client
+		return values;
+	}
+	public String getmaxList(){
+		return maxList;
+	}
+	public String getminList(){
+		return minList;
+	}
 	public String getMethod(){
 		return method;
 	}
@@ -259,7 +270,7 @@ public class MultiLabelDecisionSupport implements Serializable {
 	//method2
 	//chen's method, but applying it towards multi-label data
 	public void getBestPair(){
-		
+				
 		if(!computationFinished){
 			
 			log.debug("Entered getBestPair");
@@ -338,8 +349,129 @@ public class MultiLabelDecisionSupport implements Serializable {
 			    	   rankedResults = rankedResults + (i+1) + ".) " + exName +(i+1)+"-" +meName+ (i+1)+":"+mldsData.get(i).getMeanSum() +" ";
 			    	   log.debug(rankedResults);
 			    	   //rankedResults = rankedResults + (i+1) + ".) " + mldsData.get(i).extractorID + " " + mldsData.get(i).measureID + " ";
-			       }
-				
+			    	   
+			    	   //Code to send distance values to client
+			    	   //write  code to send arrays of number to clients----------------------------------added by Smruti
+				    	  
+			    	   
+			    	 int labelSize=mldsData.get(i).getComparisons().size();
+			    	   
+			    	   
+			    	  // double[] Vals;
+			    	  // Double[] Vals;
+			    	  
+			    	   ArrayList<ArrayList<Double>> SVals= new ArrayList<ArrayList<Double>>();
+			    	   int index;
+			    	   //double[] max=new double[labelSize];
+		    		   //double[] min =new double[labelSize];
+			    	   double max=0;
+			    	   double min=100000000;
+			    	   int numOfbin=10;
+			    	   for(int p=0;p<labelSize;p++){
+			    		   ArrayList<Double> Vals =new ArrayList<Double>();
+			    		  //  Vals    = new Double[mldsData.get(i).getComparisons().get(p).size()];
+			    		   	
+			    		   	
+			   		         
+			    		   	 index=0;
+			    		   	
+			    		   	Iterator<String> s_itr                  = mldsData.get(i).getComparisons().get(p).iterator();
+			    		   	
+			    		   	try{
+			    		   		while(s_itr.hasNext()){
+			    		   			Comparison c_S=comparisonService.getComparison( s_itr.next());
+			   			//String value1 =  ((Comparison) comparisonService.getComparison( s_itr.next() )).getValue();
+			   			String value1="";
+			   			/*if(c_S.getStatus()!=ComparisonStatus.DONE){
+			   				try{
+			   					synchronized(c_S){
+			   						c_S.wait();
+			   						value1=c_S.getValue();
+			   					}
+			   						   					
+			   				}catch (InterruptedException e) {
+								// TODO Auto-generated catch block
+								e.printStackTrace();
+							}
+			   			}*/
+			   			value1=c_S.getValue();
+			   			//Vals[index] = Double.parseDouble( value1 );
+			   			Vals.add(index,Double.parseDouble( value1));
+			   			log.debug("p="+p+" Vals["+index+"]"+Vals.get(index));
+			   			if(Vals.get(index)>max){
+			   				max=Vals.get(index);
+			   			}
+			   			if(Vals.get(index)<min){
+			   				min=Vals.get(index);
+			   			}
+			   			/*if( Vals[index] > max){ 
+			   				max = Vals[index];
+			   			}
+			   			if( Vals[index] < min){ 
+			   				min= Vals[index];
+			   			}*/
+			   			index++;
+			   		   }
+			    	  log.debug("i="+i+" p="+p+"Vals.size="+Vals.size());	   		 
+			   		  SVals.add(p,Vals);
+			   		}catch(Exception e){
+			   			e.printStackTrace(System.out);
+			   		}
+			   		 }
+			    	   //double binSize=(max-min)/(double)numOfbin;
+				   		//log.debug("Max="+max+" Min="+min+" binSize="+binSize);
+				   		double binSize=0.1;
+				   		numOfbin=(int)((max-min)/binSize);
+				   	    log.debug("Max="+max+" Min="+min+" binSize="+binSize+" numOfbin="+numOfbin);
+				   	   
+				   		double[] dvSimilar=new double[numOfbin];
+				   		
+				   		for(int p=0;p<labelSize;p++){	
+				   			//values=values+ ('a'+p);
+				   			if(p==0)
+				   			 {  
+				   				
+				   				values=values+"("+i+"a)";}
+				   			else if(p==1)
+				   				values=values+"("+i+"b)";
+				   			else if(p==2)
+				   				values=values+"("+i+"c)";
+				   			else
+				   				values=values+"("+i+"d)";
+				   			
+				   			Arrays.fill(dvSimilar,0);
+				   			log.debug("p="+p+" SVals.get(p)="+SVals.get(p).size());
+				   			for(int s=0;s<SVals.get(p).size();s++){
+				   			
+				   				for(int j=0;j<numOfbin;j++){
+				   					if(SVals.get(p).get(s)>=min+j*binSize  && SVals.get(p).get(s)<(min+(j+1.0)*binSize))
+				   					{   
+				   						dvSimilar[j]++;
+				   						break;
+				   					}
+				   					if(SVals.get(p).get(s)==(min+numOfbin*binSize))
+				   						dvSimilar[numOfbin-1]++;
+				   				}
+			   					  			
+				   			}
+				   			for(int j=0;j<dvSimilar.length;j++)
+				   		    {
+				   		    	log.debug("i="+i+" Before :j="+j+" dvSimilar[j]="+dvSimilar[j]);
+				   		    	dvSimilar[j]=dvSimilar[j]/(binSize*SVals.get(p).size());
+				   		    	//dist=dist+ dvSimilar[s];
+				   		    	//dvSimilar[s]=dist;
+				   		    	log.debug("i="+i+" After: s="+j+" dvSimilar[s]="+dvSimilar[j]);
+				   		    	values=values+","+Double.toString(dvSimilar[j]);
+				   		    } 	
+				    	   
+				   		}// label for loop ends
+				   		maxList=maxList+"("+(i+1)+")"+max;
+				   		minList=minList+"("+(i+1)+")"+min;
+				   		values=values+"("+(i+1)+")";
+				    	   //log.debug(values);
+			    	  // End of code to send distance values to client 
+			       } // top number of methods
+				log.debug(values);
 				status              = MLDS_Status.DONE;
 				computationFinished = true;
 				}
