@@ -12,7 +12,7 @@
     <packaging>pom</packaging>
     <name>Versus Service</name>
     <properties>
-        <restletVersion>2.1.0</restletVersion>
+        <restletVersion>2.1.1</restletVersion>
         <restletGroupId>org.restlet.jse</restletGroupId>
         <jetty.version>7.6.5.v20120716</jetty.version>
     </properties>
