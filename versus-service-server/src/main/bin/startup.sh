@@ -1,0 +1,1 @@
+java -Djava.awt.headless=true -classpath ../lib/'*':../'*':. edu.illinois.ncsa.versus.restlet.SimpleServer "$@"

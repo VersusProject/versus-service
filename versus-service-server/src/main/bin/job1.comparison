@@ -1,0 +1,6 @@
+endpoint=http://localhost:8182/versus/api/comparisons
+dataset1=http://isda.ncsa.illinois.edu/img/ISDA-logo.png
+dataset2=http://isda.ncsa.illinois.edu/img/uiuc-logo-bold50_2.gif
+adapter=edu.illinois.ncsa.versus.adapter.impl.ImageObjectAdapter
+extractor=edu.illinois.ncsa.versus.extract.impl.RGBHistogramExtractor
+measure=edu.illinois.ncsa.versus.measure.impl.HistogramDistanceMeasure

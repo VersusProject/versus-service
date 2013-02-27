@@ -1,0 +1,53 @@
+test/data/metric_recommendation_sys/ellipse/ellipse000.tif
+test/data/metric_recommendation_sys/ellipse/ellipse50-20.tif
+test/data/metric_recommendation_sys/ellipse/ellipse50-25.tif
+test/data/metric_recommendation_sys/ellipse/ellipse50-30.tif
+test/data/metric_recommendation_sys/ellipse/ellipse50-35.tif
+test/data/metric_recommendation_sys/ellipse/ellipse50-40.tif
+test/data/metric_recommendation_sys/ellipse/ellipse50-45.tif
+test/data/metric_recommendation_sys/ellipse/ellipse50-50.tif
+test/data/metric_recommendation_sys/ellipse/ellipse50-55.tif
+test/data/metric_recommendation_sys/ellipse/ellipse50-60.tif
+test/data/metric_recommendation_sys/ellipse/ellipse50-65.tif
+test/data/metric_recommendation_sys/ellipse/ellipse50-70.tif
+test/data/metric_recommendation_sys/ellipse/ellipse50-75.tif
+test/data/metric_recommendation_sys/ellipse/ellipse50-80.tif
+test/data/metric_recommendation_sys/ellipse/ellipse50-85.tif
+test/data/metric_recommendation_sys/ellipse/ellipse50-90.tif
+test/data/metric_recommendation_sys/ellipse/ellipse50-95.tif
+test/data/metric_recommendation_sys/fourColorBox/Blur/fourColorBox.tif
+test/data/metric_recommendation_sys/fourColorBox/Blur/fourColorBoxBlur-kernel11.tif
+test/data/metric_recommendation_sys/fourColorBox/Blur/fourColorBoxBlur-kernel13.tif
+test/data/metric_recommendation_sys/fourColorBox/Blur/fourColorBoxBlur-kernel15.tif
+test/data/metric_recommendation_sys/fourColorBox/Blur/fourColorBoxBlur-kernel17.tif
+test/data/metric_recommendation_sys/fourColorBox/Blur/fourColorBoxBlur-kernel19.tif
+test/data/metric_recommendation_sys/fourColorBox/Blur/fourColorBoxBlur-kernel21.tif
+test/data/metric_recommendation_sys/fourColorBox/Blur/fourColorBoxBlur-kernel23.tif
+test/data/metric_recommendation_sys/fourColorBox/Blur/fourColorBoxBlur-kernel25.tif
+test/data/metric_recommendation_sys/fourColorBox/Blur/fourColorBoxBlur-kernel27.tif
+test/data/metric_recommendation_sys/fourColorBox/Blur/fourColorBoxBlur-kernel29.tif
+test/data/metric_recommendation_sys/fourColorBox/Blur/fourColorBoxBlur-kernel3.tif
+test/data/metric_recommendation_sys/fourColorBox/Blur/fourColorBoxBlur-kernel5.tif
+test/data/metric_recommendation_sys/fourColorBox/Blur/fourColorBoxBlur-kernel7.tif
+test/data/metric_recommendation_sys/fourColorBox/Blur/fourColorBoxBlur-kernel9.tif
+test/data/metric_recommendation_sys/Translation Simulation/image2_001.tif
+test/data/metric_recommendation_sys/Translation Simulation/image2_002.tif
+test/data/metric_recommendation_sys/Translation Simulation/image2_003.tif
+test/data/metric_recommendation_sys/Translation Simulation/image2_004.tif
+test/data/metric_recommendation_sys/Translation Simulation/image2_005.tif
+test/data/metric_recommendation_sys/Translation Simulation/image2_006.tif
+test/data/metric_recommendation_sys/Translation Simulation/image2_007.tif
+test/data/metric_recommendation_sys/Translation Simulation/image2_008.tif
+test/data/metric_recommendation_sys/Translation Simulation/image2_009.tif
+test/data/metric_recommendation_sys/Translation Simulation/image2_010.tif
+test/data/metric_recommendation_sys/Translation Simulation/image2_011.tif
+test/data/metric_recommendation_sys/Translation Simulation/image2_012.tif
+test/data/metric_recommendation_sys/Translation Simulation/image2_013.tif
+test/data/metric_recommendation_sys/Translation Simulation/image2_014.tif
+test/data/metric_recommendation_sys/Translation Simulation/image2_015.tif
+test/data/metric_recommendation_sys/Translation Simulation/image2_016.tif
+test/data/metric_recommendation_sys/Translation Simulation/image2_017.tif
+test/data/metric_recommendation_sys/Translation Simulation/image2_018.tif
+test/data/metric_recommendation_sys/Translation Simulation/image2_019.tif
+test/data/metric_recommendation_sys/Translation Simulation/image2_020.tif
+test/data/metric_recommendation_sys/Translation Simulation/image2_021.tif
