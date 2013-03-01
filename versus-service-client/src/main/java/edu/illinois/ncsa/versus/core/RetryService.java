@@ -59,14 +59,14 @@ public class RetryService<T> {
                 } catch (ExecutionException ex) {
                     throw new RuntimeException(ex);
                 } catch (CancellationException e) {
-                    Logger.getLogger(RetryService.class.getName()).log(
-                            Level.INFO, "Computation canceled.", e);
+//                    Logger.getLogger(RetryService.class.getName()).log(
+//                            Level.INFO, "Computation canceled.", e);
                 } catch (InterruptedException e) {
-                    Logger.getLogger(RetryService.class.getName()).log(
-                            Level.INFO, "Computation interrupted.", e);
+//                    Logger.getLogger(RetryService.class.getName()).log(
+//                            Level.INFO, "Computation interrupted.", e);
                 } catch (TimeoutException e) {
-                    Logger.getLogger(RetryService.class.getName()).log(
-                            Level.INFO, "Computation timeout.", e);
+//                    Logger.getLogger(RetryService.class.getName()).log(
+//                            Level.INFO, "Computation timeout.", e);
                 } finally {
                     future.cancel(true);
                 }

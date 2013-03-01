@@ -53,9 +53,7 @@ import edu.illinois.ncsa.versus.restlet.ServerApplication;
 public class ComparisonClientTest {
 
     private static Component component;
-
     private static ComparisonClient client;
-
     private static String host;
 
     public ComparisonClientTest() {
@@ -72,6 +70,9 @@ public class ComparisonClientTest {
         component.getDefaultHost().attach("/versus",
                 new ServerApplication(port, "/versus"));
         component.start();
+
+        //Force start
+        client.getComparisons();
     }
 
     @AfterClass
@@ -80,11 +81,11 @@ public class ComparisonClientTest {
     }
 
     @Before
-    public void setUp() {
+    public void setUp() throws Exception {
     }
 
     @After
-    public void tearDown() {
+    public void tearDown() throws Exception {
     }
 
     /**
@@ -168,7 +169,6 @@ public class ComparisonClientTest {
     private HashSet<String> getComparisonsFromRepresentation(XStream xstream, Representation representation) throws IOException {
         xstream.alias("comparisons", Set.class);
         xstream.registerConverter(new StringCollectionConverter() {
-
             @Override
             protected String getNodeName() {
                 return "comparison";
@@ -205,7 +205,7 @@ public class ComparisonClientTest {
                 DummyMeasure.class.getName());
         String id = client.submit(comparison);
         assertNotNull(id);
-        
+
         Comparison result = client.getComparison(id);
         assertEquals(id, result.getId());
         assertEquals(comparison.getAdapterId(), result.getAdapterId());
@@ -218,11 +218,11 @@ public class ComparisonClientTest {
     @Test
     public void testSubmitFiles() throws IOException {
         String submit = client.submit(DummyAdapter.class.getName(),
-                                DummyExtractor.class.getName(), 
-                                DummyMeasure.class.getName(), 
-                                new File("data/test_1.jpg"), 
-                                new File("data/test_2.jpg"));
-        
+                DummyExtractor.class.getName(),
+                DummyMeasure.class.getName(),
+                new File("data/test_1.jpg"),
+                new File("data/test_2.jpg"));
+
     }
 
     /**

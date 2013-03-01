@@ -18,13 +18,14 @@ import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.message.BasicNameValuePair;
 import org.apache.http.protocol.HTTP;
-import org.apache.mina.util.AvailablePortFinder;
 import org.eclipse.jetty.server.Server;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import edu.illinois.ncsa.versus.service.JettyServer;
+
+//import edu.illinois.ncsa.versus.ds.web.JettyServer;
 
 /**
  * Test compirison resource.
@@ -36,19 +37,17 @@ public class ComparisonResourceTest {
 
 	private static Log log = LogFactory.getLog(ComparisonResourceTest.class);
 	private static Server server;
-    private static int port;
 
 	@BeforeClass
 	public static void before() throws Exception {
-        port = AvailablePortFinder.getNextAvailable(8080);
-		server = JettyServer.start(port);
+		server = JettyServer.start(8080);
 		log.info("Jetty started");
 	}
 
 	@Test
 	public void testSubmit() throws ClientProtocolException, IOException {
 		HttpClient client = new DefaultHttpClient();
-		String requestUrl = "http://localhost:" + port + "/versus/api/v1/comparisons";
+		String requestUrl = "http://localhost:8080/api/v1/comparisons";
 		HttpPost httpPost = new HttpPost(requestUrl);
 		List<NameValuePair> nvps = new ArrayList<NameValuePair>();
 		nvps.add(new BasicNameValuePair("dataset1",
