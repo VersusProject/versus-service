@@ -13,6 +13,7 @@ import org.apache.http.client.ResponseHandler;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.BasicResponseHandler;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.mina.util.AvailablePortFinder;
 import org.eclipse.jetty.server.Server;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
@@ -30,16 +31,18 @@ public class MeasureResourceTest {
 
 	private static Log log = LogFactory.getLog(MeasureResourceTest.class);
 	private static Server server;
+    private static int port;
 
 	@BeforeClass
 	public static void before() throws Exception {
-		server = JettyServer.start(8080);
+        port = AvailablePortFinder.getNextAvailable(8080);
+		server = JettyServer.start(port);
 		log.info("Jetty started");
 	}
 
 	@Test
 	public void testSubmit() throws ClientProtocolException, IOException {
-		String requestUrl = "http://localhost:8080/api/v1/measures";
+		String requestUrl = "http://localhost:" + port + "/versus/api/v1/measures";
 		HttpGet httpGet = new HttpGet(requestUrl);
 		// httpGet.addHeader("Accept:", "application/json");
 		ResponseHandler<String> responseHandler = new BasicResponseHandler();
