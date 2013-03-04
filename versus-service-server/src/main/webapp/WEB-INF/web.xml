@@ -7,7 +7,7 @@
 
 	<context-param>
 		<param-name>resteasy.servlet.mapping.prefix</param-name>
-		<param-value>/api/v1</param-value>
+		<param-value>/versus/api/v1</param-value>
 	</context-param>
 	
 	<listener>
@@ -35,7 +35,7 @@
 
 	<servlet-mapping>
 		<servlet-name>Resteasy</servlet-name>
-		<url-pattern>/api/v1/*</url-pattern>
+		<url-pattern>/versus/api/v1/*</url-pattern>
 	</servlet-mapping>
 
 </web-app>

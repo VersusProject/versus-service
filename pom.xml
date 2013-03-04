@@ -14,7 +14,7 @@
     
     <repositories>
         <repository>
-            <id>versus-3d.in-project</id>
+            <id>versus-service.in-project</id>
             <name>In Project Repo</name>
             <url>file://${project.basedir}/../libs</url>
         </repository>
