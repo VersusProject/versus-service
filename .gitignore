@@ -1,2 +1,5 @@
 /versus-service-client/target/
 /versus-service-server/target/
+.settings
+.classpath
+.project
