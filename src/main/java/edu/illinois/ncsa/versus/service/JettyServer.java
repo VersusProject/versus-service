@@ -72,6 +72,7 @@ public class JettyServer {
 			}	
 			
 			String ownurl="http://"+InetAddress.getLocalHost().getHostAddress()+":"+port+"/api/v1";
+			//String ownurl="http://"+InetAddress.getLocalHost()+":"+port+"/api/v1";
 			log.debug(ownurl);
 			 ownurl="http://"+getmyUrl()+":"+port+"/api/v1";
 				
