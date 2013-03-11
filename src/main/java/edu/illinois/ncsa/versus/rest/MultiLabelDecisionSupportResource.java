@@ -178,6 +178,9 @@ public class MultiLabelDecisionSupportResource {
 		json.put("id", mlds.getId());
 		json.put("status", mlds.getStatus());
 		json.put("rankedResults", mlds.getBestResultsList());
+		json.put("distanceValues", mlds.getValues());
+		json.put("maxList", mlds.getmaxList());
+		json.put("minList", mlds.getminList());
 		return json;
 		
 	}
