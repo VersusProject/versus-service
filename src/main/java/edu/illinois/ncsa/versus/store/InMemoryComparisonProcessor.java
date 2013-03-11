@@ -35,6 +35,7 @@ public class InMemoryComparisonProcessor implements ComparisonProcessor {
 	@Override
 	public void updateValue(String id, String value) {
 		Comparison comparison = comparisons.get(id);
+		
 		if (comparison != null) {
 			comparison.setValue(value);
 		}
