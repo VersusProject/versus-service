@@ -1,11 +1,8 @@
 package edu.illinois.ncsa.versus.rest;
 
-import java.io.IOException;
+
 import java.util.Collection;
 import java.util.List;
-import java.util.UUID;
-import java.util.logging.Level;
-
 import javax.servlet.ServletContext;
 import javax.ws.rs.Consumes;
 import javax.ws.rs.FormParam;
@@ -86,6 +83,7 @@ public class SlavesResource {
 			.getAttribute(SlavesList.class.getName());
 
 	return SlavesList.getSlaves();
+	//return slaveList.getSlaves();
 }
 	
 
