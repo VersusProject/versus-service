@@ -45,7 +45,11 @@ public class ComparisonServiceImpl implements ComparisonService {
 
 	@Override
 	public void updateValue(String id, double value) {
-		transactionLog.updateValue(id, String.valueOf(value));
+		//transactionLog.updateValue(id, String.valueOf(value));
+		//synchronized(transactionLog.getComparison(id)){// added to solve synchronization problem
+			transactionLog.updateValue(id, String.valueOf(value));
+		//	transactionLog.getComparison(id).notify();
+		//}
 	}
 
 	@Override
@@ -65,8 +69,9 @@ public class ComparisonServiceImpl implements ComparisonService {
 	}
 
 	public void setStatus(String id, ComparisonStatus status) {
-		transactionLog.setStatus(id, status);
+		//transactionLog.setStatus(id, status);
 		synchronized(transactionLog.getComparison(id)){// added to solve synchronization problem
+			transactionLog.setStatus(id, status);
 			transactionLog.getComparison(id).notify();
 		}
 	}
