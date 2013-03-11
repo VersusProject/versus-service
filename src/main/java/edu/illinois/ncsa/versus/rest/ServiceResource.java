@@ -25,6 +25,7 @@ public class ServiceResource {
 				+ "<li><a href='v1/slaves'>Slaves</a></li>"
 				+ "<li><a href='v1/distributions'>Distributions</a></li>"
 				+ "<li><a href='v1/decisionSupport'>DecisionSupport</a></li>"
+				+"<li><a href='v1/multiLabelDecisionSupport'>MultiLabelDecisionSupport</a></li>"
 				+ "</ul>");
 	}
 }
