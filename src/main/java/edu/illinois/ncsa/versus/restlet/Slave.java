@@ -33,6 +33,6 @@ public class Slave {
 	}
 	
 	public void setStatus(boolean status){
-	      this.statusBusy=status;	
+	      statusBusy=status;	
 	}
 }
