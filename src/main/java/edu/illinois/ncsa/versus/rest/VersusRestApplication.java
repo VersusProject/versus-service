@@ -22,6 +22,7 @@ public class VersusRestApplication extends Application {
 	private final Set<Object> endpoints = new HashSet<Object>();
 
 	public VersusRestApplication() {
+		endpoints.add(new IndexResource1());
 		endpoints.add(new AdapterResource());
 		endpoints.add(new ComparisonResource());
 		endpoints.add(new DecisionSupportResource());
