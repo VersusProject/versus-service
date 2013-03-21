@@ -18,6 +18,7 @@ public class ServiceResource {
 	@GET
 	public String listServices() {
 		return new String("<h3>Versus</h3>"
+				+"<ul><li><a href='v1/index'>Index</a></li>"
 				+ "<ul><li><a href='v1/adapters'>Adapters</a></li>"
 				+ "<li><a href='v1/extractors'>Extractors</a></li>"
 				+ "<li><a href='v1/measures'>Measures</a></li>"
