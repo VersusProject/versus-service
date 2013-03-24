@@ -23,12 +23,15 @@ public class RepositoryModule extends AbstractModule {
 			bind(ComparisonService.class).to(ComparisonServiceImpl.class).in(
 					Singleton.class);
 
+			bind(IndexService.class).to(IndexServiceImpl.class).in(Singleton.class);
 			Properties properties = PropertiesUtil.load();
-			// comparison results
+			
+			// comparison results & Index
 			String repository = properties.getProperty("repository", "mem");
 			if ("mem".equals(repository)) {
 				bind(ComparisonProcessor.class).to(
 						InMemoryComparisonProcessor.class).in(Singleton.class);
+				bind(IndexProcessor.class).to(InMemoryIndex.class).in(Singleton.class);
 			} else if ("mysql".equals(repository)) {
 				bind(ComparisonProcessor.class).to(
 						JDBCComparisonProcessor.class).in(Singleton.class);
