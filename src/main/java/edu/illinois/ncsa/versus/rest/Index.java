@@ -20,30 +20,30 @@ public class Index implements Serializable {
 	private String measureId;
 	private String indexerId;
 	
-	private Adapter adapter;
+	/*private Adapter adapter;
 	private Extractor extractor;
 	private Measure measure;
-	private Indexer indexer;
+	private Indexer indexer;*/
 	
-	private HashMap<String,Descriptor> indexHash;
+	//private HashMap<String,Descriptor> indexHash;
 	
 	public Index(){
-	indexHash=new HashMap<String,Descriptor>();
+	//indexHash=new HashMap<String,Descriptor>();
 	}
 	
-	public HashMap<String,Descriptor> getindexHash(){
+	/*public HashMap<String,Descriptor> getindexHash(){
 		return indexHash;
 		
-	}
+	}*/
 	
-	public void addToIndex(String id,Descriptor d){
+	/*public void addToIndex(String id,Descriptor d){
 		indexHash.put(id, d);
 		
-	}
+	}*/
 	
-	public Descriptor getDescriptor(String id){
+	/*public Descriptor getDescriptor(String id){
 		return indexHash.get(id);
-	}
+	}*/
 	
 	public String getId(){
 		return id;
@@ -53,22 +53,28 @@ public class Index implements Serializable {
 	public String getAdapterId(){
 		return adapterId;
 	}
-	
-	public Adapter getAdapter(){
-		return adapter;
+	public String getMeasureId(){
+		return measureId;
 	}
-	
 	public String getExtractorId(){
 		return extractorId;
 	}
+	
+	public String getIndexerId(){
+		return indexerId;
+	}
+	
+	/*public Adapter getAdapter(){
+		return adapter;
+	}
+	
+	
 	
 	public Extractor getExtractor(){
 		return extractor;
 	}
 	
-	public String getMeasureId(){
-		return measureId;
-	}
+	
 	
 	public Measure getMeasure(){
 		return measure;
@@ -76,11 +82,9 @@ public class Index implements Serializable {
 	
 	public Indexer getIndexer(){
 		return indexer;
-	}
+	}*/
 	
-	public String getIndexerId(){
-		return indexerId;
-	}
+	
 	
 	public void setId(String id){
 		this.id=id;
@@ -90,8 +94,21 @@ public class Index implements Serializable {
     public void setAdapterId(String adapterID){
 		this.adapterId=adapterID;
 	}
+ public void setExtractorId(String extractorID){
+		
+		this.extractorId=extractorID;
+		
+	}
+ public void setMeasureId(String measureID){
+		this.measureId=measureID;
+		
+}
+ public void setIndexerId(String indexerID){
+		this.indexerId=indexerID;
+}
+	
     
-    public void setAdapter(String adapterID){
+   /* public void setAdapter(String adapterID){
     	
     	try {
 			this.adapter = (Adapter) Class.forName(adapterID).newInstance();
@@ -108,11 +125,7 @@ public class Index implements Serializable {
     	
     }
 	
-   public void setExtractorId(String extractorID){
-		
-		this.extractorId=extractorID;
-		
-	}
+  
    
    public void setExtractor(String extractorID){
 	   try {
@@ -130,10 +143,6 @@ public class Index implements Serializable {
 	   
    }
 	
-	public void setMeasureId(String measureID){
-		this.measureId=measureID;
-		
-   }
 	
 	public void setMeasure(String measureID){
 		
@@ -152,9 +161,7 @@ public class Index implements Serializable {
 		
 	}
 	
-public void setIndexerId(String indexerID){
-		this.indexerId=indexerID;
-}
+
 
 public void setIndexer(String indexerID){
 	try {
@@ -171,5 +178,8 @@ public void setIndexer(String indexerID){
 	}
 	
 }
+public void setIndexer(Indexer indexer){
+	this.indexer=indexer;
+}*/
 	
 }
