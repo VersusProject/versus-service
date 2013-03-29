@@ -17,7 +17,6 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 
 import edu.illinois.ncsa.clustering.ClusterTreeExpanded;
-import edu.illinois.ncsa.versus.census.WordspottingFeature;
 import edu.illinois.ncsa.versus.descriptor.Descriptor;
 import edu.illinois.ncsa.versus.descriptor.impl.DoubleArrayFeature;
 import edu.illinois.ncsa.versus.measure.Measure;
