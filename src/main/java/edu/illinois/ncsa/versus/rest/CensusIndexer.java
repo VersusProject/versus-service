@@ -13,6 +13,7 @@ import kgm.utility.Pair;
 //import main.java.edu.illinois.ncsa.versus.census.WordspottingFeature;
 
 import edu.illinois.ncsa.clustering.ClusterTreeExpanded;
+import edu.illinois.ncsa.versus.census.WordspottingFeature;
 import edu.illinois.ncsa.versus.descriptor.Descriptor;
 import edu.illinois.ncsa.versus.descriptor.impl.DoubleArrayFeature;
 import edu.illinois.ncsa.versus.measure.Measure;
@@ -30,7 +31,7 @@ public class CensusIndexer implements Serializable,Indexer {
 	
 	private static Log log =  LogFactory.getLog(CensusIndexer.class);
 	
-
+     private String id;
 	private final ClusterTreeExpanded cluster;
 	private final List<Descriptor> descriptors;
 	private final List<String> identifiers;
@@ -133,7 +134,6 @@ public class CensusIndexer implements Serializable,Indexer {
 
 	@Override
 	public List<String> getIdentifiers() {
-		// TODO Auto-generated method stub
 		return identifiers;
 	}
 
@@ -180,6 +180,25 @@ public class CensusIndexer implements Serializable,Indexer {
 		    }
 		 log.debug("Returning results to IndexResource");
 		 return searchResults;
+	}
+
+	
+
+	@Override
+	public List<Descriptor> getDescriptors() {
+		
+		return descriptors;
+	}
+
+	@Override
+	public void setId(String id) {
+		this.id=id;
+		
+	}
+
+	@Override
+	public String getId() {
+		return id;
 	}
 
 }
