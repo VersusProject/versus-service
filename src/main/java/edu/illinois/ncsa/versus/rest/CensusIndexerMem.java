@@ -75,7 +75,7 @@ public class CensusIndexerMem implements Serializable, Indexer {
 		this.id = id;
 		System.out.println("Setting id for Census Indexer");
 		File indexerIdfile = new File(indexerfolder + "/" + id + ".txt");
-		FileInputStream fis;
+		FileInputStream fis = null;
 		if (indexerIdfile.exists()) {
 			try {
 				fis = new FileInputStream(indexerIdfile);
@@ -91,13 +91,22 @@ public class CensusIndexerMem implements Serializable, Indexer {
 				for (String i : idss) {
 					this.ids.add(i);
 				}
-				fis.close();
+
+				// fis.close();
+
 			} catch (ClassNotFoundException e) {
 
 				e.printStackTrace();
 			} catch (IOException e) {
 				System.out.println("I am inside iOException");
 				e.printStackTrace();
+			} finally {
+				try {
+					if (fis != null)
+						fis.close();
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
 			}
 
 		}
