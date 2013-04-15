@@ -28,45 +28,48 @@ import org.codehaus.jackson.type.TypeReference;
 
 public class IndexTestClient {
 
-	private static Log log = LogFactory.getLog(SimpleComparisonTestClient.class);
-	
-	public static void main(String args[]){
-	
-	HttpClient client = new DefaultHttpClient();
-	String id="85d8fd98-18fe-4352-9179-b2f1f3df73a6";
-	//String requestUrl = "http://localhost:8080/api/v1/index/"+id+"/add";
-	String requestUrl = "http://localhost:8080/api/v1/index/"+id+"/query";
-	HttpPost httpPost = new HttpPost(requestUrl);
-	List<NameValuePair> nvps = new ArrayList<NameValuePair>();
-	nvps.add(new BasicNameValuePair("infile","http://www.ncsa.illinois.edu/includes/images/acb.jpg"));
-	try {
-		httpPost.setEntity(new UrlEncodedFormEntity(nvps, HTTP.UTF_8));
-	} catch (UnsupportedEncodingException e) {
-		// TODO Auto-generated catch block
-		e.printStackTrace();
-	}
-	HttpResponse response=null;
-	try {
-		response = client.execute(httpPost);
-		BufferedReader br = new BufferedReader(
-                new InputStreamReader((response.getEntity().getContent())));
+	private static Log log = LogFactory.getLog(IndexTestClient.class);
 
-                String output,output1=null;
-               System.out.println("Response from the Server ....POST: \n");
-        
-               while ((output = br.readLine()) != null) {
-        	    output1=output;
-	            log.debug(output);
-               }
-       
-		
-	} catch (ClientProtocolException e) {
-		// TODO Auto-generated catch block
-		e.printStackTrace();
-	} catch (IOException e) {
-		// TODO Auto-generated catch block
-		e.printStackTrace();
+	public static void main(String args[]) {
+
+		HttpClient client = new DefaultHttpClient();
+		String id = "45c14c5c-59ad-4ad3-8404-cc6429a97da7";
+		// String requestUrl = "http://localhost:8080/api/v1/index/"+id+"/add";
+		String requestUrl = "http://localhost:8080/api/v1/index/" + id
+				+ "/query";
+		HttpPost httpPost = new HttpPost(requestUrl);
+		List<NameValuePair> nvps = new ArrayList<NameValuePair>();
+		// nvps.add(new
+		// BasicNameValuePair("infile","http://www.ncsa.illinois.edu/includes/images/about.jpg"));
+		nvps.add(new BasicNameValuePair("infile",
+				"file:///C:/Users/smruti/NCSAResearch/workspace-versus/18/0070.png"));
+		try {
+			httpPost.setEntity(new UrlEncodedFormEntity(nvps, HTTP.UTF_8));
+		} catch (UnsupportedEncodingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		HttpResponse response = null;
+		try {
+			response = client.execute(httpPost);
+			BufferedReader br = new BufferedReader(new InputStreamReader(
+					(response.getEntity().getContent())));
+
+			String output, output1 = null;
+			System.out.println("Response from the Server ....POST: \n");
+
+			while ((output = br.readLine()) != null) {
+				output1 = output;
+				log.debug(output);
+			}
+
+		} catch (ClientProtocolException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		// log.debug(response);
 	}
-	//log.debug(response);
-	}
-	}
+}
