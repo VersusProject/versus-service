@@ -6,7 +6,11 @@ import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 
@@ -34,6 +38,7 @@ import edu.illinois.ncsa.versus.measure.Measure;
 import edu.illinois.ncsa.versus.registry.CompareRegistry;
 import edu.illinois.ncsa.versus.rest.DecisionSupportResource.DSForm;
 import edu.illinois.ncsa.versus.restlet.DecisionSupport;
+import edu.illinois.ncsa.versus.restlet.DecisionSupport.DSInfo;
 import edu.illinois.ncsa.versus.search.Indexer;
 import edu.illinois.ncsa.versus.search.SearchResult;
 import edu.illinois.ncsa.versus.store.DecisionSupportServiceImpl;
@@ -145,16 +150,15 @@ public class IndexResource {
 			indexer = indexerService.getIndexer(index.getId());
 		} else {
 			if (indexerId.contains("LinearIndexerMem")) {
-				//indexer = new LinearIndexer(
-				//		indexerService.getIndexerProcessor());
+				// indexer = new LinearIndexer(
+				// indexerService.getIndexerProcessor());
 				indexer = new LinearIndexerMem();
-			} else if(indexerId.contains("LinearIndexerDisk")){
-				indexer=new LinearIndexerDisk();
+			} else if (indexerId.contains("LinearIndexerDisk")) {
+				indexer = new LinearIndexerDisk();
+			} else {
+				indexer = new CensusIndexerDisk();
 			}
-			else {
-				indexer = new CensusIndexerMem();
-			}
-			
+
 			indexer.setId(index.getId());
 			indexerService.addIndexer(indexer);
 		}
@@ -166,8 +170,8 @@ public class IndexResource {
 		content += "<li>" + index.getIndexerId() + "</li>";
 
 		/* search for the indexer based on id and list all file ids stored on it */
-		if(indexer.getIdentifiers()==null){
-		//if (indexer.getIdentifiers().size() == 0) {
+		if (indexer.getIdentifiers() == null) {
+			// if (indexer.getIdentifiers().size() == 0) {
 			content += "<li>No Files in the index</li>";
 			content += "</ul>";
 			return content;
@@ -209,28 +213,27 @@ public class IndexResource {
 		 */
 
 		Index index = indexService.getIndex(id);
-		String indexerId=index.getIndexerId();
+		String indexerId = index.getIndexerId();
 		Indexer indexer;
-		//= indexerService.getIndexer(id);
-		
+		// = indexerService.getIndexer(id);
+
 		if (indexerService.existIndexer(index.getId())) {
 			indexer = indexerService.getIndexer(index.getId());
 		} else {
 			if (indexerId.contains("LinearIndexerMem")) {
-				//indexer = new LinearIndexer(
-				//		indexerService.getIndexerProcessor());
+				// indexer = new LinearIndexer(
+				// indexerService.getIndexerProcessor());
 				indexer = new LinearIndexerMem();
-			} else if(indexerId.contains("LinearIndexerDisk")){
-				indexer=new LinearIndexerDisk();
+			} else if (indexerId.contains("LinearIndexerDisk")) {
+				indexer = new LinearIndexerDisk();
+			} else {
+				indexer = new CensusIndexerDisk();
 			}
-			else {
-				indexer = new CensusIndexerMem();
-			}
-			
+
 			indexer.setId(index.getId());
 			indexerService.addIndexer(indexer);
 		}
-		
+
 		/*
 		 * adapter=index.getAdapter(); extractor=index.getExtractor();
 		 * indexer=index.getIndexer();
@@ -267,130 +270,164 @@ public class IndexResource {
 
 	}
 
-	
-	  @GET
-	  @Path("/{id}/build")
-	  @Produces("text/html") 
-	  public String buildindex(@PathParam("id") String id,@Context ServletContext context) {
-	  
-	  Injector injector = (Injector) context.getAttribute(Injector.class.getName()); 
-	  IndexServiceImpl indexService = injector.getInstance(IndexServiceImpl.class);
-	  IndexerServiceImpl indexerService=injector.getInstance(IndexerServiceImpl.class);
-	  
-	  Index index = indexService.getIndex(id);
-	  Indexer indexer;
-	  
-	  String indexerId=index.getIndexerId();
-	  log.debug("indexerId="+indexerId);
-	  if(indexerService.existIndexer(index.getId())){
-		  log.debug("Indexer exists");
-	   
-		  if (indexerId.contains("CensusIndexerMem")){ 
-			  indexer=indexerService.getIndexer(index.getId());
-			  indexer.build();
-		  }
-		  return "Building Index : Done";
-	  }else{
-		  return "No Index to Build";
-	  }
-	 
-	  
-	  }
-	  
-	  
-	  @POST
-	  @Path("/{id}/query")
-	  @Produces(MediaType.TEXT_HTML)
-	 
-	  @Consumes(MediaType.APPLICATION_FORM_URLENCODED) public String
-	  queryindex(@Form UploadForm form,@PathParam("id") String id,@Context
-	  ServletContext context){
-	  
-	  IndexingEngine inengine = (IndexingEngine) context
-	  .getAttribute(IndexingEngine.class.getName()); Injector injector =
-	  (Injector) context.getAttribute(Injector.class .getName());
-	  IndexServiceImpl indexService = injector
-	  .getInstance(IndexServiceImpl.class);
-	  
-	  IndexerServiceImpl indexerService=injector.getInstance(IndexerServiceImpl.class);
-	  
-	  log.debug("query : Linear or Cluster Index");
-	  
-	  String fileurl=form.infile; 
-	  File inputFile=null; 
-	  String  adapter;
-	  String extractor;
-	  String measure; 
-	  Indexer indexer;
-	  
-	  Index index=indexService.getIndex(id);
-	  adapter=index.getAdapterId();
-	  extractor=index.getExtractorId();
-	  measure=index.getMeasureId();
-	  
-	  String indexerId=index.getIndexerId();
-	  
-	  if (indexerService.existIndexer(index.getId())) {
+	@GET
+	@Path("/{id}/build")
+	@Produces("text/html")
+	public String buildindex(@PathParam("id") String id,
+			@Context ServletContext context) {
+
+		Injector injector = (Injector) context.getAttribute(Injector.class
+				.getName());
+		IndexServiceImpl indexService = injector
+				.getInstance(IndexServiceImpl.class);
+		IndexerServiceImpl indexerService = injector
+				.getInstance(IndexerServiceImpl.class);
+
+		Index index = indexService.getIndex(id);
+		Indexer indexer;
+
+		String indexerId = index.getIndexerId();
+		log.debug("indexerId=" + indexerId);
+		if (indexerService.existIndexer(index.getId())) {
+			log.debug("Indexer exists");
+
+			// if (indexerId.contains("CensusIndexerMem")) {
+			indexer = indexerService.getIndexer(index.getId());
+			indexer.build();
+			// }
+			return "Building Index : Done";
+			// } else {
+			// return "No Index to Build";
+		}
+		return "No Index to Build";
+	}
+
+	@POST
+	@Path("/{id}/query")
+	// @Produces(MediaType.TEXT_HTML)
+	@Produces("application/json")
+	@Consumes(MediaType.APPLICATION_FORM_URLENCODED)
+	// public String queryindex(@Form UploadForm form, @PathParam("id") String
+	// id,
+	// @Context ServletContext context) {
+	public List<Map<String, Object>> queryindex(@Form UploadForm form,
+			@PathParam("id") String id, @Context ServletContext context) {
+
+		IndexingEngine inengine = (IndexingEngine) context
+				.getAttribute(IndexingEngine.class.getName());
+		Injector injector = (Injector) context.getAttribute(Injector.class
+				.getName());
+		IndexServiceImpl indexService = injector
+				.getInstance(IndexServiceImpl.class);
+
+		IndexerServiceImpl indexerService = injector
+				.getInstance(IndexerServiceImpl.class);
+
+		log.debug("query : Linear or Cluster Index");
+
+		String fileurl = form.infile;
+		File inputFile = null;
+		String adapter;
+		String extractor;
+		String measure;
+		Indexer indexer;
+
+		Index index = indexService.getIndex(id);
+		adapter = index.getAdapterId();
+		extractor = index.getExtractorId();
+		measure = index.getMeasureId();
+
+		String indexerId = index.getIndexerId();
+
+		if (indexerService.existIndexer(index.getId())) {
 			indexer = indexerService.getIndexer(index.getId());
 		} else {
 			if (indexerId.contains("LinearIndexerMem")) {
-				//indexer = new LinearIndexer(
-				//		indexerService.getIndexerProcessor());
+				// indexer = new LinearIndexer(
+				// indexerService.getIndexerProcessor());
 				indexer = new LinearIndexerMem();
-			} else if(indexerId.contains("LinearIndexerDisk")){
-				indexer=new LinearIndexerDisk();
+			} else if (indexerId.contains("LinearIndexerDisk")) {
+				indexer = new LinearIndexerDisk();
+			} else {
+				// indexer = new CensusIndexer();
+				indexer = new CensusIndexerDisk();
 			}
-			else {
-				//indexer = new CensusIndexer();
-				indexer=new CensusIndexerMem();
-			}
-			
+
 			indexer.setId(index.getId());
 			indexerService.addIndexer(indexer);
 		}
-		
-	  
-	  
-	  
-	  List<Double> result=new ArrayList<Double>();
-	  List<SearchResult> resultC=new ArrayList<SearchResult>();
-	  
-	  try { 
-		  inputFile=ComparisonResource.getFile(fileurl);
-	  //inputFile.getName() 
-	  } catch (IOException e1) {  e1.printStackTrace(); }
-	  
-	  String content = new  String("<h3>Versus > Index Instance>Query Results</h3>" + "<ul>");
-	  
-	  
-	  if (inputFile.isFile()) {
-		  log.debug("isFile");
-	  
-	  try {
-	  
-	  resultC=inengine.queryIndex(inputFile, adapter, extractor, measure,
-	  indexer); 
-	  if(!resultC.isEmpty()){
-		  for(int i=0;i<resultC.size()-1;i++){
-			  log.debug("result docID: "+resultC.get(i).getDocId() +
-					  "Proximity value:"+resultC.get(i).getProximity().getValue());
-			  content+="<li>docID: "+resultC.get(i).getDocId()+"Proximity value: "+resultC.get(i).getProximity().getValue()+"</li>";
-			  } 
-		  } else{
-	       log.debug("result id Empty"); } content+="</ul>";
-	  
-	  } catch (InterruptedException e) { // TODO Auto-generated catch block
-	         e.printStackTrace();
-	         } 
-	  catch (ExecutionException e) {
-	   e.printStackTrace(); 
-	   }
-	  
-	  }
-	  
-	  return content; 
-	  }
-	 
+
+		List<Double> result = new ArrayList<Double>();
+		List<SearchResult> resultC = new ArrayList<SearchResult>();
+
+		try {
+			inputFile = ComparisonResource.getFile(fileurl);
+			// inputFile.getName()
+		} catch (IOException e1) {
+			e1.printStackTrace();
+		}
+		List<Map<String, Object>> results = new ArrayList<Map<String, Object>>();
+		// ArrayList<Result> results=new ArrayList<Result>();
+		// String content = new String(
+		// "<h3>Versus > Index Instance>Query Results</h3>" + "<ul>");
+
+		if (inputFile.isFile()) {
+			log.debug("isFile");
+
+			try {
+
+				resultC = inengine.queryIndex(inputFile, adapter, extractor,
+						measure, indexer);
+
+				// Result result1;
+
+				if (!resultC.isEmpty()) {
+					Collections.sort(resultC, new Comparator<SearchResult>() {
+						public int compare(SearchResult r1, SearchResult r2) {
+							return ((Double) r1.getProximity().getValue())
+									.compareTo((Double) r2.getProximity()
+											.getValue());
+						}
+					});
+
+					for (int i = 0; i < resultC.size() - 1; i++) {
+						Map<String, Object> json = new HashMap<String, Object>();
+						// result1=new Result();
+						log.debug("result docID: " + resultC.get(i).getDocId()
+								+ "Proximity value:"
+								+ resultC.get(i).getProximity().getValue());
+						if (!resultC.get(i).getDocId().equals("0")) {
+							json.put("docID", resultC.get(i).getDocId());
+							json.put("proximity", resultC.get(i).getProximity()
+									.getValue());
+							// result1.set(resultC.get(i).getDocId(),resultC.get(i).getProximity().getValue());
+							results.add(json);
+
+							/*
+							 * content += "<li>docID: " +
+							 * resultC.get(i).getDocId() + "Proximity value: " +
+							 * resultC.get(i).getProximity().getValue() +
+							 * "</li>";
+							 */
+						}
+					}
+				} else {
+					log.debug("result id Empty");
+				}
+				// content += "</ul>";
+
+			} catch (InterruptedException e) { // TODO Auto-generated catch
+												// block
+				e.printStackTrace();
+			} catch (ExecutionException e) {
+				e.printStackTrace();
+			}
+
+		}
+
+		// return content;
+		return results;
+	}
 
 	public static class UploadForm {
 		@FormParam("infile")
