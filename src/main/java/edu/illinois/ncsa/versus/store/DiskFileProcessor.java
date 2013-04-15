@@ -34,8 +34,11 @@ public class DiskFileProcessor implements FileProcessor {
 			String location = properties.getProperty("file.directory");
 			if (location != null) {
 				directory = location;
+				//log.debug("directory="+directory);
+				System.out.println("directory="+directory);
 			} else {
 				directory = System.getProperty("java.io.tmpdir");
+				System.out.println("directory="+directory);
 			}
 			// System.out.println("Storing file in " + directory);
 		} catch (IOException e) {
