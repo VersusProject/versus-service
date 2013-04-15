@@ -2,6 +2,7 @@ package edu.illinois.ncsa.versus.store;
 
 import java.io.File;
 import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 
@@ -9,8 +10,11 @@ import com.google.inject.Inject;
 
 
 
+import edu.illinois.ncsa.versus.descriptor.Descriptor;
+import edu.illinois.ncsa.versus.measure.Measure;
 import edu.illinois.ncsa.versus.rest.Index;
 import edu.illinois.ncsa.versus.restlet.DecisionSupport;
+import edu.illinois.ncsa.versus.search.SearchResult;
 
 public class IndexServiceImpl implements IndexService{
 
@@ -18,10 +22,12 @@ public class IndexServiceImpl implements IndexService{
 	
 	
 	private final IndexProcessor indexList;
+
 	
 	@Inject
 	public IndexServiceImpl(IndexProcessor indexProcessor){
-      this.indexList=indexProcessor;		
+      this.indexList=indexProcessor;	
+    
 	}
 			
 	@Override
@@ -44,7 +50,7 @@ public class IndexServiceImpl implements IndexService{
 		//return indexList.values();
 	}
 
-	
+		
 	
 
 }
