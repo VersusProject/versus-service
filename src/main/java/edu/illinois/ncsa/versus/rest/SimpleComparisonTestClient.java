@@ -35,8 +35,8 @@ public class SimpleComparisonTestClient {
 	String requestUrl = "http://localhost:8080/api/v1/comparisons";
 	HttpPost httpPost = new HttpPost(requestUrl);
 	List<NameValuePair> nvps = new ArrayList<NameValuePair>();
-	nvps.add(new BasicNameValuePair("dataset1","http://www.cse.iitd.ac.in/~gayathri/ga2.jpg"));
-	nvps.add(new BasicNameValuePair("dataset2","http://www.cse.iitd.ac.in/~chinmay/Chinmay.jpg"));
+	nvps.add(new BasicNameValuePair("dataset1","http://www.ncsa.illinois.edu/includes/images/about.jpg"));
+	nvps.add(new BasicNameValuePair("dataset2","http://www.ncsa.illinois.edu/includes/images/about.jpg"));
 	//nvps.add(new BasicNameValuePair("adapter",
 	//		"edu.illinois.ncsa.versus.adapter.impl.BufferedImageAdapter"));
 	nvps.add(new BasicNameValuePair("adapter",
