@@ -68,24 +68,25 @@ public class JettyServer {
 				log.debug("Master="+Master);
 				Properties properties=PropertiesUtil.load();
 				Master=properties.getProperty("master");
-				log.debug("Master="+Master);
+				log.debug("From Properties: Master="+Master);
 			}	
 			
-			String ownurl="http://"+InetAddress.getLocalHost().getHostAddress()+":"+port+"/api/v1";
+			String ownurl="http://"+InetAddress.getLocalHost().getHostAddress()+":"+port+"/api/v1";//windows
 			//String ownurl="http://"+InetAddress.getLocalHost()+":"+port+"/api/v1";
-			log.debug(ownurl);
-			 ownurl="http://"+getmyUrl()+":"+port+"/api/v1";
+			log.debug("Own Url="+ ownurl);
+			 ownurl="http://"+getmyUrl()+":"+port+"/api/v1";//linux
 				
 			URL myURL=new URL(ownurl);
+			
 			if(Master==null){
-				log.debug("I am the defult Master");
+				log.debug("No master url: I am the defult Master");
 				Master=ownurl;
 			}
 			
 			
 			URL masterURL=new URL(Master);
 			
-			log.debug("myURL= "+myURL+"masterURL"+masterURL);
+			log.debug("myURL= "+myURL+" masterURL="+masterURL);
 			//System.out.println("myURL= "+myURL+"masterURL"+masterURL);
 			
 			if(!masterURL.equals(myURL)){
