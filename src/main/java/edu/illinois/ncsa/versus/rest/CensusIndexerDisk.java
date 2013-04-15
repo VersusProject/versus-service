@@ -25,7 +25,7 @@ import edu.illinois.ncsa.versus.restlet.PropertiesUtil;
 import edu.illinois.ncsa.versus.search.Indexer;
 import edu.illinois.ncsa.versus.search.SearchResult;
 
-public class CensusIndexerMem implements Serializable, Indexer {
+public class CensusIndexerDisk implements Serializable, Indexer {
 	private static Log log = LogFactory.getLog(CensusIndexer.class);
 
 	private String id;
@@ -35,11 +35,11 @@ public class CensusIndexerMem implements Serializable, Indexer {
 	// private ArrayList<List<Double>> sigs;
 	ArrayList<List<Double>> signatures = new ArrayList<List<Double>>();
 	ArrayList<String> ids = new ArrayList<String>();
-	private final double returnPercentage = 200.0;
+	private final double returnPercentage = 40.0;
 	private Measure measure;
 	String indexerfolder;
 
-	public CensusIndexerMem() {
+	public CensusIndexerDisk() {
 		cluster = new ClusterTreeExpanded();
 		descriptors = new ArrayList<Descriptor>();
 		identifiers = new ArrayList<String>();
@@ -216,8 +216,8 @@ public class CensusIndexerMem implements Serializable, Indexer {
 
 	@Override
 	public List<String> getIdentifiers() {
-		// return identifiers;
-		return ids;
+		return identifiers;
+		// return ids;
 	}
 
 	@Override
