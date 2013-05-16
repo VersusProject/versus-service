@@ -1,10 +1,11 @@
 package edu.illinois.ncsa.versus.rest;
 
 //import java.net.URI;
+import java.io.Serializable;
 import java.net.URL;
 import java.util.HashMap;
 
-public class HashIdSlave {
+public class HashIdSlave implements Serializable{
    HashMap<String,String> hashList;
 	
  public HashIdSlave(){

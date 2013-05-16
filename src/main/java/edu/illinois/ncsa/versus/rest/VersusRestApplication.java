@@ -24,7 +24,7 @@ public class VersusRestApplication extends Application {
 	public VersusRestApplication() {
 		endpoints.add(new IndexResource());
 		endpoints.add(new AdapterResource());
-		endpoints.add(new ComparisonResource());
+		endpoints.add(new ComparisonResource1());
 		endpoints.add(new DecisionSupportResource());
 		endpoints.add(new DistributionResource());
 		endpoints.add(new ExtractorResource());
