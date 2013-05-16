@@ -66,6 +66,11 @@ public class RepositoryModule extends AbstractModule {
 						Singleton.class);
 			}
 
+			bind(MapService.class).to(MapServiceImpl.class).in(Singleton.class);
+			String map=properties.getProperty("map", "diskMap");
+			bind(MapProcessor.class).to(DiskMapProcessor.class).in(
+					Singleton.class);
+			
 			// indexer
 			bind(IndexerService.class).to(IndexerServiceImpl.class).in(
 					Singleton.class); // how to bind it to census Indexer also

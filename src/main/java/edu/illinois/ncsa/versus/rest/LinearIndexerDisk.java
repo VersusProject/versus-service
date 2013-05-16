@@ -29,10 +29,11 @@ public class LinearIndexerDisk implements Serializable, Indexer {
 	String indexerfolder;
 	ArrayList<String> identifiers;
 	ArrayList<Descriptor> descriptors;
-	IndexContent inc = new IndexContent();
+	IndexContent inc;
 
 	public LinearIndexerDisk() {
 		Properties properties;
+		inc= new IndexContent();
 		identifiers = new ArrayList<String>();
 		descriptors = new ArrayList<Descriptor>();
 		try {
@@ -146,8 +147,12 @@ public class LinearIndexerDisk implements Serializable, Indexer {
 	public void build() {
 
 		File indexerIdfile = new File(indexerfolder + "/" + getId() + ".txt");
-		inc.getDescriptors().clear();
-		inc.getIds().clear();
+		
+		//inc.getDescriptors().clear();
+		//inc.getIds().clear();
+		
+		
+		
 		inc.setDescriptors(descriptors);
 		inc.setIds(identifiers);
 

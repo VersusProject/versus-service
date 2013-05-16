@@ -26,7 +26,7 @@ import edu.illinois.ncsa.versus.search.Indexer;
 import edu.illinois.ncsa.versus.search.SearchResult;
 
 public class CensusIndexerDisk implements Serializable, Indexer {
-	private static Log log = LogFactory.getLog(CensusIndexer.class);
+	private static Log log = LogFactory.getLog(CensusIndexerDisk.class);
 
 	private String id;
 	private ClusterTreeExpanded cluster;
@@ -56,10 +56,10 @@ public class CensusIndexerDisk implements Serializable, Indexer {
 				if (!indexerfile.exists())
 					indexerfile.mkdir();
 
-				System.out.println("Census indexer folder=" + indexerfolder);
+				log.debug("Census indexer folder=" + indexerfolder);
 			} else {
 				indexerfolder = System.getProperty("java.io.tmpdir");
-				System.out.println("folder=" + indexerfolder);
+				log.debug("folder=" + indexerfolder);
 			}
 			// System.out.println("Storing file in " + directory);
 		} catch (IOException e) {
@@ -72,7 +72,7 @@ public class CensusIndexerDisk implements Serializable, Indexer {
 	@Override
 	public void setId(String id) {
 		this.id = id;
-		System.out.println("Setting id for Census Indexer");
+		log.debug("Setting id for Census Indexer");
 		File indexerIdfile = new File(indexerfolder + "/" + id + ".txt");
 		FileInputStream fis = null;
 		if (indexerIdfile.exists()) {
@@ -83,9 +83,28 @@ public class CensusIndexerDisk implements Serializable, Indexer {
 				ClusterTreeExpanded c = (ClusterTreeExpanded) ois.readObject();
 
 				this.cluster = c;
-				System.out.println("Reading Cluster");
+				log.debug("Reading Cluster");
 
 				String[] idss = cluster.identifiers;
+				
+				log.debug("Cluster.identifiers.length="+ idss.length);
+				
+				double[][] sig=cluster.original_signatures;
+				List<Double> s;
+				
+				int l=0;
+				
+				for(double[] d :sig){
+					
+					s= new ArrayList<Double>();
+					for(double dd :d){
+						s.add(dd);
+					}
+					this.signatures.add(s);
+					l++;
+				}
+				//WordspottingFeature descriptor = new WordspottingFeature(sig);
+				log.debug("signatures.length="+signatures.size()+" l="+l);
 
 				for (String i : idss) {
 					this.ids.add(i);
@@ -130,7 +149,9 @@ public class CensusIndexerDisk implements Serializable, Indexer {
 	public void build() {
 
 		int i = 0;
-		ids.clear();
+		//ids.clear();
+		//signatures.clear();
+		//ids.removeAll(ids);
 		for (Descriptor d : descriptors) {
 			WordspottingFeature descriptor = new WordspottingFeature(d);
 			signatures.add(descriptor.asListDoubles());
@@ -140,7 +161,8 @@ public class CensusIndexerDisk implements Serializable, Indexer {
 		}
 		// index
 		cluster.build(signatures, ids);
-
+        descriptors.clear();
+        identifiers.clear();
 		File indexerIdfile = new File(indexerfolder + "/" + getId() + ".txt");
 
 		try {
@@ -216,8 +238,11 @@ public class CensusIndexerDisk implements Serializable, Indexer {
 
 	@Override
 	public List<String> getIdentifiers() {
-		return identifiers;
-		// return ids;
+		//return identifiers;
+		if(ids.isEmpty())
+			return null;
+		else	
+		 return ids;
 	}
 
 	@Override

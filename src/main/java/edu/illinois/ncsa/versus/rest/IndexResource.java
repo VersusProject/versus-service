@@ -44,6 +44,7 @@ import edu.illinois.ncsa.versus.search.SearchResult;
 import edu.illinois.ncsa.versus.store.DecisionSupportServiceImpl;
 import edu.illinois.ncsa.versus.store.IndexServiceImpl;
 import edu.illinois.ncsa.versus.store.IndexerServiceImpl;
+import edu.illinois.ncsa.versus.store.MapServiceImpl;
 
 @Path("/index")
 public class IndexResource {
@@ -58,7 +59,9 @@ public class IndexResource {
 				.getName());
 		IndexServiceImpl indexService = injector
 				.getInstance(IndexServiceImpl.class);
-
+		
+        
+        
 		Collection<Index> indexCollection = indexService.listAll();
 
 		if (indexCollection.size() == 0) {
@@ -139,7 +142,11 @@ public class IndexResource {
 
 		IndexerServiceImpl indexerService = injector
 				.getInstance(IndexerServiceImpl.class);
-
+		
+		MapServiceImpl mapService=injector.getInstance(MapServiceImpl.class);
+		
+		IdMap m=mapService.getMap();
+        
 		Index index = indexService.getIndex(id);
 		String indexerId = index.getIndexerId();
 
@@ -168,9 +175,11 @@ public class IndexResource {
 		content += "<li>" + index.getExtractorId() + "</li>";
 		content += "<li>" + index.getMeasureId() + "</li>";
 		content += "<li>" + index.getIndexerId() + "</li>";
-
+         
+		String id2="";
 		/* search for the indexer based on id and list all file ids stored on it */
 		if (indexer.getIdentifiers() == null) {
+			//if (indexer.getIdentifiers().isEmpty()) {
 			// if (indexer.getIdentifiers().size() == 0) {
 			content += "<li>No Files in the index</li>";
 			content += "</ul>";
@@ -180,8 +189,8 @@ public class IndexResource {
 			content += "<li> List of File Ids</li>";
 			// for (String id1 : index.getindexHash().keySet()) {
 			for (String id1 : indexer.getIdentifiers()) {
-
-				content += "<li>" + id1 + "</li>";
+                id2=m.getMId(id1);
+				content += "<li>" + id2 + "</li>";
 			}
 
 		}
@@ -205,6 +214,20 @@ public class IndexResource {
 
 		IndexerServiceImpl indexerService = injector
 				.getInstance(IndexerServiceImpl.class);
+		
+		MapServiceImpl mapService=injector.getInstance(MapServiceImpl.class);
+		
+		IdMap m= new IdMap();
+		
+		if(!mapService.equals(null)){
+			if(!(mapService.getMap()==null)){
+				if(!mapService.getMap().getMap().isEmpty()){
+					m=mapService.getMap();
+					log.debug("I am inside add if");
+				}
+			}
+		}
+		//HashMap<String,String> hmap=m.getMap();
 
 		String fileurl = form.infile;
 		File inputFile = null;
@@ -246,14 +269,23 @@ public class IndexResource {
 
 		try {
 			inputFile = ComparisonResource.getFile(fileurl);
+						
 			// inputFile.getName()
+			//inputFile.getName(),
 		} catch (IOException e1) {
 			// TODO Auto-generated catch block
 			e1.printStackTrace();
 		}
 		if (inputFile.isFile()) {
 			log.debug("isFile");
-
+			m.addMap(inputFile.getName(), fileurl);
+            log.debug("inputFile.getName()="+inputFile.getName()+"fileurl="+fileurl);
+            log.debug("Is m map empty="+m.getMap().isEmpty());
+           if(!m.getMap().isEmpty()) 
+           {   
+        	   mapService.addMap(m);
+               log.debug("adding map");
+           }
 			try {
 				inengine.addDocument(inputFile, adapter, extractor, indexer);
 			} catch (InterruptedException e) {
@@ -283,6 +315,11 @@ public class IndexResource {
 		IndexerServiceImpl indexerService = injector
 				.getInstance(IndexerServiceImpl.class);
 
+        MapServiceImpl mapService=injector.getInstance(MapServiceImpl.class);
+		
+		/*IdMap m=mapService.getMap();
+		mapService.addMap(m);*/
+		
 		Index index = indexService.getIndex(id);
 		Indexer indexer;
 
@@ -322,6 +359,13 @@ public class IndexResource {
 
 		IndexerServiceImpl indexerService = injector
 				.getInstance(IndexerServiceImpl.class);
+		
+		
+		MapServiceImpl mapService=injector.getInstance(MapServiceImpl.class);
+		
+		IdMap m=mapService.getMap();
+		
+		
 
 		log.debug("query : Linear or Cluster Index");
 
@@ -393,12 +437,14 @@ public class IndexResource {
 					for (int i = 0; i < resultC.size() - 1; i++) {
 						Map<String, Object> json = new HashMap<String, Object>();
 						// result1=new Result();
-						log.debug("result docID: " + resultC.get(i).getDocId()
-								+ "Proximity value:"
-								+ resultC.get(i).getProximity().getValue());
+					//	log.debug("result docID: " + resultC.get(i).getDocId()+ "Proximity value:"+ resultC.get(i).getProximity().getValue());
+					log.debug("result docID: " + m.getMId(resultC.get(i).getDocId())+ "Proximity value:"+ resultC.get(i).getProximity().getValue());
 						if (!resultC.get(i).getDocId().equals("0")) {
-							json.put("docID", resultC.get(i).getDocId());
-							json.put("proximity", resultC.get(i).getProximity()
+							 // m.getMId(id1);
+							
+							//json.put("docID", resultC.get(i).getDocId());
+							  json.put("docID", m.getMId(resultC.get(i).getDocId()));
+							   json.put("proximity", resultC.get(i).getProximity()
 									.getValue());
 							// result1.set(resultC.get(i).getDocId(),resultC.get(i).getProximity().getValue());
 							results.add(json);
