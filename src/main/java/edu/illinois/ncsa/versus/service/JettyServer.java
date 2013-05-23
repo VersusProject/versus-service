@@ -73,8 +73,10 @@ public class JettyServer {
 			
 			String ownurl="http://"+InetAddress.getLocalHost().getHostAddress()+":"+port+"/api/v1";//windows
 			//String ownurl="http://"+InetAddress.getLocalHost()+":"+port+"/api/v1";
-			log.debug("Own Url="+ ownurl);
-			 ownurl="http://"+getmyUrl()+":"+port+"/api/v1";//linux
+			
+			//String ownurl="http://"+getmyUrl()+":"+port+"/api/v1";//linux
+			log.debug("OwnUrL="+ ownurl);
+
 				
 			URL myURL=new URL(ownurl);
 			
@@ -86,7 +88,7 @@ public class JettyServer {
 			
 			URL masterURL=new URL(Master);
 			
-			log.debug("myURL= "+myURL+" masterURL="+masterURL);
+			log.debug("myURL= "+myURL+" masterURL= "+masterURL);
 			//System.out.println("myURL= "+myURL+"masterURL"+masterURL);
 			
 			if(!masterURL.equals(myURL)){
