@@ -81,9 +81,8 @@ public class SlavesResource {
 	
 	SlavesList slaveList = (SlavesList) context
 			.getAttribute(SlavesList.class.getName());
-
-	return SlavesList.getSlaves();
-	//return slaveList.getSlaves();
+	//return SlavesList.getSlaves();
+	return slaveList.getSlaves();
 }
 	
 

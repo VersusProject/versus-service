@@ -352,9 +352,8 @@ public class ComparisonResource {
 					final PairwiseComparison comparison = new PairwiseComparison();
 					comparison.setId(UUID.randomUUID().toString());
 					comparison
-							.setFirstDataset(getFile(comparisonForm.dataset1));
-					comparison
-							.setSecondDataset(getFile(comparisonForm.dataset2));
+					.setFirstDataset(getFile(comparisonForm.dataset1));
+					comparison.setSecondDataset(getFile(comparisonForm.dataset2));
 					comparison.setAdapterId(comparisonForm.adapter);
 					comparison.setExtractorId(comparisonForm.extractor);
 					comparison.setMeasureId(comparisonForm.measure);
@@ -631,8 +630,12 @@ public class ComparisonResource {
 		HashIdSlave list = (HashIdSlave) context.getAttribute(HashIdSlave.class
 				.getName());
 
-		RankSlaves slaveList = (RankSlaves) context
-				.getAttribute(RankSlaves.class.getName());
+		//RankSlaves slaveList = (RankSlaves) context
+		//		.getAttribute(RankSlaves.class.getName());
+		SlavesList slaveList = (SlavesList) context
+				.getAttribute(SlavesList.class.getName());
+RankSlaves rank =(RankSlaves)context.getAttribute(RankSlaves.class.getName());
+		
 		ArrayList<Slave> slaves = (ArrayList<Slave>) slaveList.getSlaves();
 
 		HttpClient client = new DefaultHttpClient();
@@ -642,19 +645,25 @@ public class ComparisonResource {
 		boolean flag = false;
 
 		do {
-			if (RankSlaves.nextIndex < 0) {
+			/*if (RankSlaves.nextIndex < 0) {
 				RankSlaves.nextIndex = 0;
 			} else {
 				if (RankSlaves.nextIndex == (slaves.size() - 1)) {
 					RankSlaves.nextIndex = 0;
 				} else
 					RankSlaves.nextIndex++;
-			}
-			log.debug("RankSlaves.nextIndex= " + RankSlaves.nextIndex);
-			if (checkifbusy(slaves.get(RankSlaves.nextIndex), context, client) == false) {
+			}*/
+			rank.setNextIndex(slaves.size()-1);
+			//log.debug("RankSlaves.nextIndex= " + RankSlaves.nextIndex);
+			log.debug("RankSlaves.nextIndex= " + rank.getNextIndex());
 
-				if (supportComparison(slaves.get(RankSlaves.nextIndex),
-						comparison, context, client)) {
+			//if (checkifbusy(slaves.get(RankSlaves.nextIndex), context, client) == false) {
+			if (checkifbusy(slaves.get(rank.getNextIndex()), context, client) == false) {
+
+				//if (supportComparison(slaves.get(RankSlaves.nextIndex),
+				//		comparison, context, client)) {
+				if (supportComparison(slaves.get(rank.getNextIndex()), comparison,
+						context, client)) {
 					log.debug("querySlaves(): ADAPTER, EXTRACTOR,MEASURE Supported");
 					flag = true;
 					break;
@@ -669,8 +678,10 @@ public class ComparisonResource {
 			return "Modules not Supported by any Slaves";
 
 		} else {
-			String requestUrl = (slaves.get(RankSlaves.nextIndex).getUrl())
-					.toString() + "/comparisons";
+			//String requestUrl = (slaves.get(RankSlaves.nextIndex).getUrl())
+			//		.toString() + "/comparisons";
+			String requestUrl = (slaves.get(rank.getNextIndex()).getUrl())
+							.toString() + "/comparisons";
 
 			HttpPost httpPost = new HttpPost(requestUrl);
 
@@ -877,20 +888,24 @@ public class ComparisonResource {
 		// log.debug("I am inside getFile in Comparison resource");
 		// ------------------------------------------------------------ The
 		// original code-----------------------
+		log.debug("remoteURL"+remoteURL+"url.getPath="+url.getPath());
 		if (url.getPath().isEmpty()
 				|| url.getPath().matches(".*/versus[\\d]+.tmp")) {
 			file = File.createTempFile("versus", ".tmp");
 		} else {
 			String filename = new File(url.getPath()).getName().replaceAll(
 					"[\\d]+\\.", ".");
+			    log.debug("filename:"+filename);
 			int idx = filename.lastIndexOf(".");
 			if (idx > 3) {
 				file = File.createTempFile(filename.substring(0, idx),
 						filename.substring(idx));
+				log.debug("filePath:"+file.getAbsolutePath()+"file:"+file.getName());
 			} else if (idx != -1) {
 				file = File.createTempFile("versus", filename.substring(idx));
 			} else {
 				file = File.createTempFile(filename, ".tmp");
+				log.debug("filePath1:"+file.getAbsolutePath()+"file1:"+file.getName());
 			}
 		}
 		// -------------------------------------------------------------------------
@@ -903,7 +918,7 @@ public class ComparisonResource {
 		}
 		is.close();
 		fos.close();
-		log.debug("");
+		log.debug("file Pathname"+file.getAbsolutePath());
 		return file;
 	}
 

@@ -11,13 +11,13 @@ public class SlavesList implements Serializable{
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
-	static List<Slave> slaves;
+	static	List<Slave> slaves;
 	
 	public SlavesList(){
 		slaves=new ArrayList<Slave>();
 	}
 	
-	public  static List<Slave> getSlaves(){
+	public List<Slave> getSlaves(){
 		return slaves;
 	}
     public void addSlave(String url){

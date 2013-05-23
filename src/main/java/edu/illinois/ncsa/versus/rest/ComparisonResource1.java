@@ -704,35 +704,42 @@ public class ComparisonResource1 {
 		log.debug("Inside querySlaves():");
 		HashIdSlave list = (HashIdSlave) context.getAttribute(HashIdSlave.class
 				.getName());
-		// HashCompareID compList = (HashCompareID) context
-		// .getAttribute(HashCompareID.class.getName());
+		
+		//RankSlaves slaveList = (RankSlaves) context
+		//		.getAttribute(RankSlaves.class.getName());
+		SlavesList slaveList = (SlavesList) context
+						.getAttribute(SlavesList.class.getName());
+		RankSlaves rank =(RankSlaves)context.getAttribute(RankSlaves.class.getName());
 
-		RankSlaves slaveList = (RankSlaves) context
-				.getAttribute(RankSlaves.class.getName());
 
 		ArrayList<Slave> slaves = (ArrayList<Slave>) slaveList.getSlaves();
 
 		HttpClient client = new DefaultHttpClient();
 
-		// int startindex=RankSlaves.nextIndex;
+
 		int ssize = slaveList.getSlaves().size();
 		boolean flag = false;
+		
 
 		do {
-			if (RankSlaves.nextIndex < 0) {
+			/*if (RankSlaves.nextIndex < 0) {
 				RankSlaves.nextIndex = 0;
 			} else {
 				if (RankSlaves.nextIndex == (slaves.size() - 1)) {
 					RankSlaves.nextIndex = 0;
 				} else
 					RankSlaves.nextIndex++;
-			}
-			log.debug("RankSlaves.nextIndex= " + RankSlaves.nextIndex);
+			}*/
+			rank.setNextIndex(slaves.size()-1);
+			//log.debug("RankSlaves.nextIndex= " + RankSlaves.nextIndex);
+			log.debug("RankSlaves.nextIndex= " + rank.getNextIndex());
 			// if (checkifbusy(slaves.get(RankSlaves.nextIndex), context,
-			// client) == false) {
+         	// client) == false) {
 
-			if (supportComparison(slaves.get(RankSlaves.nextIndex), comparison,
-					context, client)) {
+			//if (supportComparison(slaves.get(RankSlaves.nextIndex), comparison,
+			//		context, client)) {
+			if (supportComparison(slaves.get(rank.getNextIndex()), comparison,
+						context, client)) {
 				log.debug("querySlaves(): ADAPTER, EXTRACTOR,MEASURE Supported");
 				flag = true;
 				break;
@@ -747,9 +754,10 @@ public class ComparisonResource1 {
 			return "Modules not Supported by any Slaves";
 
 		} else {
-			String requestUrl = (slaves.get(RankSlaves.nextIndex).getUrl())
+			//String requestUrl = (slaves.get(RankSlaves.nextIndex).getUrl())
+			//		.toString() + "/comparisons";
+			String requestUrl = (slaves.get(rank.getNextIndex()).getUrl())
 					.toString() + "/comparisons";
-
 			HttpPost httpPost = new HttpPost(requestUrl);
 
 			log.debug("MASTER: I am here to send data to slave");

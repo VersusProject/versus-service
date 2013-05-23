@@ -11,9 +11,10 @@ import edu.illinois.ncsa.versus.engine.impl.ExecutionEngine;
 import edu.illinois.ncsa.versus.engine.impl.IndexingEngine;
 import edu.illinois.ncsa.versus.registry.CompareRegistry;
 import edu.illinois.ncsa.versus.rest.FileMap;
-import edu.illinois.ncsa.versus.rest.HashCompareID;
+
 import edu.illinois.ncsa.versus.rest.HashIdSlave;
-import edu.illinois.ncsa.versus.rest.IdMap;
+//import edu.illinois.ncsa.versus.rest.IdMap;
+import edu.illinois.ncsa.versus.rest.RankSlaves;
 import edu.illinois.ncsa.versus.rest.SlavesList;
 
 /**
@@ -39,6 +40,8 @@ public class VersusServletConfig implements ServletContextListener {
 		//context.removeAttribute(HashCompareID.class.getName());
 		context.removeAttribute(FileMap.class.getName());
 		
+		context.removeAttribute(RankSlaves.class.getName());
+		
 	}
 
 	@Override
@@ -56,7 +59,9 @@ public class VersusServletConfig implements ServletContextListener {
 		
 		HashIdSlave compList=new HashIdSlave(); 
 		//HashCompareID compList=new HashCompareID();//
-		FileMap fmap=new FileMap();                 //modified master-slave     
+		FileMap fmap=new FileMap();                 //modified master-slave    
+		
+		RankSlaves rank= new RankSlaves();   //rank RR
 
 		ServletContext context = event.getServletContext();
 		
@@ -73,5 +78,8 @@ public class VersusServletConfig implements ServletContextListener {
 		//context.setAttribute(HashCompareID.class.getName(), compList);
 		context.setAttribute(HashIdSlave.class.getName(), compList);
 		context.setAttribute(FileMap.class.getName(), fmap);
+		
+		context.setAttribute(RankSlaves.class.getName(), rank);
 	}
+	
 }
