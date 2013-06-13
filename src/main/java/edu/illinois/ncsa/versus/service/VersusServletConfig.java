@@ -3,6 +3,9 @@
  */
 package edu.illinois.ncsa.versus.service;
 
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+
 import javax.servlet.ServletContext;
 import javax.servlet.ServletContextEvent;
 import javax.servlet.ServletContextListener;
@@ -13,6 +16,8 @@ import edu.illinois.ncsa.versus.registry.CompareRegistry;
 import edu.illinois.ncsa.versus.rest.FileMap;
 
 import edu.illinois.ncsa.versus.rest.HashIdSlave;
+import edu.illinois.ncsa.versus.rest.Index;
+import edu.illinois.ncsa.versus.rest.IndexCounter;
 //import edu.illinois.ncsa.versus.rest.IdMap;
 import edu.illinois.ncsa.versus.rest.RankSlaves;
 import edu.illinois.ncsa.versus.rest.SlavesList;
@@ -41,6 +46,7 @@ public class VersusServletConfig implements ServletContextListener {
 		context.removeAttribute(FileMap.class.getName());
 		
 		context.removeAttribute(RankSlaves.class.getName());
+		context.removeAttribute(IndexCounter.class.getName());
 		
 	}
 
@@ -62,6 +68,8 @@ public class VersusServletConfig implements ServletContextListener {
 		FileMap fmap=new FileMap();                 //modified master-slave    
 		
 		RankSlaves rank= new RankSlaves();   //rank RR
+		
+		IndexCounter count=new IndexCounter();
 
 		ServletContext context = event.getServletContext();
 		
@@ -80,6 +88,8 @@ public class VersusServletConfig implements ServletContextListener {
 		context.setAttribute(FileMap.class.getName(), fmap);
 		
 		context.setAttribute(RankSlaves.class.getName(), rank);
+		
+		context.setAttribute(IndexCounter.class.getName(), count);
 	}
 	
 }

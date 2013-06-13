@@ -162,7 +162,10 @@ public class IndexResource {
 				indexer = new LinearIndexerMem();
 			} else if (indexerId.contains("LinearIndexerDisk")) {
 				indexer = new LinearIndexerDisk();
-			} else {
+			} else if(indexerId.contains("ClusterLinearIndexer")){
+				indexer=new ClusterLinearIndexer();
+			} 
+			else {
 				indexer = new CensusIndexerDisk();
 			}
 
@@ -214,7 +217,10 @@ public class IndexResource {
 
 		IndexerServiceImpl indexerService = injector
 				.getInstance(IndexerServiceImpl.class);
+		IndexCounter count = (IndexCounter) context
+				.getAttribute(IndexCounter.class.getName());
 		
+		int rlen=4;
 		MapServiceImpl mapService=injector.getInstance(MapServiceImpl.class);
 		
 		IdMap m= new IdMap();
@@ -242,6 +248,10 @@ public class IndexResource {
 
 		if (indexerService.existIndexer(index.getId())) {
 			indexer = indexerService.getIndexer(index.getId());
+			//count.increment(index.getId());
+			if(!count.getCounter().containsKey(index.getId()))
+					count.setCount(index.getId());
+			
 		} else {
 			if (indexerId.contains("LinearIndexerMem")) {
 				// indexer = new LinearIndexer(
@@ -249,12 +259,15 @@ public class IndexResource {
 				indexer = new LinearIndexerMem();
 			} else if (indexerId.contains("LinearIndexerDisk")) {
 				indexer = new LinearIndexerDisk();
-			} else {
+			} else if(indexerId.contains("ClusterLinearIndexer")){
+				indexer=new ClusterLinearIndexer();
+			}else {
 				indexer = new CensusIndexerDisk();
 			}
-
+            count.setCount(index.getId());
 			indexer.setId(index.getId());
 			indexerService.addIndexer(indexer);
+			
 		}
 
 		/*
@@ -295,7 +308,14 @@ public class IndexResource {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-
+          if(count.getCount(index.getId())>=rlen){
+        	 buildindex(index.getId(), context) ;
+        	 log.debug("Building");
+        	 count.resetCount(index.getId());
+          }
+          else{
+        	  count.increment(index.getId());
+            }
 		}
 
 		return "Done";
@@ -332,6 +352,7 @@ public class IndexResource {
 			indexer = indexerService.getIndexer(index.getId());
 			indexer.build();
 			// }
+			log.debug("Building Done");
 			return "Building Index : Done";
 			// } else {
 			// return "No Index to Build";
@@ -392,7 +413,10 @@ public class IndexResource {
 				indexer = new LinearIndexerMem();
 			} else if (indexerId.contains("LinearIndexerDisk")) {
 				indexer = new LinearIndexerDisk();
-			} else {
+			} else if(indexerId.contains("ClusterLinearIndexer")){
+                 indexer= new ClusterLinearIndexer();  				
+			}
+			else {
 				// indexer = new CensusIndexer();
 				indexer = new CensusIndexerDisk();
 			}
