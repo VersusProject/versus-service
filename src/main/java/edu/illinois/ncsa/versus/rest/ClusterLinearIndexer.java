@@ -1,5 +1,9 @@
 package edu.illinois.ncsa.versus.rest;
 
+/*
+ * @author Smruti Padhy
+ * 
+ * */
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -30,11 +34,14 @@ public class ClusterLinearIndexer implements Serializable,Indexer{
 
 	private String id;
 	private ClusterTreeExpanded cluster;
+	
 	private final List<Descriptor> descriptors;
 	private final List<String> identifiers;
 	// private ArrayList<List<Double>> sigs;
+	
 	ArrayList<List<Double>> signatures = new ArrayList<List<Double>>();
 	ArrayList<String> ids = new ArrayList<String>();
+	
 	private final double returnPercentage = 200.0;
 	private Measure measure;
 	String indexerfolder;
@@ -79,7 +86,7 @@ public class ClusterLinearIndexer implements Serializable,Indexer{
 	@Override
 	public void setId(String id) {
 		this.id = id;
-		log.debug("Setting id for Census Indexer");
+		log.debug("Setting id for Cluster-Linear Indexer");
 		File indexerIdfile = new File(indexerfolder + "/" + id + ".txt");
 		FileInputStream fis = null;
 		if (indexerIdfile.exists()) {
@@ -155,6 +162,8 @@ public class ClusterLinearIndexer implements Serializable,Indexer{
 	public void addDescriptor(Descriptor document) {
 		descriptors.add(document);
 	}
+	
+	//building of Index
 
 	public void build() {
 
