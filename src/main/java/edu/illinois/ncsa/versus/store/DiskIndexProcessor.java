@@ -79,14 +79,6 @@ public class DiskIndexProcessor implements IndexProcessor {
 				}
 			}
 
-			// while(s.readObject()!=null)
-			/*
-			 * { index=(Index) s.readObject(); if(id.equals(index.getId()))
-			 * return index;
-			 * 
-			 * }
-			 */
-
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -101,12 +93,13 @@ public class DiskIndexProcessor implements IndexProcessor {
 	@Override
 	public Collection<Index> listAll() {
 		ArrayList<Index> indexes = new ArrayList<Index>();
-		// FileInputStream in;
+				
 		Index index;
-		// ArrayList<String> meta=new ArrayList<String>();
-
+		
 		File indexfile = new File(folder);
-
+        if(!indexfile.exists()){
+			return indexes;
+		}
 		FileInputStream fis;
 		try {
 			fis = new FileInputStream(indexfile);
@@ -114,19 +107,10 @@ public class DiskIndexProcessor implements IndexProcessor {
 			while (true) {
 				try {
 					indexes.add((Index) read(fis));
-					// meta.add((String)readS(fis));
-					// meta=(ArrayList<String>)readS(fis);
+					
 				} catch (EOFException e) {
 					fis.close();
-					/*
-					 * int i=0; while(i<meta.size()){ index=new Index();
-					 * index.setAdapterId(meta.get(i));
-					 * index.setExtractorId(meta.get(i+1));
-					 * index.setMeasureId(meta.get(i+2));
-					 * index.setIndexerId(meta.get(i+3)); indexes.add(index);
-					 * i=i+4; }
-					 */
-					return indexes;
+				  return indexes;
 				}
 			}
 
@@ -151,23 +135,13 @@ public class DiskIndexProcessor implements IndexProcessor {
 		oos.close();
 	}
 
-	/*
-	 * private static void write(File indexFile, String s) throws IOException {
-	 * ObjectOutputStream oos = getOOS(indexFile); oos.writeObject(s);
-	 * oos.flush(); oos.close(); }
-	 */
+	
 	private static Index read(FileInputStream fis)
 			throws ClassNotFoundException, IOException {
 		Index index = (Index) getOIS(fis).readObject();
 		return index;
 	}
-
-	/*
-	 * private static ArrayList<String> readS(FileInputStream fis) throws
-	 * ClassNotFoundException,IOException{ ArrayList<String>
-	 * s=(ArrayList<String>) getOIS(fis).readObject(); return s; }
-	 */
-
+	
 	private static ObjectOutputStream getOOS(File indexFile) throws IOException {
 		if (indexFile.exists()) {
 			// this is a workaround so that we can append objects to an existing

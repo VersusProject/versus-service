@@ -68,7 +68,8 @@ import edu.illinois.ncsa.versus.store.ComparisonServiceImpl;
 /**
  * Submit and query comparisons.
  * 
- * @author Luigi Marini
+ * @author Luigi Marini , Smruti Padhy
+ * Implementation with Round Robin
  * 
  */
 @Path("/comparisons")

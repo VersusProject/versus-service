@@ -35,8 +35,13 @@ public class SimpleComparisonTestClient {
 	String requestUrl = "http://localhost:8080/api/v1/comparisons";
 	HttpPost httpPost = new HttpPost(requestUrl);
 	List<NameValuePair> nvps = new ArrayList<NameValuePair>();
-	nvps.add(new BasicNameValuePair("dataset1","http://www.ncsa.illinois.edu/includes/images/about.jpg"));
-	nvps.add(new BasicNameValuePair("dataset2","http://www.ncsa.illinois.edu/includes/images/about.jpg"));
+	//String Req1="file:///C:/Users/smruti/NCSAResearch/workspace-versus/ex1/0001.png";
+	//nvps.add(new BasicNameValuePair("dataset1","http://www.ncsa.illinois.edu/includes/images/about.jpg"));
+	nvps.add(new BasicNameValuePair("dataset1","file:///C:/Users/smruti/NCSAResearch/workspace-versus/ex1/0001.png"));
+	nvps.add(new BasicNameValuePair("dataset2","file:///C:/Users/smruti/NCSAResearch/workspace-versus/ex1/0002.png"));
+	//nvps.add(new BasicNameValuePair("dataset1","http://www.cse.iitd.ernet.in/~spadhy/smruti_uiuc.jpg"));
+	//nvps.add(new BasicNameValuePair("dataset2","http://www.cse.iitd.ernet.in/~aruhela/index_files/amit.JPG"));
+	//nvps.add(new BasicNameValuePair("dataset2","http://www.ncsa.illinois.edu/includes/images/acb.jpg"));
 	//nvps.add(new BasicNameValuePair("adapter",
 	//		"edu.illinois.ncsa.versus.adapter.impl.BufferedImageAdapter"));
 	nvps.add(new BasicNameValuePair("adapter",

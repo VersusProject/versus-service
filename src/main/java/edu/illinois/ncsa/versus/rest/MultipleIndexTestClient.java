@@ -32,19 +32,18 @@ public class MultipleIndexTestClient {
 
 		nvps.add(new BasicNameValuePair("Adapter",
 				"edu.illinois.ncsa.versus.adapter.impl.BufferedImageAdapter"));
-		nvps.add(new BasicNameValuePair("Extractor",
-				"edu.illinois.ncsa.versus.extract.impl.RGBHistogramExtractor"));
-		nvps.add(new BasicNameValuePair("Measure",
-				"edu.illinois.ncsa.versus.measure.impl.KLdivergenceMeasure"));
-		// nvps.add(new
-		// BasicNameValuePair("Extractor","edu.illinois.ncsa.versus.rest.WordspottingExtractor"));
-		// nvps.add(new
-		// BasicNameValuePair("Measure","edu.illinois.ncsa.versus.measure.impl.EuclideanDistanceMeasure"));
-		nvps.add(new BasicNameValuePair("Indexer",
-				"edu.illinois.ncsa.versus.rest.LinearIndexerDisk"));
-		// nvps.add(new
-		// BasicNameValuePair("Indexer","edu.illinois.ncsa.versus.rest.CensusIndexerDisk"));
-
+		//nvps.add(new BasicNameValuePair("Extractor",
+		//		"edu.illinois.ncsa.versus.extract.impl.RGBHistogramExtractor"));
+		//nvps.add(new BasicNameValuePair("Measure",
+		//		"edu.illinois.ncsa.versus.measure.impl.KLdivergenceMeasure"));
+		 nvps.add(new
+		 BasicNameValuePair("Extractor","edu.illinois.ncsa.versus.rest.WordspottingExtractor"));
+		 nvps.add(new
+		 BasicNameValuePair("Measure","edu.illinois.ncsa.versus.measure.impl.EuclideanDistanceMeasure"));
+		//nvps.add(new BasicNameValuePair("Indexer",
+		//		"edu.illinois.ncsa.versus.rest.LinearIndexerDisk"));
+		// nvps.add(new BasicNameValuePair("Indexer","edu.illinois.ncsa.versus.rest.CensusIndexerDisk"));
+           nvps.add(new BasicNameValuePair("Indexer","edu.illinois.ncsa.versus.rest.ClusterLinearIndexer"));
 		try {
 			httpPost.setEntity(new UrlEncodedFormEntity(nvps, HTTP.UTF_8));
 		} catch (UnsupportedEncodingException e) {

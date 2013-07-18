@@ -33,17 +33,16 @@ public class IndexTestClient {
 	public static void main(String args[]) {
 
 		HttpClient client = new DefaultHttpClient();
-		//String id ="ea3fa774-0de7-4f60-a518-ac16c6e8d535";
-		//String id ="273af0f1-5e40-4860-a5fa-97a9c5a017c8";
-		String id="69c6a099-d8ae-4a60-bf2c-3cac193c72ec";
-		String requestUrl = "http://localhost:8080/api/v1/index/"+id+"/add";
+		String id="d06a9558-af45-495c-8983-882544f96109";
+
+	    String requestUrl = "http://localhost:8080/api/v1/index/"+id+"/add";
 		//String requestUrl = "http://localhost:8080/api/v1/index/" + id+ "/query";
 		HttpPost httpPost = new HttpPost(requestUrl);
 		List<NameValuePair> nvps = new ArrayList<NameValuePair>();
-		// nvps.add(new
-		// BasicNameValuePair("infile","http://www.ncsa.illinois.edu/includes/images/about.jpg"));
-		nvps.add(new BasicNameValuePair("infile",
-				"file:///C:/Users/smruti/NCSAResearch/workspace-versus/18/0070.png"));
+		 nvps.add(new
+		 BasicNameValuePair("infile","http://www.ncsa.illinois.edu/includes/images/about.jpg"));
+		//nvps.add(new BasicNameValuePair("infile",
+		//		"file:///C:/Users/smruti/NCSAResearch/workspace-versus/18/0070.png"));
 		try {
 			httpPost.setEntity(new UrlEncodedFormEntity(nvps, HTTP.UTF_8));
 		} catch (UnsupportedEncodingException e) {
