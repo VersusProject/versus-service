@@ -285,6 +285,10 @@ public class IndexResource1 {
 		String extractor = index.getExtractorId();
 		
 		try {
+			/*int startin=fileurl.lastIndexOf("/");
+			int endin=fileurl.lastIndexOf("?");
+			String fid=fileurl.substring(startin+1, endin);
+			log.debug("fid="+fid);*/
 			inputFile = ComparisonResource.getFile(fileurl);
 						
 			// inputFile.getName()

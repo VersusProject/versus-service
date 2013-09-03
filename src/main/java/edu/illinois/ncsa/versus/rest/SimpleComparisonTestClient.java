@@ -36,12 +36,12 @@ public class SimpleComparisonTestClient {
 	HttpPost httpPost = new HttpPost(requestUrl);
 	List<NameValuePair> nvps = new ArrayList<NameValuePair>();
 	//String Req1="file:///C:/Users/smruti/NCSAResearch/workspace-versus/ex1/0001.png";
-	//nvps.add(new BasicNameValuePair("dataset1","http://www.ncsa.illinois.edu/includes/images/about.jpg"));
-	nvps.add(new BasicNameValuePair("dataset1","file:///C:/Users/smruti/NCSAResearch/workspace-versus/ex1/0001.png"));
-	nvps.add(new BasicNameValuePair("dataset2","file:///C:/Users/smruti/NCSAResearch/workspace-versus/ex1/0002.png"));
+	nvps.add(new BasicNameValuePair("dataset1","http://www.ncsa.illinois.edu/includes/images/about.jpg"));
+	//nvps.add(new BasicNameValuePair("dataset1","file:///C:/Users/smruti/NCSAResearch/workspace-versus/ex1/0001.png"));
+	//nvps.add(new BasicNameValuePair("dataset2","file:///C:/Users/smruti/NCSAResearch/workspace-versus/ex1/0002.png"));
 	//nvps.add(new BasicNameValuePair("dataset1","http://www.cse.iitd.ernet.in/~spadhy/smruti_uiuc.jpg"));
 	//nvps.add(new BasicNameValuePair("dataset2","http://www.cse.iitd.ernet.in/~aruhela/index_files/amit.JPG"));
-	//nvps.add(new BasicNameValuePair("dataset2","http://www.ncsa.illinois.edu/includes/images/acb.jpg"));
+	nvps.add(new BasicNameValuePair("dataset2","http://www.ncsa.illinois.edu/includes/images/acb.jpg"));
 	//nvps.add(new BasicNameValuePair("adapter",
 	//		"edu.illinois.ncsa.versus.adapter.impl.BufferedImageAdapter"));
 	nvps.add(new BasicNameValuePair("adapter",
@@ -98,25 +98,7 @@ public class SimpleComparisonTestClient {
 	        	 log.debug("Response from GET value:"+output);
 	           }
 	         
-	         /*ObjectMapper mapper = new ObjectMapper();
-              Map<String,Object> json=new HashMap<String,Object>();
-			 
-              try {
-					json = mapper.readValue(output1,new TypeReference<Map<String,Object>>() {});
-				} catch (JsonParseException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (JsonMappingException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				} catch (IOException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
-				}*/
-	                        
-			//log.debug("Value="+json.get("value"));
-		
-	}} catch (ClientProtocolException e) {
+	        	}} catch (ClientProtocolException e) {
 		// TODO Auto-generated catch block
 		e.printStackTrace();
 	} catch (IOException e) {

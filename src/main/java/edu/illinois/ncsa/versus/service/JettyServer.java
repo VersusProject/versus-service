@@ -71,10 +71,10 @@ public class JettyServer {
 				log.debug("From Properties: Master="+Master);
 			}	
 			
-			String ownurl="http://"+InetAddress.getLocalHost().getHostAddress()+":"+port+"/api/v1";//windows
+			//String ownurl="http://"+InetAddress.getLocalHost().getHostAddress()+":"+port+"/api/v1";//windows
 			//String ownurl="http://"+InetAddress.getLocalHost()+":"+port+"/api/v1";
 			
-			//String ownurl="http://"+getmyUrl()+":"+port+"/api/v1";//linux
+			String ownurl="http://"+getmyUrl()+":"+port+"/api/v1";//linux
 			log.debug("OwnUrL="+ ownurl);
 
 				

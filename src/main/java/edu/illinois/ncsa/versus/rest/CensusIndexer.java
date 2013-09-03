@@ -127,11 +127,7 @@ public class CensusIndexer implements Serializable, Indexer {
 		return null;
 	}
 
-	/*
-	 * public List<Double> query(Descriptor query,Measure measure){ return null;
-	 * }
-	 */
-
+	
 	@Override
 	public List<String> getIdentifiers() {
 		return identifiers;

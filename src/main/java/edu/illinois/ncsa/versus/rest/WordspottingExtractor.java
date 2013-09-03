@@ -7,7 +7,8 @@ import java.awt.image.BufferedImage;
 import java.io.Serializable;
 import java.util.HashSet;
 import java.util.Set;
-
+//import kgm.utility.*;
+//import kgm.*;
 import kgm.image.ImageUtility;
 import edu.illinois.ncsa.versus.adapter.Adapter;
 import edu.illinois.ncsa.versus.adapter.HasPixels;
@@ -23,6 +24,7 @@ import edu.ncsa.handwriting.WordSpotting;
  * @author Luigi Marini
  * 
  */
+@SuppressWarnings("serial")
 public class WordspottingExtractor implements Serializable,Extractor {
 
 	public Descriptor extract(Adapter adapter) throws Exception {

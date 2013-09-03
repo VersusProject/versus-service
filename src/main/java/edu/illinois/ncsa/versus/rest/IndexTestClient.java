@@ -33,10 +33,10 @@ public class IndexTestClient {
 	public static void main(String args[]) {
 
 		HttpClient client = new DefaultHttpClient();
-		String id="d06a9558-af45-495c-8983-882544f96109";
+		String id="2f1f1dac-130e-415e-af81-954c27cc456b";
 
-	    String requestUrl = "http://localhost:8080/api/v1/index/"+id+"/add";
-		//String requestUrl = "http://localhost:8080/api/v1/index/" + id+ "/query";
+	   String requestUrl = "http://localhost:8080/api/v1/index/"+id+"/add";
+	//String requestUrl = "http://localhost:8080/api/v1/index/" + id+ "/query";
 		HttpPost httpPost = new HttpPost(requestUrl);
 		List<NameValuePair> nvps = new ArrayList<NameValuePair>();
 		 nvps.add(new

@@ -35,9 +35,9 @@ public class MultipleIndexTestClient {
 		//nvps.add(new BasicNameValuePair("Extractor",
 		//		"edu.illinois.ncsa.versus.extract.impl.RGBHistogramExtractor"));
 		//nvps.add(new BasicNameValuePair("Measure",
-		//		"edu.illinois.ncsa.versus.measure.impl.KLdivergenceMeasure"));
-		 nvps.add(new
-		 BasicNameValuePair("Extractor","edu.illinois.ncsa.versus.rest.WordspottingExtractor"));
+	//			"edu.illinois.ncsa.versus.measure.impl.KLdivergenceMeasure"));
+		nvps.add(new
+		BasicNameValuePair("Extractor","edu.illinois.ncsa.versus.rest.WordspottingExtractor"));
 		 nvps.add(new
 		 BasicNameValuePair("Measure","edu.illinois.ncsa.versus.measure.impl.EuclideanDistanceMeasure"));
 		//nvps.add(new BasicNameValuePair("Indexer",

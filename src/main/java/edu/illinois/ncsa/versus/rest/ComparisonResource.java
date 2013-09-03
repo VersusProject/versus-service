@@ -13,6 +13,7 @@ import java.io.UnsupportedEncodingException;
 //import java.net.InetAddress;
 //import java.net.MalformedURLException;
 import java.net.URL;
+import java.net.URLConnection;
 //import java.net.URLDecoder;
 //import java.net.UnknownHostException;
 import java.util.ArrayList;
@@ -54,6 +55,7 @@ import org.codehaus.jackson.type.TypeReference;
 import org.jboss.resteasy.annotations.Form;
 
 import com.google.inject.Injector;
+import com.mongodb.util.Base64Codec;
 
 import edu.illinois.ncsa.versus.engine.impl.ComparisonStatusHandler;
 import edu.illinois.ncsa.versus.engine.impl.ExecutionEngine;
@@ -888,7 +890,7 @@ RankSlaves rank =(RankSlaves)context.getAttribute(RankSlaves.class.getName());
 		// log.debug("I am inside getFile in Comparison resource");
 		// ------------------------------------------------------------ The
 		// original code-----------------------
-		log.debug("remoteURL"+remoteURL+"url.getPath="+url.getPath());
+		log.debug("remoteURL"+remoteURL+"  url.getPath="+url.getPath());
 		if (url.getPath().isEmpty()
 				|| url.getPath().matches(".*/versus[\\d]+.tmp")) {
 			file = File.createTempFile("versus", ".tmp");
@@ -905,12 +907,13 @@ RankSlaves rank =(RankSlaves)context.getAttribute(RankSlaves.class.getName());
 				file = File.createTempFile("versus", filename.substring(idx));
 			} else {
 				file = File.createTempFile(filename, ".tmp");
-				log.debug("filePath1:"+file.getAbsolutePath()+"file1:"+file.getName());
+				log.debug("filePath1:"+file.getAbsolutePath()+" file1:"+file.getName());
 			}
 		}
 		// -------------------------------------------------------------------------
 
 		file.deleteOnExit(); // TODO only gets called when jvm exits
+				
 		FileOutputStream fos = new FileOutputStream(file);
 		InputStream is = url.openStream();
 		while ((len = is.read(buff)) != -1) {
